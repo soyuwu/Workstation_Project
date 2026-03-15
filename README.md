@@ -61,15 +61,16 @@ php artisan serve
 Truy cập: http://127.0.0.1:8000
 
 📁 Cấu trúc thư mục trọng tâm
-app/Http/Controllers: Nơi xử lý logic nghiệp vụ.
 
-app/Models: Nơi định nghĩa các thực thể (Seats, Bookings, Users).
+# app/Http/Controllers: Nơi xử lý logic nghiệp vụ.
 
-database/migrations: Nơi quản lý cấu trúc bảng.
+# app/Models: Nơi định nghĩa các thực thể (Seats, Bookings, Users).
 
-resources/views: Giao diện Blade (HTML).
+# database/migrations: Nơi quản lý cấu trúc bảng.
 
-routes/web.php: Khai báo các đường dẫn URL.
+# resources/views: Giao diện Blade (HTML).
+
+# routes/web.php: Khai báo các đường dẫn URL.
 
 🤝 Quy tắc làm việc nhóm (Git Flow)
 Để tránh xung đột code (Conflict), mọi thành viên tuân thủ:
