@@ -7,6 +7,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('LoginPage');
+
 Route::get('/thongbao', function () {
     $so1 = app('thongBaoDauTien'); 
     return $so1->index();
@@ -34,11 +38,6 @@ Route::get('/cache-get', function () {
     $value = Cache::get('name');
     return $value;
 })->name('getCache');
-
-
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('LoginPage');
 
 Route::get('/user', function() {
     session(['name' => 'Truong Giang'], ['age' => 20]);
