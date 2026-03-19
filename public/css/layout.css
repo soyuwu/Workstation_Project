@@ -1,0 +1,39 @@
+.header-top {
+    background-color: #ffffff;
+    border-bottom: 2px solid #e5e7eb;
+    padding: 12px 0;
+}
+
+.project-title {
+    text-align: center;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+}
+.nav-bar {
+    border-bottom: 1px solid #f3f4f6;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.nav-list {
+    justify-content: center;
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+    padding: 16px 0;
+}
+
+.nav-item a {
+    text-decoration: none;
+    color: #374151;
+    font-weight: 500;
+    transition: color 0.2s;
+    margin-inline: 40px;
+}
+
+.nav-item a:hover {
+    color: rgb(88, 4, 4);
+}
