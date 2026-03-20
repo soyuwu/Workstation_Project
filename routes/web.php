@@ -7,9 +7,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('LoginPage');
+Route::get('/signin', function () {
+    return view('auth.SignIn');
+})->name('SignIn');
 
 Route::get('/thongbao', function () {
     $so1 = app('thongBaoDauTien'); 

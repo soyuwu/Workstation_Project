@@ -1,29 +1,70 @@
 .header-top {
+    display: flex;
+    align-items: center;
+    padding: 10px 40px;
     background-color: #ffffff;
     border-bottom: 2px solid #e5e7eb;
-    padding: 12px 0;
+}
+
+/* Khối giả bên trái để cân bằng */
+.header-top::before {
+    content: "";
+    flex: 1;
+}
+
+.container {
+    flex: 1;
+    /* Giữ text-align ở đây là đủ cho tiêu đề */
+    text-align: center;
 }
 
 .project-title {
-    text-align: center;
-    font-weight: 700;
+    /* Đã bỏ text-align: center dư thừa */
+    font-weight: 1000;
+    font-size: 70px;
     color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 4px;
+    margin: 0; /* Đảm bảo không có margin mặc định làm lệch dòng */
 }
+
+.SignInLogInBar {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.SignInLogInBar a {
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+    padding: 6px 12px; /* Thêm padding ngang cho nút cân đối hơn */
+    background-color: #60636b;
+    border-radius: 5px;
+    transition: opacity 0.2s; /* Thêm hiệu ứng mượt */
+}
+
+.SignInLogInBar a:hover {
+    opacity: 0.8;
+}
+
 .nav-bar {
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 2px solid #e5e7eb;
     position: sticky;
     top: 0;
     z-index: 10;
+    background-color: white; /* Nên thêm màu nền để khi cuộn không bị xuyên thấu */
 }
 
 .nav-list {
-    justify-content: center;
     display: flex;
+    justify-content: center;
     list-style: none;
-    gap: 2rem;
+    /* Tăng gap lên thay vì dùng margin ở thẻ con */
+    gap: 8rem;
     padding: 16px 0;
+    margin: 0;
 }
 
 .nav-item a {
@@ -31,7 +72,7 @@
     color: #374151;
     font-weight: 500;
     transition: color 0.2s;
-    margin-inline: 40px;
+    /* Đã bỏ margin-inline dư thừa */
 }
 
 .nav-item a:hover {

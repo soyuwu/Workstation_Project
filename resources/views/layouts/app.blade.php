@@ -13,6 +13,10 @@
         <div class="container">
             <h1 class="project-title">WORKSTATION</h1>
         </div>
+        <div class="SignInLogInBar">
+            <a id ="SignIn" href="{{route('SignIn')}}">Sign In</a>
+            <a id ="LogIn" href="">Log In</a>
+        </div>
     </header>
 
     <nav class="nav-bar">
