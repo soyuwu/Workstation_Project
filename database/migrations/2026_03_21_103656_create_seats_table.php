@@ -11,18 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {   
-        if(!Schema::hasTable('seats')){
-            Schema::create('seats', function (Blueprint $table) {
+        Schema::create('seats', function (Blueprint $table) {
                 $table->id();
                 $table->timestamps();
                 $table->text('area');
                 $table->unsignedInteger('cost');
-            });
-        }
-
-        Schema::table('seats', function (Blueprint $table) {
-            $table->integer('floor')->before('area');
-        });
+            });    
+        // Schema::table('seats', function (Blueprint $table) {
+        //     $table->integer('floor')->before('area');
+        // });
     }
         
     /**
