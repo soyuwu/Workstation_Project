@@ -93,3 +93,5 @@ Không push file .env lên GitHub (Đã được chặn bởi .gitignore).
 [ ] Dashboard quản lý trạng thái ghế (Trống/Đang ngồi).
 
 Dự án được thực hiện bởi Team [Giang, Khánh, Mạnh, Huy] - Sinh viên Năm 2.
+
+Lưu ý về migration: 1. Khi anh em đã tạo những bảng mà muốn sửa nhanh, anh em hãy sửa trực tiếp trong file : database/migrations/(tên file chưa bảng anh em muốn sửa) hãy sửa trực tiếp trong schema::create, sau đó anh em chạy php artisan migrate:fresh để nó xóa đi toàn bộ bảng và tạo mới lại toàn bộ theo ae mong muốn!
