@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workstation - @yield('title')</title>
     
-    <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/topBar.css') }}">
 </head>
 <body>
 
@@ -15,7 +15,7 @@
         </div>
         <div class="SignInLogInBar">
             <a id ="SignIn" href="{{route('register')}}">Sign In</a>
-            <a id ="LogIn" href="">Log In</a>
+            <a id ="LogIn" href="{{route('logIn')   }}">Log In</a>
         </div>
     </header>
 

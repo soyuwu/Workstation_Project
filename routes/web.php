@@ -4,14 +4,16 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\AuthController;
 Route::get('/', function () {
-    return view('welcome');
+    return view('LandingPage.welcome');
 });
 
 // đường dẫn qua trang signIn
 Route::post('/register', [AuthController::class, 'register']);
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 
-
+// Duong dan qua trang LogIn
+Route::post('/logIn', [AuthController::class, 'logIn'])->name('logIn');
+Route::get('/logIn', [AuthController::class, 'showLogInForm']);
 
 // Route::get('/signin', function () {
 //     return view('auth.SignIn');

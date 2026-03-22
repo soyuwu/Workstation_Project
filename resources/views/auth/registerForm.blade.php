@@ -1,6 +1,3 @@
-@extends('layouts.app')
-
-@section('content')
 <div class="register-container">
     <h2>Đăng ký tài khoản Workstation</h2>
     
@@ -21,7 +18,6 @@
             <input type="password" name="password_confirmation" placeholder="Xác nhận mật khẩu">
             @error('password') <span class="error">{{ $message }}</span> @enderror
         </div>
-        <button type="submit">Tham gia ngay</button>
+        <button type="submit">Đăng ký</button>
     </form>
 </div>
-@endsection

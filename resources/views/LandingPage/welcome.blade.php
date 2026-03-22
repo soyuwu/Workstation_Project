@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.topBar')
 
 @section('title', 'Bảng điều khiển')
 
