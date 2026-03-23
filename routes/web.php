@@ -12,8 +12,11 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 
 // Duong dan qua trang LogIn
-Route::post('/logIn', [AuthController::class, 'logIn'])->name('logIn');
-Route::get('/logIn', [AuthController::class, 'showLogInForm']);
+Route::post('/logIn', [AuthController::class, 'logIn']);
+Route::get('/logIn', [AuthController::class, 'showLogInForm'])->name('logIn');
+
+// LogOut
+Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
 
 // Route::get('/signin', function () {
 //     return view('auth.SignIn');

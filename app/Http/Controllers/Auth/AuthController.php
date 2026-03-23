@@ -7,10 +7,16 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Authenticatable;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    private $userModel;
+    public function __construct(){
+        $this->userModel = new User();
+    }
+
+    //Regsister
     // 1. Show form cho người dùng.
     public function showRegisterForm(){
         return view('auth.registerForm');
@@ -26,19 +32,20 @@ class AuthController extends Controller
         ]);
 
         // Create new user.
-        $user = User::create([
+        $this->userModel = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
         // Log in immediately
-        //Auth::login($user);
+        AuthController::logIn($request);
 
         // Redirect to HomePage.
         return redirect('/'); 
     }
     
+    //LogIn
     // 3. Show form đăng nhập.
     public function showLogInForm(){
         return view('auth.logInForm');
@@ -47,7 +54,7 @@ class AuthController extends Controller
     public function logIn(Request $request){
         $request->validate([
             'email' => 'required|email',
-            'passsword' => 'required|min:8'
+            'password' => 'required|min:8'
         ]);
 
         $email = $request->input('email');
@@ -59,7 +66,9 @@ class AuthController extends Controller
             return back()->withErrors(['email' => 'Email này chưa được đăng ký']);
         }
 
-        if(password_verify($password, $user->password)){
+        if(Hash::check($password, $user->password)){
+            Auth::login($user);
+            $request->session()->regenerate();
             Session::put('user_id', $user->id);
             Session::put('user_role', $user->role);
 
@@ -67,5 +76,13 @@ class AuthController extends Controller
         }
 
         return back()->withErrors(['password' => 'Mat khau sai']);
+    }
+
+    //LogOut
+    public function logOut(){
+        Session::forget('user_id');
+        Session::forget('user_role');
+        
+        return redirect('/')->with('success', 'Ban da dang xuat thanh cong');
     }
 }
