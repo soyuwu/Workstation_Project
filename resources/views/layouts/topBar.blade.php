@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{{ asset('css/topBar.css') }}">
 </head>
 <body>
-
+    @include('layouts.notifications')
     <header class="header-top">
         <div class="container">
             <h1 class="project-title">WORKSTATION</h1>

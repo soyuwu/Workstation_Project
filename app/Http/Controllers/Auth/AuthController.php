@@ -32,7 +32,7 @@ class AuthController extends Controller
         ]);
 
         // Create new user.
-        $this->userModel = User::create([
+        $this->userModel->create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
