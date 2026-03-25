@@ -8,22 +8,27 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 class AuthController extends Controller
 {
     private $userModel;
-    public function __construct(){
+    public function __construct()
+    {
         $this->userModel = new User();
     }
 
     //Regsister
     // 1. Show form cho người dùng.
-    public function showRegisterForm(){
+    public function showRegisterForm()
+    {
         return view('auth.registerForm');
     }
 
     // 2. Khách bấm nút đăng ký.
-    public function register(Request $request){
+    public function register(Request $request)
+    {
         // Validation.
         $request->validate([
             'name' => 'required|min:2',
@@ -42,16 +47,18 @@ class AuthController extends Controller
         AuthController::logIn($request);
 
         // Redirect to HomePage.
-        return redirect('/'); 
+        return redirect('/');
     }
-    
+
     //LogIn
     // 3. Show form đăng nhập.
-    public function showLogInForm(){
+    public function showLogInForm()
+    {
         return view('auth.logInForm');
     }
 
-    public function logIn(Request $request){
+    public function logIn(Request $request)
+    {
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|min:8'
@@ -62,11 +69,11 @@ class AuthController extends Controller
 
         $user = User::where('email', $email)->first();
 
-        if(!$user){
+        if (!$user) {
             return back()->withErrors(['email' => 'Email này chưa được đăng ký']);
         }
 
-        if(Hash::check($password, $user->password)){
+        if (Hash::check($password, $user->password)) {
             Auth::login($user);
             $request->session()->regenerate();
             Session::put('user_id', $user->id);
@@ -79,10 +86,36 @@ class AuthController extends Controller
     }
 
     //LogOut
-    public function logOut(){
+    public function logOut()
+    {
         Session::forget('user_id');
         Session::forget('user_role');
-        
+
         return redirect('/')->with('success', 'Ban da dang xuat thanh cong');
+    }
+
+    //Activate Email
+    public function sendActivationEmail($email, $name, $link)
+    {
+        $mail = new PHPMailer(true);
+
+        try {
+            $mail->isSMTP();
+            $mail->Host() = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = env('MAIL_USERNAME');
+            $mail->Password = env('MAIL_PASSWORD');
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            $mail->Port = 465;
+            $mail->Charset = 'UTF-8';
+
+            $mail->setFrom(env('MAIL_FROM_ADDRESS'), 'WORKSTAION TEAM');
+            $mail->addAddress($email, $name);
+
+
+            return $mail->send();
+        } catch (Exception $e) {
+            return false;
+        }
     }
 }
