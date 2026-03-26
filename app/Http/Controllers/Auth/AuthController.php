@@ -39,12 +39,7 @@ class AuthController extends Controller
             'password' => 'required|min:4|confirmed',
         ]);
 
-        $token = bin2hex(random_bytes(32));
-        $this->emailVerification->create([
-            'email' => $request->email,
-            'token' => $token,
-            'create_at' => ,
-        ]);
+
         // Create new user.
         $this->userModel->create([
             'name' => $request->name,
@@ -52,12 +47,26 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Log in immediately
+        $token = bin2hex(random_bytes(32));
+        $this->emailVerification->create([
+            'email' => $request->email,
+            'token' => $token,
+            'createAt' => now(),
+        ]);
+
+        //Tạo link
+        $linkActive = url("/activate?token=$token");
+
+        if ($this->sendActivationEmail($request->email, $request->name, $linkActive)) {
+            AuthController::logIn($request);
+            return redirect('/')->with('success', 'Dang ky thanh cong, kiem tra email de kich hoat tai khoan.');
+        }
+
         AuthController::logIn($request);
 
-        // Redirect to HomePage.
-        return redirect('/');
+        return redirect('/')->with('warning', 'Đăng ký thành công nhưng gửi mail lỗi. Vui lòng liên hệ Admin.');
     }
+
 
     //LogIn
     // 3. Show form đăng nhập.
@@ -131,5 +140,32 @@ class AuthController extends Controller
         } catch (Exception $e) {
             return false;
         }
+    }
+
+    public function activate(Request $request)
+    {
+        // Lấy token từ URL (?token=...)
+        $token = $request->query('token');
+
+        if (!$token) {
+            return redirect('/login')->with('error', 'Mã xác thực không hợp lệ.');
+        }
+
+        // Tự tìm User có token này trong DB
+        $email = EmailVerification::where('token', $token)->first();
+
+        if ($email) {
+            // Cập nhật thủ công
+            //Chay thu va can sua lai kha nhieu
+            $user = User::where('email', $email->email)->first();
+            $user->email_verified_at = now();
+            $user->save();
+
+            $email->delete();
+
+            return redirect('/login')->with('success', 'Tài khoản đã kích hoạt thành công!');
+        }
+
+        return redirect('/login')->with('error', 'Token không tồn tại hoặc đã hết hạn.');
     }
 }

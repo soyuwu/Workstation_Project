@@ -17,6 +17,6 @@ class EmailVerification extends Model
     protected $fillable = [
         'email',
         'token',
-        'created_at'
+        'createdAt'
     ];
 }
