@@ -1,8 +1,8 @@
 <div class="register-container">
     <h2>Đăng ký tài khoản Workstation</h2>
-    
+
     <form action="{{ url('/register') }}" method="POST">
-        @csrf 
+        @csrf
         <div>
             <input type="text" name="name" placeholder="Họ và tên" value="{{ old('name') }}">
             @error('name') <span class="error">{{ $message }}</span> @enderror

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\EmailVerification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
@@ -14,9 +15,11 @@ use PHPMailer\PHPMailer\Exception;
 class AuthController extends Controller
 {
     private $userModel;
+    private $emailVerification;
     public function __construct()
     {
         $this->userModel = new User();
+        $this->emailVerification = new EmailVerification();
     }
 
     //Regsister
@@ -33,9 +36,15 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'required|min:2',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|confirmed',
+            'password' => 'required|min:4|confirmed',
         ]);
 
+        $token = bin2hex(random_bytes(32));
+        $this->emailVerification->create([
+            'email' => $request->email,
+            'token' => $token,
+            'create_at' => ,
+        ]);
         // Create new user.
         $this->userModel->create([
             'name' => $request->name,
@@ -61,7 +70,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required|min:8'
+            'password' => 'required|min:4'
         ]);
 
         $email = $request->input('email');
@@ -101,18 +110,23 @@ class AuthController extends Controller
 
         try {
             $mail->isSMTP();
-            $mail->Host() = 'smtp.gmail.com';
+            $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
             $mail->Username = env('MAIL_USERNAME');
             $mail->Password = env('MAIL_PASSWORD');
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             $mail->Port = 465;
-            $mail->Charset = 'UTF-8';
+            $mail->CharSet = 'UTF-8';
 
             $mail->setFrom(env('MAIL_FROM_ADDRESS'), 'WORKSTAION TEAM');
             $mail->addAddress($email, $name);
 
-
+            $mail->isHTML(true);
+            $mail->Subject = 'WORKSTATION TEAM: Xac nhan Email';
+            $mail->Body = "
+                <h2>Xac nhan Email de kich hoat tai khoan</h2>
+                <p><a href = '$link'>Vui long bam vao day de xac nhan link.</p>
+            ";
             return $mail->send();
         } catch (Exception $e) {
             return false;
