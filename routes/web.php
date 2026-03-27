@@ -21,6 +21,9 @@ Route::get('/logIn', [AuthController::class, 'showLogInForm'])->name('logIn');
 // LogOut
 Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
 
+// ActiveLink
+Route::get('/activate', [AuthController::class, 'showActivation'])->name('activate');
+
 
 // Route::get('/test-mail', function () {
 //     $auth = new \App\Http\Controllers\Auth\AuthController();

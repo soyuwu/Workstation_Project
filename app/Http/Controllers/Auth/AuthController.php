@@ -112,6 +112,11 @@ class AuthController extends Controller
         return redirect('/')->with('success', 'Ban da dang xuat thanh cong');
     }
 
+    //Show activate 
+    public function showActivation()
+    {
+        return view('Auth.activate');
+    }
     //Activate Email
     public function sendActivationEmail($email, $name, $link)
     {
