@@ -21,11 +21,12 @@
 .project-title {
     /* Đã bỏ text-align: center dư thừa */
     font-weight: 1000;
-    font-size: 70px;
+    font-size: 20px;
     color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 4px;
-    margin: 0; /* Đảm bảo không có margin mặc định làm lệch dòng */
+    margin: 0;
+    /* Đảm bảo không có margin mặc định làm lệch dòng */
 }
 
 .SignInLogInBar {
@@ -39,10 +40,12 @@
     text-decoration: none;
     color: white;
     font-weight: 500;
-    padding: 6px 12px; /* Thêm padding ngang cho nút cân đối hơn */
+    padding: 6px 12px;
+    /* Thêm padding ngang cho nút cân đối hơn */
     background-color: #60636b;
     border-radius: 5px;
-    transition: opacity 0.2s; /* Thêm hiệu ứng mượt */
+    transition: opacity 0.2s;
+    /* Thêm hiệu ứng mượt */
 }
 
 .SignInLogInBar a:hover {
@@ -54,7 +57,8 @@
     position: sticky;
     top: 0;
     z-index: 10;
-    background-color: white; /* Nên thêm màu nền để khi cuộn không bị xuyên thấu */
+    background-color: white;
+    /* Nên thêm màu nền để khi cuộn không bị xuyên thấu */
 }
 
 .nav-list {
