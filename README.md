@@ -1,5 +1,6 @@
-🚀 Workstation Booking System - Dự án Học tập Năm 2
-Dự án này là hệ thống quản lý và đặt chỗ ngồi làm việc (Workspace) dựa trên mô hình MVC, sử dụng Framework Laravel và cơ sở dữ liệu MySQL. Mục tiêu chính là học cách kết nối giữa Frontend, Backend và Database, cũng như thực hành quy trình làm việc nhóm qua Git.
+🚀 Workstation Booking System
+Dự án Học tập Năm 2 - Team [Giang, Khánh, Mạnh, Huy]
+Hệ thống quản lý và đặt chỗ ngồi làm việc (Workspace) dựa trên mô hình MVC, sử dụng Framework Laravel 11 và cơ sở dữ liệu MySQL. Dự án tập trung vào việc thực hành kết nối Full-stack và quy trình làm việc nhóm qua Git.
 
 🛠 Tech Stack
 Backend: PHP 8.3+ (Laravel 11)
@@ -11,89 +12,116 @@ Frontend: Blade Template, Tailwind CSS / Bootstrap
 Tooling: Laragon, Composer, VS Code
 
 ⚙️ Hướng dẫn Setup cho Teammate (Local Setup)
-Nếu bạn vừa clone dự án này về, hãy thực hiện các bước sau để chạy web trên máy của mình:
+
+```
+git clone https://github.com/soyuwu/Workstation_Project.git
+
+```
+
+Nếu bạn vừa clone dự án về, hãy thực hiện các bước sau để chạy web trên máy của mình:
 
 1. Cài đặt môi trường
-   Đảm bảo máy bạn đã có:
-
-Laragon Full (Đã bật Apache và MySQL).
-
-Composer (Đã cài và check bằng lệnh composer -v).
+   Đảm bảo máy bạn đã cài đặt:
+   Laragon Full (Đã bật Apache và MySQL).
+   Composer (Kiểm tra bằng lệnh composer -v).
 
 2. Cài đặt thư viện
-   Mở Terminal tại thư mục dự án và chạy:
+   Mở Terminal tại thư mục dự án và chạy các lệnh cài đặt dependencies (bao gồm cả Laravel Core và PHPMailer):
 
-Bash
+```
+composer install
+```
 
-composer install 3. Cấu hình file môi trường
-Copy file mẫu: cp .env.example .env (Hoặc đổi tên thủ công nếu dùng Windows Explorer).
+3. Cấu hình file môi trường
+   Tạo file .env từ file mẫu:
 
-Mở file .env và chỉnh sửa các thông số database:
+```
+cp .env.example .env
+```
 
-Plaintext
+Mở file .env vừa tạo và chỉnh sửa các thông số Database + Mail để khớp với máy cá nhân:
 
+```
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=workstation_db
 DB_USERNAME=root
-DB_PASSWORD= 4. Khởi tạo Project Key và Database
-Chạy các lệnh sau theo thứ tự:
+DB_PASSWORD=
 
-Bash
+# Cấu hình Gmail SMTP (Dùng App Password)
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=465
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_app_password
+MAIL_ENCRYPTION=ssl
+```
 
-# Tạo mã bảo mật cho ứng dụng
+4. Khởi tạo Project & Database
+   Chạy các lệnh sau theo thứ tự để thiết lập "chìa khóa" bảo mật và cấu trúc bảng:
 
+# Tạo mã bảo mật ứng dụng
+
+```
 php artisan key:generate
+```
 
-# Tạo cấu trúc bảng vào MySQL (Nhớ tạo database workstation_db trước trong HeidiSQL)
+# Tạo cấu trúc bảng (Lưu ý: Tạo database 'workstation_db' trước trong HeidiSQL/Navicat)
 
+```
 php artisan migrate
+```
 
-# (Tùy chọn) Chèn dữ liệu mẫu nếu có
+# (Tùy chọn) Chèn dữ liệu mẫu
 
-# php artisan db:seed
+```
+php artisan db:seed
+```
 
 5. Chạy ứng dụng
-   Bash
 
+```
 php artisan serve
+```
+
 Truy cập: http://127.0.0.1:8000
 
-📁 Cấu trúc thư mục trọng tâm
+#📁 Cấu trúc thư mục trọng tâm
+app/Http/Controllers: Nơi xử lý logic nghiệp vụ (Auth, Booking, Admin).
 
-# app/Http/Controllers: Nơi xử lý logic nghiệp vụ.
+app/Models: Định nghĩa thực thể (Users, Seats, Bookings, EmailVerifications).
 
-# app/Models: Nơi định nghĩa các thực thể (Seats, Bookings, Users).
+database/migrations: Quản lý cấu trúc bảng (Sơ đồ DB).
 
-# database/migrations: Nơi quản lý cấu trúc bảng.
+resources/views: Giao diện Blade (Giao diện người dùng).
 
-# resources/views: Giao diện Blade (HTML).
+routes/web.php: Khai báo các đường dẫn URL của ứng dụng.
 
-# routes/web.php: Khai báo các đường dẫn URL.
+#🤝 Quy tắc làm việc nhóm (Git Flow)
+Để tránh Conflict (Xung đột code), các thành viên cần tuân thủ:
 
-🤝 Quy tắc làm việc nhóm (Git Flow)
-Để tránh xung đột code (Conflict), mọi thành viên tuân thủ:
+Pull trước khi Code: Luôn chạy git pull vào đầu ngày làm việc.
 
-Luôn git pull trước khi bắt đầu code ngày mới.
+Commit có tâm: Viết mô tả rõ ràng theo chuẩn:
 
-Commit có tâm: Viết mô tả rõ ràng (Vd: feat: thêm bảng seats, fix: sửa lỗi kết nối DB).
+feat: thêm bảng seats
 
-Không push file .env lên GitHub (Đã được chặn bởi .gitignore).
+fix: sửa lỗi kết nối DB
 
-📝 Ghi chú tính năng (Roadmap)
-[x] Khởi tạo bộ khung Laravel.
+refactor: tối ưu hàm login
 
-[x] Kết nối thành công MySQL.
+Bảo mật: Tuyệt đối không push file .env lên GitHub (Đã chặn bởi .gitignore).
 
-[ ] Thiết kế bảng Seats và tạo Migration.
+#⚠️ Lưu ý quan trọng về Migration
+Nếu bạn cần sửa đổi cấu trúc bảng (thêm cột, đổi kiểu dữ liệu):
 
-[ ] Xây dựng tính năng quét mã QR để Check-in.
+Sửa trực tiếp trong file tương ứng tại database/migrations/.
 
-[ ] Dashboard quản lý trạng thái ghế (Trống/Đang ngồi).
+Chạy lệnh sau để xóa sạch và tạo lại toàn bộ database theo cấu trúc mới:
 
-Dự án được thực hiện bởi Team [Giang, Khánh, Mạnh, Huy] - Sinh viên Năm 2.
+```
+php artisan migrate:fresh
+```
 
-Lưu ý về migration: 1. Khi anh em đã tạo những bảng mà muốn sửa nhanh, anh em hãy sửa trực tiếp trong file : database/migrations/(tên file chưa bảng anh em muốn sửa) hãy sửa trực tiếp trong schema::create, sau đó anh em chạy php artisan migrate:fresh để nó xóa đi toàn bộ bảng và tạo mới lại toàn bộ theo ae mong muốn!
-
-composer require phpmailer/phpmailer
+(Cảnh báo: Lệnh này sẽ xóa sạch dữ liệu cũ trong bảng)
