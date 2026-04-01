@@ -125,3 +125,4 @@ php artisan migrate:fresh
 ```
 
 (Cảnh báo: Lệnh này sẽ xóa sạch dữ liệu cũ trong bảng)
+gi
