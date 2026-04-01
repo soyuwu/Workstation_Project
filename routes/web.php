@@ -22,7 +22,7 @@ Route::get('/logIn', [AuthController::class, 'showLogInForm'])->name('logIn');
 Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
 
 // ActiveLink
-Route::get('/activate', [AuthController::class, 'showActivation'])->name('activate');
+Route::get('/activate', [AuthController::class, 'activate'])->name('activate');
 
 
 // Route::get('/test-mail', function () {

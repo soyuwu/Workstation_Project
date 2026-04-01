@@ -51,7 +51,6 @@ class AuthController extends Controller
         $this->emailVerification->create([
             'email' => $request->email,
             'token' => $token,
-            'createAt' => now(),
         ]);
 
         //Tạo link
@@ -153,7 +152,7 @@ class AuthController extends Controller
         $token = $request->query('token');
 
         if (!$token) {
-            return redirect('/login')->with('error', 'Mã xác thực không hợp lệ.');
+            return redirect('/')->with('error', 'Mã xác thực không hợp lệ.');
         }
 
         // Tự tìm User có token này trong DB
@@ -163,14 +162,15 @@ class AuthController extends Controller
             // Cập nhật thủ công
             //Chay thu va can sua lai kha nhieu
             $user = User::where('email', $email->email)->first();
+
             $user->email_verified_at = now();
             $user->save();
 
             $email->delete();
 
-            return redirect('/login')->with('success', 'Tài khoản đã kích hoạt thành công!');
+            return redirect('/')->with('success', 'Tài khoản đã kích hoạt thành công!');
         }
 
-        return redirect('/login')->with('error', 'Token không tồn tại hoặc đã hết hạn.');
+        return redirect('/')->with('error', 'Token không tồn tại hoặc đã hết hạn.');
     }
 }
