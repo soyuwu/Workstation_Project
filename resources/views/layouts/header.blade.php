@@ -13,6 +13,6 @@
             @else
                 <a id ="SignIn" href="{{route('register')}}">Sign In</a>
                 <a id ="LogIn" href="{{route('logIn')   }}">Log In</a>    
-            @endif      
+            @endif  
         </div>
     </header>
