@@ -6,20 +6,49 @@ use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Mail;
 use PHPMailer\PHPMailer\PHPMailer;
 
+//Route::get('/', function () {
+//    return view('LandingPage.welcome');
+//});
+
+// đường dẫn qua trang signIn
+//Route::post('/register', [AuthController::class, 'register']);
+//Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+
+// Duong dan qua trang LogIn
+//Route::post('/logIn', [AuthController::class, 'logIn']);
+//Route::get('/logIn', [AuthController::class, 'showLogInForm'])->name('logIn');
+
+// LogOut
+//Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
+
 Route::get('/', function () {
     return view('LandingPage.welcome');
 });
 
-// đường dẫn qua trang signIn
-Route::post('/register', [AuthController::class, 'register']);
-Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::prefix('admin')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('layouts.admin.tongquan');
+    });
+    Route::get('/booking', function () {
+        return view('layouts.admin.booking');
+    });
+    Route::get('/facility', function () {
+        return view('layouts.admin.map');
+    });
+    Route::get('/fnb', function () {
+        return view('layouts.admin.fnb');
+    });
+    Route::get('/marketing', function () {
+        return view('layouts.admin.voucher');
+    });
+    Route::get('/crm', function () {
+        return view('layouts.admin.user');
+    });
+    Route::get('/settings', function () {
+        return view('layouts.admin.nhansu');
+    });
+});
 
-// Duong dan qua trang LogIn
-Route::post('/logIn', [AuthController::class, 'logIn']);
-Route::get('/logIn', [AuthController::class, 'showLogInForm'])->name('logIn');
-
-// LogOut
-Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
 
 
 // Route::get('/test-mail', function () {
@@ -66,5 +95,5 @@ Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
 // });
 
 // Route::get('/user', function(Request $request) {
-    
+
 // });
