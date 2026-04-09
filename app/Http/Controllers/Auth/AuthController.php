@@ -173,4 +173,12 @@ class AuthController extends Controller
 
         return redirect('/')->with('error', 'Token không tồn tại hoặc đã hết hạn.');
     }
+
+    //Forget password
+    public function showForgetPasswordForm()
+    {
+        return view('auth.forgetPasswordForm');
+    }
+
+    public function sendEmailForgetPassword($email, $link) {}
 }
