@@ -204,26 +204,6 @@
                   gap: 16px;
             }
 
-            .notification-bell {
-                  position: relative;
-                  cursor: pointer;
-                  font-size: 1.3rem;
-                  color: #4b5563;
-            }
-
-            .notification-bell:hover {
-                  color: #111827;
-            }
-
-            .notification-dot {
-                  position: absolute;
-                  top: 0;
-                  right: 0;
-                  width: 8px;
-                  height: 8px;
-                  background: #ef4444;
-                  border-radius: 50%;
-            }
 
             /* ===================================== */
             /* PAGE CONTAINER                        */
@@ -504,15 +484,14 @@
                   background: #f9fafb;
             }
 
-            .th-right,
-            .td-right {
-                  text-align: right;
+            .text-center {
+                  text-align: center !important;
             }
 
             .action-group {
                   display: flex;
                   gap: 6px;
-                  justify-content: flex-end;
+                  justify-content: center;
             }
 
             /* ===================================== */
@@ -1107,11 +1086,6 @@
                               <input type="text" placeholder="Tìm kiếm nhanh..." class="search-input" id="globalSearch">
                         </div>
                         <div class="header-actions">
-                              <div class="notification-bell" id="notificationBell">
-                                    <span style="font-size: 0.9rem; font-weight: 500;">Thông báo</span>
-                                    <span class="notification-dot"
-                                          style="position: relative; display: inline-block; top: -5px; right: 0;"></span>
-                              </div>
                               <button class="btn btn-outline btn-sm" id="btnLogout">
                                     Đăng xuất
                               </button>

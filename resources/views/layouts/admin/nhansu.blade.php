@@ -10,7 +10,7 @@
         <div class="section-header">
             <div>
                 <h1 class="page-title">Nhân Sự & Phân Quyền</h1>
-                <p class="page-subtitle">Quản lý tài khoản nhân viên, phân quyền hệ thống và cấu hình chung.</p>
+                <p class="page-subtitle">Quản lý tài khoản nhân viên và phân quyền hệ thống.</p>
             </div>
             <div class="section-actions">
                 <button class="btn btn-primary" id="btnAddStaff" onclick="openStaffModal('add')">
@@ -23,7 +23,6 @@
         <div class="filter-tabs" id="settingsSubTabs">
             <button class="filter-tab filter-tab--active" data-tab="settings-staff">Nhân sự & Tài khoản</button>
             <button class="filter-tab" data-tab="settings-roles">Nhóm quyền</button>
-            <button class="filter-tab" data-tab="settings-general">Cấu hình chung</button>
         </div>
 
         {{-- Tab 1: Staff Accounts --}}
@@ -37,7 +36,7 @@
                             <th>Thông tin liên hệ</th>
                             <th>Quyền Hệ Thống</th>
                             <th>Trạng thái tài khoản</th>
-                            <th class="th-right">Thao tác</th>
+                            <th class="text-center">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -57,7 +56,7 @@
                             <td><span class="badge badge--purple"><i class="ph-bold ph-shield-check"></i> Super Admin</span>
                             </td>
                             <td><span class="badge badge--green">Đang hoạt động</span></td>
-                            <td class="td-right">
+                            <td class="text-center">
                                 <div class="action-group">
                                     <button class="btn btn-outline btn-sm btn-icon" title="Cập nhật">
                                         <i class="ph-bold ph-pencil-simple"></i>
@@ -84,7 +83,7 @@
                             <td><span class="badge badge--blue"><i class="ph-bold ph-user-circle-gear"></i>
                                     Receptionist</span></td>
                             <td><span class="badge badge--green">Đang hoạt động</span></td>
-                            <td class="td-right">
+                            <td class="text-center">
                                 <div class="action-group">
                                     <button class="btn btn-outline btn-sm btn-icon" title="Cập nhật">
                                         <i class="ph-bold ph-pencil-simple"></i>
@@ -110,7 +109,7 @@
                             <td class="text-sm">tuananh.le@workstation.vn</td>
                             <td><span class="badge badge--amber"><i class="ph-bold ph-coffee"></i> Bếp / Pha chế</span></td>
                             <td><span class="badge badge--red">Không hoạt động</span></td>
-                            <td class="td-right">
+                            <td class="text-center">
                                 <div class="action-group">
                                     <button class="btn btn-outline btn-sm btn-icon" title="Cập nhật">
                                         <i class="ph-bold ph-pencil-simple"></i>
@@ -141,7 +140,7 @@
                             <th>Tên nhóm quyền</th>
                             <th>Mô tả</th>
                             <th>Số thành viên</th>
-                            <th class="th-right">Thao tác</th>
+                            <th class="text-center">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -149,7 +148,7 @@
                             <td><b>Super Admin</b></td>
                             <td class="text-muted text-sm">Toàn quyền truy cập hệ thống</td>
                             <td>1 người</td>
-                            <td class="td-right">
+                            <td class="text-center">
                                 <button class="btn btn-outline btn-sm btn-icon" title="Xem chi tiết">
                                     <i class="ph-bold ph-eye"></i>
                                 </button>
@@ -159,7 +158,7 @@
                             <td><b>Receptionist (Lễ tân)</b></td>
                             <td class="text-muted text-sm">Quản lý Booking, Check-in/out</td>
                             <td>2 người</td>
-                            <td class="td-right">
+                            <td class="text-center">
                                 <div class="action-group">
                                     <button class="btn btn-outline btn-sm btn-icon" title="Sửa quyền">
                                         <i class="ph-bold ph-pencil-simple"></i>
@@ -174,7 +173,7 @@
                             <td><b>Bếp / Pha chế</b></td>
                             <td class="text-muted text-sm">Xem đơn F&B, cập nhật trạng thái</td>
                             <td>1 người</td>
-                            <td class="td-right">
+                            <td class="text-center">
                                 <div class="action-group">
                                     <button class="btn btn-outline btn-sm btn-icon" title="Sửa quyền">
                                         <i class="ph-bold ph-pencil-simple"></i>
@@ -190,37 +189,7 @@
             </div>
         </div>
 
-        {{-- Tab 3: General Settings --}}
-        <div class="sub-section sub-section--hidden" id="settings-general">
-            <div class="card">
-                <div class="card__header">
-                    <h2 class="card__title"><i class="ph-fill ph-gear"></i> Cấu hình chung</h2>
-                </div>
-                <div class="settings-form">
-                    <div class="form-group">
-                        <label class="form-label">Tên hệ thống hiển thị</label>
-                        <input type="text" class="input-field" value="WS Portal - Workstation Booking" id="settingSiteName">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Múi giờ</label>
-                        <select class="input-select" id="settingTimezone">
-                            <option selected>Asia/Ho_Chi_Minh (GMT +7)</option>
-                            <option>Asia/Bangkok (GMT +7)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Đơn vị tiền tệ</label>
-                        <select class="input-select" id="settingCurrency">
-                            <option selected>VND (₫)</option>
-                            <option>USD ($)</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-primary" id="btnSaveSettings">
-                        <i class="ph-bold ph-floppy-disk"></i> Lưu cài đặt
-                    </button>
-                </div>
-            </div>
-        </div>
+
     </div>
 
     <!-- Modal Thêm/Sửa Nhân sự -->
@@ -350,7 +319,7 @@
                                     <td class="text-sm">${email}</td>
                                     <td>${roleHtml}</td>
                                     <td><span class="badge badge--green">Hoạt động</span></td>
-                                    <td class="td-right">
+                                    <td class="text-center">
                                         <div class="action-group">
                                             <button class="btn btn-outline btn-sm btn-icon" title="Cập nhật">
                                                 <i class="ph-bold ph-pencil-simple"></i>

@@ -36,7 +36,7 @@
                                     <th>Thời gian áp dụng</th>
                                     <th>Đã dùng / Giới hạn</th>
                                     <th>Trạng thái</th>
-                                    <th class="th-right">Thao tác</th>
+                                    <th class="text-center">Thao tác</th>
                               </tr>
                         </thead>
                         <tbody>
@@ -57,7 +57,7 @@
                                           <span class="text-sm">15 / 100 lượt</span>
                                     </td>
                                     <td><span class="badge badge--green">Đang chạy</span></td>
-                                    <td class="td-right">
+                                    <td class="text-center">
                                           <div class="action-group">
                                                 <button class="btn btn-outline btn-sm btn-icon" title="Chỉnh sửa">
                                                       <i class="ph-bold ph-pencil-simple"></i>
@@ -86,7 +86,7 @@
                                           <span class="text-sm">120 / 500 lượt</span>
                                     </td>
                                     <td><span class="badge badge--green">Đang chạy</span></td>
-                                    <td class="td-right">
+                                    <td class="text-center">
                                           <div class="action-group">
                                                 <button class="btn btn-outline btn-sm btn-icon" title="Chỉnh sửa">
                                                       <i class="ph-bold ph-pencil-simple"></i>
@@ -115,7 +115,7 @@
                                           <span class="text-muted text-sm">50 / 50 lượt (Hết)</span>
                                     </td>
                                     <td><span class="badge badge--red">Hết hạn / Hết lượt</span></td>
-                                    <td class="td-right">
+                                    <td class="text-center">
                                           <button class="btn btn-outline btn-sm btn-icon" title="Xem chi tiết">
                                                 <i class="ph-bold ph-eye"></i>
                                           </button>
@@ -297,7 +297,7 @@
                                           <span class="text-sm">0 / ${limit} lượt</span>
                                       </td>
                                       <td><span class="badge badge--green">Đang chạy</span></td>
-                                      <td class="td-right">
+                                      <td class="text-center">
                                           <div class="action-group">
                                               <button class="btn btn-outline btn-sm btn-icon edit-btn" title="Chỉnh sửa">
                                                   <i class="ph-bold ph-pencil-simple"></i>

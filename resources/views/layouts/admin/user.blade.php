@@ -34,7 +34,7 @@
                                           <th>Tổng chi tiêu</th>
                                           <th>Số lần đặt chỗ</th>
                                           <th>Trạng thái tài khoản</th>
-                                          <th class="th-right">Thao tác</th>
+                                          <th class="text-center">Thao tác</th>
                                     </tr>
                               </thead>
                               <tbody>
@@ -60,7 +60,7 @@
                                           </td>
                                           <td>24 lần booking</td>
                                           <td><span class="badge badge--green">Hoạt động</span></td>
-                                          <td class="td-right">
+                                          <td class="text-center">
                                                 <div class="action-group">
                                                       <button class="btn btn-outline btn-sm btn-icon"
                                                             title="Cập nhật thông tin">
@@ -96,7 +96,7 @@
                                           </td>
                                           <td>5 lần booking</td>
                                           <td><span class="badge badge--green">Hoạt động</span></td>
-                                          <td class="td-right">
+                                          <td class="text-center">
                                                 <div class="action-group">
                                                       <button class="btn btn-outline btn-sm btn-icon"
                                                             title="Cập nhật thông tin">
@@ -130,7 +130,7 @@
                                           </td>
                                           <td>0 lần hoàn thành</td>
                                           <td><span class="badge badge--red">Bị chặn (Blacklist)</span></td>
-                                          <td class="td-right">
+                                          <td class="text-center">
                                                 <div class="action-group">
                                                       <button class="btn btn-outline btn-sm btn-icon"
                                                             title="Cập nhật thông tin">
@@ -358,7 +358,7 @@
                                   <td><b>0 ₫</b></td>
                                   <td>0 lần booking</td>
                                   <td><span class="badge badge--green">Hoạt động</span></td>
-                                  <td class="td-right">
+                                  <td class="text-center">
                                       <div class="action-group">
                                           <button class="btn btn-outline btn-sm btn-icon" title="Xem lịch sử">
                                               <i class="ph-bold ph-eye"></i>

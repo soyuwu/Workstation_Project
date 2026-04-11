@@ -55,18 +55,7 @@
                         </div>
                   </div>
 
-                  <div class="metric-card">
-                        <div class="metric-icon metric-icon--amber">
-                              <i class="ph-fill ph-chart-donut"></i>
-                        </div>
-                        <div class="metric-body">
-                              <span class="metric-label">Tỉ lệ lấp đầy (Occupancy)</span>
-                              <span class="metric-value">68%</span>
-                              <div class="occupancy-bar">
-                                    <div class="occupancy-bar__fill" style="width: 68%;"></div>
-                              </div>
-                        </div>
-                  </div>
+
             </div>
 
             {{-- Charts & Activity Row --}}

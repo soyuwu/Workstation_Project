@@ -38,7 +38,7 @@
                                     <th>Không gian thuê</th>
                                     <th>Thời gian đặt</th>
                                     <th>Tổng tiền</th>
-                                    <th class="th-right">Thao tác</th>
+                                    <th class="text-center">Thao tác</th>
                               </tr>
                         </thead>
                         <tbody>
@@ -57,7 +57,7 @@
                                           <span class="text-muted text-sm">Lúc: 08:30</span>
                                     </td>
                                     <td><b>300.000 ₫</b></td>
-                                    <td class="td-right">
+                                    <td class="text-center">
                                           <div class="action-group">
                                                 <button class="btn btn-outline btn-sm btn-icon btn-view-details"
                                                       title="Xem chi tiết" data-id="#BK-1029" data-name="Nguyễn Trọng A"
@@ -85,7 +85,7 @@
                                           <span class="text-muted text-sm">Lúc: 15:20</span>
                                     </td>
                                     <td><b>150.000 ₫</b></td>
-                                    <td class="td-right">
+                                    <td class="text-center">
                                           <div class="action-group">
                                                 <button class="btn btn-outline btn-sm btn-icon btn-view-details"
                                                       title="Xem chi tiết" data-id="#BK-1028" data-name="Lê Văn B"
@@ -112,7 +112,7 @@
                                           <span class="text-muted text-sm">Lúc: 09:15</span>
                                     </td>
                                     <td class="text-muted">200.000 ₫</td>
-                                    <td class="td-right">
+                                    <td class="text-center">
                                           <button class="btn btn-outline btn-sm btn-icon btn-view-details"
                                                 title="Xem chi tiết" data-id="#BK-1020" data-name="Trần Thị C"
                                                 data-phone="0912 345 678" data-room="Pod Cá nhân (P-01)"
@@ -138,7 +138,7 @@
                                           <span class="text-muted text-sm">Lúc: 11:45</span>
                                     </td>
                                     <td class="text-muted">500.000 ₫</td>
-                                    <td class="td-right">
+                                    <td class="text-center">
                                           <button class="btn btn-outline btn-sm btn-icon btn-view-details"
                                                 title="Xem chi tiết" data-id="#BK-1015" data-name="Phạm Duy D"
                                                 data-phone="0988 111 222" data-room="Meeting Room M2"

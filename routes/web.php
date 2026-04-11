@@ -6,24 +6,22 @@ use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Mail;
 use PHPMailer\PHPMailer\PHPMailer;
 
-//Route::get('/', function () {
-//    return view('LandingPage.welcome');
-//});
-
-// đường dẫn qua trang signIn
-//Route::post('/register', [AuthController::class, 'register']);
-//Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-
-// Duong dan qua trang LogIn
-//Route::post('/logIn', [AuthController::class, 'logIn']);
-//Route::get('/logIn', [AuthController::class, 'showLogInForm'])->name('logIn');
-
-// LogOut
-//Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
-
 Route::get('/', function () {
     return view('LandingPage.welcome');
 });
+
+// đường dẫn qua trang signIn
+Route::post('/register', [AuthController::class, 'register']);
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+
+// Duong dan qua trang LogIn
+Route::post('/logIn', [AuthController::class, 'logIn']);
+Route::get('/logIn', [AuthController::class, 'showLogInForm'])->name('logIn');
+
+// LogOut
+Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
+
+
 
 Route::prefix('admin')->group(function () {
     Route::get('/dashboard', function () {
