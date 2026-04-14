@@ -175,11 +175,6 @@ class AuthController extends Controller
     }
 
     //Forget password
-    public function showForgetPasswordForm()
-    {
-        return view('auth.forgetPassword');
-    }
-
     public function createLink($email)
     {
         $token = bin2hex(random_bytes(32));

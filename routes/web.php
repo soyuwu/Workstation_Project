@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
 use PHPMailer\PHPMailer\PHPMailer;
 
 Route::get('/', function () {
@@ -25,7 +26,9 @@ Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
 Route::get('/activate', [AuthController::class, 'activate'])->name('activate');
 
 // ForgetPassword
-Route::get('/forget-password', [AuthController::class, 'showForgetPasswordForm'])->name('forget-password');
+Route::get('/resetPassword', function () {
+    return view('auth.forgetPassword');
+});
 Route::post('/forget-password', [AuthController::class, 'sendEmailForgetPassword']);
 
 // Route::get('/test-mail', function () {
@@ -66,10 +69,11 @@ Route::post('/forget-password', [AuthController::class, 'sendEmailForgetPassword
 //     return $value;
 // })->name('getCache');
 
-// Route::get('/user', function() {
-//     session(['name' => 'Truong Giang'], ['age' => 20]);
-//     return session('age');
-// });
+Route::get('/user', function () {
+    session(['name' => 'Truong Giang'], ['age' => 20]);
+    echo (Session->name);
+    return session('age');
+});
 
 // Route::get('/user', function(Request $request) {
     
