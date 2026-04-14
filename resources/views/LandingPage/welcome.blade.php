@@ -1,7 +1,5 @@
 @extends('layouts.topBar')
 
-@extends('layouts.admin.admin_master')
-
 @section('page-title', 'Trang chủ')
 
 @section('content')
