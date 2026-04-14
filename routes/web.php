@@ -36,6 +36,33 @@ Route::get('/forgot-password', function () {
 })->name('forgot.password');
 
 
+
+Route::prefix('admin')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('layouts.admin.tongquan');
+    });
+    Route::get('/booking', function () {
+        return view('layouts.admin.booking');
+    });
+    Route::get('/facility', function () {
+        return view('layouts.admin.map');
+    });
+    Route::get('/fnb', function () {
+        return view('layouts.admin.fnb');
+    });
+    Route::get('/marketing', function () {
+        return view('layouts.admin.voucher');
+    });
+    Route::get('/crm', function () {
+        return view('layouts.admin.user');
+    });
+    Route::get('/settings', function () {
+        return view('layouts.admin.nhansu');
+    });
+});
+
+
+
 // Route::get('/test-mail', function () {
 //     $auth = new \App\Http\Controllers\Auth\AuthController();
 //     $result = $auth->sendActivationEmail('24520422@gm.uit.edu.vn', 'Test User', 'http://127.0.0.1:8000/test');
@@ -80,5 +107,5 @@ Route::get('/forgot-password', function () {
 // });
 
 // Route::get('/user', function(Request $request) {
-    
+
 // });
