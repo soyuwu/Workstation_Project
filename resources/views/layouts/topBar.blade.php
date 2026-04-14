@@ -3,46 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workstation - @yield('title')</title>
-    
+    <title>Workstation - @yield('title', 'Hệ thống đặt chỗ')</title>
+
+    {{-- Google Fonts --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    {{-- Material Symbols --}}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    {{-- Font Awesome 6 CDN --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    {{-- Swiper CSS --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    {{-- Vite Assets --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/topBar.css') }}">
 </head>
-<body>
+<body class="font-body text-on-surface bg-background antialiased">
     @include('layouts.notifications')
-    <header class="header-top">
-        <div class="container">
-            <h1 class="project-title">WORKSTATION</h1>
-        </div>
-        <div class="SignInLogInBar">
-            @if(Session::has('user_id'))
-                <span style="color: #6b7280; margin-right: 15px;">Chào, User ID: {{ Session::get('user_id') }}</span>
-                <span style="color: #6b7280; margin-right: 15px;">Role: {{ Session::get('user_role') }}</span>
-                <form action="{{route('logOut') }}" method="GET" style="display: inline;">
-                    @csrf
-                    <button type="submit" style="background: none; border: none; color: red; cursor: pointer;">LogOut</button>
-                </form>
-            @else
-                <a id ="SignIn" href="{{route('register')}}">Sign In</a>
-                <a id ="LogIn" href="{{route('logIn')   }}">Log In</a>    
-            @endif      
-        </div>
-    </header>
-
-    <nav class="nav-bar">
-        <div class="container">
-            <ul class="nav-list">
-                <li class="nav-item"><a href="/seats">GIỚI THIỆU</a></li>
-                <li class="nav-item"><a href="/seats">BẢN ĐỒ</a></li>
-                <li class="nav-item"><a href="/single">SINGLE</a></li>
-                <li class="nav-item"><a href="/group">GROUP</a></li>
-                <li class="nav-item"><a href="/services">Dịch vụ khác</a></li>
-            </ul>
-        </div>
-    </nav>
-
-    <main class="container content-area">
+    @include('layouts.nav')
+    <main>
         @yield('content')
     </main>
 
+    {{-- Swiper JS --}}
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 </body>
 </html>

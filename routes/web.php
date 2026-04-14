@@ -21,6 +21,15 @@ Route::get('/logIn', [AuthController::class, 'showAuthForm'])->name('logIn');
 // LogOut
 Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
 
+// Trang Dịch vụ
+Route::get('/khong-gian', function () {
+    return view('services.khong-gian');
+})->name('khongGian');
+
+Route::get('/dich-vu', function () {
+    return view('services.dich-vu');
+})->name('dichVu');
+
 // Forgot Password
 Route::get('/forgot-password', function () {
     return view('auth.emailVerified');
