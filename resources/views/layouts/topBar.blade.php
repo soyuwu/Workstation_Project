@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workstation - @yield('title')</title>
-    
+
     <link rel="stylesheet" href="{{ asset('css/topBar.css') }}">
 </head>
+
 <body>
     @include('layouts.notifications')
     <header class="header-top">
@@ -15,16 +17,16 @@
         </div>
         <div class="SignInLogInBar">
             @if(Session::has('user_id'))
-                <span style="color: #6b7280; margin-right: 15px;">Chào, User ID: {{ Session::get('user_id') }}</span>
-                <span style="color: #6b7280; margin-right: 15px;">Role: {{ Session::get('user_role') }}</span>
-                <form action="{{route('logOut') }}" method="GET" style="display: inline;">
-                    @csrf
-                    <button type="submit" style="background: none; border: none; color: red; cursor: pointer;">LogOut</button>
-                </form>
+            <span style="color: #6b7280; margin-right: 15px;">Chào, User ID: {{ Session::get('user_id') }}</span>
+            <span style="color: #6b7280; margin-right: 15px;">Role: {{ Session::get('user_role') }}</span>
+            <form action="{{route('logOut') }}" method="GET" style="display: inline;">
+                @csrf
+                <button type="submit" style="background: none; border: none; color: red; cursor: pointer;">LogOut</button>
+            </form>
             @else
-                <a id ="SignIn" href="{{route('register')}}">Sign In</a>
-                <a id ="LogIn" href="{{route('logIn')   }}">Log In</a>    
-            @endif      
+            <a id="SignIn" href="{{route('register')}}">Sign In</a>
+            <a id="LogIn" href="{{route('logIn')   }}">Log In</a>
+            @endif
         </div>
     </header>
 
@@ -45,4 +47,5 @@
     </main>
 
 </body>
+
 </html>

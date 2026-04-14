@@ -1,7 +1,7 @@
 <div class="forget-password">
     <h2>Đặt lại password</h2>
-
-    <form action="{{ url('') }}" method="POST">
+    @if(Session::has('reset_token'))
+    <form action="{{route('')}}" method="POST">
         @csrf
         <div>
             <div>
@@ -14,4 +14,14 @@
         </div>
         <button type="submit">Đổi mật khẩu</button>
     </form>
+    @else
+    <form action="{{url('/forget-password')}}" method="post">
+        <div>
+            <input type="email" name="email" placeholder="Nhập email đăng ký để reset mật khẩu">
+        </div>
+        <div>
+            <button type="submit">Xác nhận</button>
+        </div>
+    </form>
+    @endif
 </div>

@@ -177,8 +177,45 @@ class AuthController extends Controller
     //Forget password
     public function showForgetPasswordForm()
     {
-        return view('auth.forgetPasswordForm');
+        return view('auth.forgetPassword');
     }
 
-    public function sendEmailForgetPassword($email, $link) {}
+    public function createLink($email)
+    {
+        $token = bin2hex(random_bytes(32));
+        $linkActive = url("/forget-password?token=$token");
+
+        return $linkActive;
+    }
+
+    public function sendEmailForgetPassword(Request $request)
+    {
+        $link = AuthController::createLink($request->email);
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = env('MAIL_USERNAME');
+            $mail->Password = env('MAIL_PASSWORD');
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            $mail->Port = 465;
+            $mail->CharSet = 'UTF-8';
+
+            $mail->setFrom(env('MAIL_FROM_ADDRESS'), 'WORKSTAION TEAM');
+            $mail->addAddress($request->email);
+
+            $mail->isHTML(true);
+            $mail->Subject = 'WORKSTATION TEAM: Xac nhan Email';
+            $mail->Body = "
+                <h2>Xac nhan Email de doi mat khau</h2>
+                <p><a href = '$link'>Vui long bam vao day de xac nhan link.</p>
+            ";
+            return $mail->send();
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    public function 
 }

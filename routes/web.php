@@ -24,6 +24,9 @@ Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
 // ActiveLink
 Route::get('/activate', [AuthController::class, 'activate'])->name('activate');
 
+// ForgetPassword
+Route::get('/forget-password', [AuthController::class, 'showForgetPasswordForm'])->name('forget-password');
+Route::post('/forget-password', [AuthController::class, 'sendEmailForgetPassword']);
 
 // Route::get('/test-mail', function () {
 //     $auth = new \App\Http\Controllers\Auth\AuthController();
