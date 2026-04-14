@@ -10,16 +10,30 @@ Route::get('/', function () {
     return view('LandingPage.welcome');
 });
 
-// đường dẫn qua trang signIn
+// đường dẫn qua trang signIn/signUp dùng chung 1 form
 Route::post('/register', [AuthController::class, 'register']);
-Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::get('/register', [AuthController::class, 'showAuthForm'])->name('register');
 
 // Duong dan qua trang LogIn
 Route::post('/logIn', [AuthController::class, 'logIn']);
-Route::get('/logIn', [AuthController::class, 'showLogInForm'])->name('logIn');
+Route::get('/logIn', [AuthController::class, 'showAuthForm'])->name('logIn');
 
 // LogOut
 Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
+
+// Trang Dịch vụ
+Route::get('/khong-gian', function () {
+    return view('services.khong-gian');
+})->name('khongGian');
+
+Route::get('/dich-vu', function () {
+    return view('services.dich-vu');
+})->name('dichVu');
+
+// Forgot Password
+Route::get('/forgot-password', function () {
+    return view('auth.emailVerified');
+})->name('forgot.password');
 
 
 

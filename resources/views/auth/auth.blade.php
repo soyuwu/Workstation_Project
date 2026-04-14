@@ -5,9 +5,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-    <title>Modern Login Page | Tailwind CSS</title>
+    <title>WorkStation</title>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/emailVerify.js', 'resources/js/slipLoginLogout.js'])
 
     <link rel="stylesheet" href="./style.css">
 
@@ -51,11 +51,13 @@
 </head>
 
 <body class="bg-linear-to-r from-[#e2e2e2] to-[#c9d6ff] flex items-center justify-center flex-col h-screen">
-    <div class="relative overflow-hidden bg-white rounded-[30px] shadow-[0_5px_15px_rgba(0,0,0,0.35)] w-4xl max-w-full min-h-140 group"
+    <div class="relative overflow-hidden bg-white rounded-[30px] shadow-[0_5px_15px_rgba(0,0,0,0.35)] w-4xl max-w-full min-h-140 group {{ request()->is('register') ? 'active' : '' }}"
         id="container">
         <div
             class="absolute top-0 h-full w-1/2 left-0 opacity-0 z-1 transition-all duration-[0.6s] ease-in-out group-[.active]:translate-x-full group-[.active]:opacity-100 group-[.active]:z-5 group-[.active]:animate-[move_0.6s] sign-up">
-            <form class="bg-white flex items-center justify-center text-center flex-col px-10 h-full">
+            <form method="POST" action="/register"
+                class="bg-white flex items-center justify-center text-center flex-col px-10 h-full">
+                @csrf
                 <h1 class="text-3xl font-bold m-0">Create Account</h1>
                 <div class="my-4 flex gap-2">
                     <div
@@ -76,13 +78,16 @@
                     </div>
                 </div>
                 <span class="text-[12px]">or use your email for registeration</span>
-                <input type="text" placeholder="Name"
-                    class="bg-[#eee] border-none my-2 px-3.75 py-2.5 text-[13px] rounded-lg w-full outline-none" />
-                <input type="email" placeholder="Email"
-                    class="bg-[#eee] border-none my-2 px-3.75 py-2.5 text-[13px] rounded-lg w-full outline-none" />
-                <input type="password" placeholder="Password"
-                    class="bg-[#eee] border-none my-2 px-3.75 py-2.5 text-[13px] rounded-lg w-full outline-none" />
-                <button type="button"
+                <input type="text" name="name" placeholder="Name"
+                    class="bg-[#eee] border-none my-2 px-3.75 py-2.5 text-[13px] rounded-lg w-full outline-none"
+                    required />
+                <input type="email" name="email" placeholder="Email"
+                    class="bg-[#eee] border-none my-2 px-3.75 py-2.5 text-[13px] rounded-lg w-full outline-none"
+                    required />
+                <input type="password" name="password" placeholder="Password"
+                    class="bg-[#eee] border-none my-2 px-3.75 py-2.5 text-[13px] rounded-lg w-full outline-none"
+                    required />
+                <button type="submit"
                     class="hover:bg-[#512da8] bg-purple-600 text-white text-[12px] border border-transparent py-2.5 px-11.25 rounded-lg font-semibold uppercase mt-2.5 tracking-[0.5px] cursor-pointer">
                     Sign up
                 </button>
@@ -90,7 +95,9 @@
         </div>
         <div
             class="absolute top-0 h-full w-1/2 left-0 z-2 transition-all duration-[0.6s] ease-in-out group-[.active]:translate-x-full sign-in">
-            <form class="bg-white flex items-center justify-center flex-col px-10 h-full text-center">
+            <form method="POST" action="/logIn"
+                class="bg-white flex items-center justify-center flex-col px-10 h-full text-center">
+                @csrf
                 <h1 class="text-3xl font-bold m-0">Sign In</h1>
                 <div class="my-4 flex gap-2">
                     <div
@@ -111,14 +118,16 @@
                     </div>
                 </div>
                 <span class="text-[12px]">or use your email password</span>
-                <input type="email" placeholder="Email"
-                    class="bg-[#eee] border-none my-2 px-3.75 py-2.5 text-[13px] rounded-lg w-full outline-none" />
-                <input type="password" placeholder="Password"
-                    class="bg-[#eee] border-none my-2 px-3.75 py-2.5 text-[13px] rounded-lg w-full outline-none" />
-                <a href="#"
-                    class="text-[#333] text-[13px] no-underline m-1 border-white rounded-3xl py-2 px-4 hover:bg-gray-300 hover:text-red-600 transition-all duration-200 ease-in-out">Forgot
+                <input type="email" name="email" placeholder="Email"
+                    class="bg-[#eee] border-none my-2 px-3.75 py-2.5 text-[13px] rounded-lg w-full outline-none"
+                    required />
+                <input type="password" name="password" placeholder="Password"
+                    class="bg-[#eee] border-none my-2 px-3.75 py-2.5 text-[13px] rounded-lg w-full outline-none"
+                    required />
+                <a id = "emailVerified-btn"
+                    class="text-[#333] text-[13px] no-underline m-1 border-white rounded-3xl py-2 px-4 hover:bg-gray-300 hover:text-red-600 transition-all duration-200 ease-in-out cursor-pointer">Forgot
                     password?</a>
-                <button type="button"
+                <button type="submit"
                     class="hover:bg-[#512da8] bg-purple-600 text-white text-[12px] border border-transparent py-2.5 px-11.25 rounded-lg font-semibold uppercase mt-2.5 tracking-[0.5px] cursor-pointer">
                     Sign in
                 </button>
@@ -157,18 +166,7 @@
             </div>
         </div>
     </div>
-    <script>
-        const container = document.getElementById("container");
-        const registerBtn = document.getElementById("register");
-        const loginBtn = document.getElementById("login");
-
-        registerBtn.addEventListener("click", () => {
-            container.classList.add("active");
-        });
-        loginBtn.addEventListener("click", () => {
-            container.classList.remove("active");
-        });
-    </script>
 </body>
 
 </html>
+
