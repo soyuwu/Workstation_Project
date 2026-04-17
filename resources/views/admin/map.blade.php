@@ -1,391 +1,304 @@
-@extends('layouts.admin.admin_master')
+@extends('admin.admin_master')
 
 @section('page-title', 'Không gian & Cơ sở')
 
 @section('content')
-    <style>
-        .cinema-map-container {
-            background: #ffffffff;
-            padding: 40px;
-            border-radius: 16px;
-            color: #0d0e0aff;
-            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
-            overflow-x: auto;
-            min-height: 80vh;
-        }
-
-        .map-legend {
-            display: flex;
-            gap: 30px;
-            margin-bottom: 40px;
-            justify-content: center;
-            background: #ebebf0ff;
-            padding: 16px 32px;
-            border-radius: 30px;
-            width: max-content;
-            margin-inline: auto;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 15px;
-            font-weight: 600;
-        }
-
-        .legend-color {
-            width: 18px;
-            height: 18px;
-            border-radius: 4px;
-        }
-
-        .color-active {
-            background: #548bf9ff;
-            box-shadow: 0 0 10px #86c2f3ff;
-        }
-
-        .color-maintenance {
-            background: #efc587ff;
-        }
-
-        .floor-plan {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 16px;
-            min-width: 900px;
-            padding: 20px;
-        }
-
-        .space-item {
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 12px;
-            text-align: center;
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        .space-title {
-            font-weight: 700;
-            font-size: 14px;
-            margin-bottom: 6px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-        }
-
-        /* Status: Được sử dụng (Active) */
-        .status-active {
-            background: #548bf9ff;
-            cursor: pointer;
-            border: 2px solid #729befff;
-        }
-
-        .status-active:hover {
-            background: #2563eb;
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
-        }
-
-        /* Status: Bảo trì (Maintenance) */
-        .status-maintenance {
-            background: #efc587ff;
-            cursor: not-allowed;
-            border: 2px solid #ecd484ff;
-            opacity: 0.5;
-            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0, 0, 0, 0.2) 10px, rgba(0, 0, 0, 0.2) 20px);
-        }
-
-        /* Layout Sizes */
-        .space-seminar {
-            grid-column: span 12;
-            height: 120px;
-            font-size: 18px;
-        }
-
-        .space-meeting {
-            grid-column: span 6;
-            height: 100px;
-        }
-
-        .space-group {
-            grid-column: span 4;
-            height: 90px;
-        }
-
-        .space-group-wide {
-            grid-column: span 6;
-            height: 90px;
-        }
-
-        .space-ind {
-            grid-column: span 2;
-            height: 80px;
-        }
-
-        .space-ind-wide {
-            grid-column: span 3;
-            height: 80px;
-        }
-
-        .section-label {
-            grid-column: span 12;
-            color: #9ca3af;
-            font-size: 14px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-top: 20px;
-            border-bottom: 2px solid #374151;
-            padding-bottom: 8px;
-        }
-
-        /* Modal Styles */
-        .schedule-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
-        }
-
-        .modal-content {
-            background: #ffffff;
-            color: #111827;
-            width: 500px;
-            max-width: 90%;
-            border-radius: 16px;
-            padding: 30px;
-            position: relative;
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 24px;
-            cursor: pointer;
-            color: #6b7280;
-        }
-
-        .timeline {
-            margin-top: 20px;
-            border-left: 3px solid #e5e7eb;
-            padding-left: 20px;
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -28px;
-            top: 4px;
-            width: 13px;
-            height: 13px;
-            border-radius: 50%;
-            background: #ef4444;
-            /* Booked dot */
-        }
-
-        .time-badge {
-            display: inline-block;
-            background: #f3f4f6;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 13px;
-            margin-bottom: 5px;
-        }
-    </style>
-
-    <div id="section-facility">
-        <div class="cinema-map-container">
-
-            <h2 style="text-align: center; margin-bottom: 10px; font-size: 24px; font-weight: bold; letter-spacing: 2px;">
-                BẢN ĐỒ VỊ TRÍ ĐẶT CHỖ
-            </h2>
-
-            <div style="text-align: center; margin-bottom: 30px;">
-                <label for="bookingDatePicker" style="margin-right: 10px; font-weight: bold; font-size: 16px;">Chọn Ngày Xem:</label>
-                <input type="date" id="bookingDatePicker"
-                    style="padding: 8px 12px; border-radius: 6px; border: 1px solid #374151; background: #f4f5f6ff; color: black; cursor: pointer; font-family: inherit;">
+    <div id="section-facility" class="content-section">
+        <div class="section-header">
+            <div>
+                <h1 class="page-title">Quản lý Chỗ Ngồi & Không Gian</h1>
+                <p class="page-subtitle">Kiểm soát trạng thái đặt chỗ, không gian đang sử dụng và chỗ trống dạng danh sách.
+                </p>
             </div>
-
-            <div class="map-legend">
-                <div class="legend-item">
-                    <div class="legend-color color-active"></div> <span>Được sử dụng</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color color-maintenance"></div> <span>Bảo trì</span>
+            <div class="section-actions">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label for="bookingDatePicker" style="font-weight: bold; font-size: 14px;">Chọn Ngày:</label>
+                    <input type="date" id="bookingDatePicker"
+                        style="padding: 8px 12px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; cursor: pointer; font-family: inherit;">
                 </div>
             </div>
+        </div>
 
-            <div class="floor-plan">
+        {{-- Lọc trạng thái --}}
+        <div class="filter-tabs" id="statusSubTabs">
+            <button class="filter-tab filter-tab--active" data-status="all">Tất cả thông tin</button>
+            <button class="filter-tab" data-status="in-use">Đang sử dụng</button>
+            <button class="filter-tab" data-status="booked">Đã đặt trước</button>
+            <button class="filter-tab" data-status="available">Chỗ trống (Chưa đặt)</button>
+        </div>
 
-                <div class="section-label">Hội Thảo (10-15 người)</div>
-                <div class="space-item space-seminar status-active" onclick="showSchedule('Phòng Hội Thảo (Grand Hall)')">
-                    <i class="ph-bold ph-presentation-chart" style="font-size: 32px; margin-bottom: 8px;"></i>
-                    <div class="space-title">PHÒNG HỘI THẢO</div>
-                </div>
+        <div class="sub-section">
+            <div class="card card--table">
+                <table class="data-table" id="facilityTable">
+                    <thead>
+                        <tr>
+                            <th>Tên Không gian / Chỗ ngồi</th>
+                            <th>Loại chỗ & Sức chứa</th>
+                            <th>Trạng thái</th>
+                            <th>Thông tin Khách hàng (Nếu có)</th>
+                            <th>Khung giờ</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Row 1: IN USE -->
+                        <tr class="status-row" data-status="in-use">
+                            <td>
+                                <b>Phòng Hội Thảo (Grand Hall)</b><br>
+                                <span class="text-muted text-sm">Mã: HT-01</span>
+                            </td>
+                            <td>
+                                <span class="badge badge--blue"><i class="ph-bold ph-presentation-chart"></i> Hội
+                                    Thảo</span><br>
+                                <span class="text-muted text-sm">10-15 người</span>
+                            </td>
+                            <td><span class="badge badge--purple">Đang sử dụng</span></td>
+                            <td>
+                                <b>Công ty Tech Corp</b><br>
+                                <span class="text-muted text-sm">SĐT: 0901234567 | #BK-1050</span>
+                            </td>
+                            <td><span style="font-weight: 500;">08:00 - 12:00</span></td>
+                            <td class="text-center">
+                                <button class="btn btn-outline btn-sm btn-icon" title="Xem chi tiết"
+                                    onclick="showSchedule('Phòng Hội Thảo (Grand Hall)')">
+                                    <i class="ph-bold ph-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
 
-                <div class="section-label">Phòng Họp (6-9 người)</div>
-                <div class="space-item space-meeting status-active" onclick="showSchedule('Phòng Họp M1')">
-                    <i class="ph-bold ph-users-three" style="font-size: 28px; margin-bottom: 6px;"></i>
-                    <div class="space-title">PHÒNG HỘI THẢO M1</div>
-                </div>
-                <div class="space-item space-meeting status-active" onclick="showSchedule('Phòng Họp M2')">
-                    <i class="ph-bold ph-users-three" style="font-size: 28px; margin-bottom: 6px;"></i>
-                    <div class="space-title">PHÒNG HỘI THẢO M2</div>
-                </div>
+                        <!-- Row 2: BOOKED -->
+                        <tr class="status-row" data-status="booked">
+                            <td>
+                                <b>Phòng Họp M1</b><br>
+                                <span class="text-muted text-sm">Mã: RM-M1</span>
+                            </td>
+                            <td>
+                                <span class="badge badge--amber"><i class="ph-bold ph-users-three"></i> Phòng Họp</span><br>
+                                <span class="text-muted text-sm">6-9 người</span>
+                            </td>
+                            <td><span class="badge badge--amber">Đã đặt</span></td>
+                            <td>
+                                <b>Nguyễn Minh Tâm</b><br>
+                                <span class="text-muted text-sm">SĐT: 0988000111 | #BK-1058</span>
+                            </td>
+                            <td><span style="font-weight: 500;">14:00 - 16:00</span></td>
+                            <td class="text-center">
+                                <button class="btn btn-outline btn-sm btn-icon" title="Xem chi tiết"
+                                    onclick="showSchedule('Phòng Họp M1')">
+                                    <i class="ph-bold ph-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
 
-                <div class="section-label">Bàn Nhóm Học (3-5 người)</div>
-                <div class="space-item space-group status-active" onclick="showSchedule('Bàn Nhóm G1')">
-                    <div class="space-title">NHÓM G1</div>
-                </div>
-                <div class="space-item space-group status-maintenance">
-                    <div class="space-title">NHÓM G2 (Bảo trì)</div>
-                </div>
-                <div class="space-item space-group status-active" onclick="showSchedule('Bàn Nhóm G3')">
-                    <div class="space-title">NHÓM G3</div>
-                </div>
-                <div class="space-item space-group-wide status-active" onclick="showSchedule('Bàn Nhóm G4')">
-                    <div class="space-title">NHÓM G4</div>
-                </div>
-                <div class="space-item space-group-wide status-active" onclick="showSchedule('Bàn Nhóm G5')">
-                    <div class="space-title">NHÓM G5</div>
-                </div>
+                        <!-- Row 3: AVAILABLE -->
+                        <tr class="status-row" data-status="available">
+                            <td>
+                                <b>Phòng Họp M2</b><br>
+                                <span class="text-muted text-sm">Mã: RM-M2</span>
+                            </td>
+                            <td>
+                                <span class="badge badge--amber"><i class="ph-bold ph-users-three"></i> Phòng Họp</span><br>
+                                <span class="text-muted text-sm">6-9 người</span>
+                            </td>
+                            <td><span class="badge badge--green">Chưa đặt</span></td>
+                            <td>
+                                <span class="text-muted text-sm">--</span>
+                            </td>
+                            <td><span class="text-muted text-sm">--</span></td>
+                            <td class="text-center">
+                                <button class="btn btn-outline btn-sm btn-icon" title="Xem chi tiết"
+                                    onclick="showSchedule('Phòng Họp M2')">
+                                    <i class="ph-bold ph-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
 
-                <div class="section-label">Bàn Cá Nhân (1-2 người)</div>
-                <!-- Row of 6 -->
-                <div class="space-item space-ind status-active" onclick="showSchedule('Bàn T01')">
-                    <div class="space-title">T01</div>
-                </div>
-                <div class="space-item space-ind status-active" onclick="showSchedule('Bàn T02')">
-                    <div class="space-title">T02</div>
-                </div>
-                <div class="space-item space-ind status-maintenance">
-                    <div class="space-title">T03</div>
-                </div>
-                <div class="space-item space-ind status-active" onclick="showSchedule('Bàn T04')">
-                    <div class="space-title">T04</div>
-                </div>
-                <div class="space-item space-ind status-active" onclick="showSchedule('Bàn T05')">
-                    <div class="space-title">T05</div>
-                </div>
-                <div class="space-item space-ind status-active" onclick="showSchedule('Bàn T06')">
-                    <div class="space-title">T06</div>
-                </div>
+                        <!-- Row 4: IN USE GROUP -->
+                        <tr class="status-row" data-status="in-use">
+                            <td>
+                                <b>Bàn Nhóm G1</b><br>
+                                <span class="text-muted text-sm">Mã: GR-G1</span>
+                            </td>
+                            <td>
+                                <span class="badge badge--blue"><i class="ph-bold ph-users"></i> Bàn Nhóm</span><br>
+                                <span class="text-muted text-sm">3-5 người</span>
+                            </td>
+                            <td><span class="badge badge--purple">Đang sử dụng</span></td>
+                            <td>
+                                <b>Nhóm Đồ Án K12</b><br>
+                                <span class="text-muted text-sm">SĐT: 0911222333 | #BK-1062</span>
+                            </td>
+                            <td><span style="font-weight: 500;">09:00 - 15:00</span></td>
+                            <td class="text-center">
+                                <button class="btn btn-outline btn-sm btn-icon" title="Xem chi tiết"
+                                    onclick="showSchedule('Bàn Nhóm G1')">
+                                    <i class="ph-bold ph-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
 
-                <!-- Row of 4 -->
-                <div class="space-item space-ind-wide status-active" onclick="showSchedule('Bàn T07')">
-                    <div class="space-title">T07</div>
-                </div>
-                <div class="space-item space-ind-wide status-maintenance">
-                    <div class="space-title">T08</div>
-                </div>
-                <div class="space-item space-ind-wide status-active" onclick="showSchedule('Bàn T09')">
-                    <div class="space-title">T09</div>
-                </div>
-                <div class="space-item space-ind-wide status-active" onclick="showSchedule('Bàn T10')">
-                    <div class="space-title">T10</div>
-                </div>
+                        <!-- Row 5: BOOKED INDIVIDUAL -->
+                        <tr class="status-row" data-status="booked">
+                            <td>
+                                <b>Bàn Cá Nhân T01</b><br>
+                                <span class="text-muted text-sm">Mã: IND-T01</span>
+                            </td>
+                            <td>
+                                <span class="badge" style="background:#e5e7eb; color:#374151;"><i
+                                        class="ph-bold ph-user"></i> Bàn Đơn</span><br>
+                                <span class="text-muted text-sm">1-2 người</span>
+                            </td>
+                            <td><span class="badge badge--amber">Đã đặt</span></td>
+                            <td>
+                                <b>Lê Hải Yến</b><br>
+                                <span class="text-muted text-sm">SĐT: 0909123456 | #BK-1070</span>
+                            </td>
+                            <td><span style="font-weight: 500;">18:00 - 22:00</span></td>
+                            <td class="text-center">
+                                <button class="btn btn-outline btn-sm btn-icon" title="Xem chi tiết"
+                                    onclick="showSchedule('Bàn Cá Nhân T01')">
+                                    <i class="ph-bold ph-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
 
+                        <!-- Row 6: AVAILABLE INDIVIDUAL -->
+                        <tr class="status-row" data-status="available">
+                            <td>
+                                <b>Bàn Cá Nhân T02</b><br>
+                                <span class="text-muted text-sm">Mã: IND-T02</span>
+                            </td>
+                            <td>
+                                <span class="badge" style="background:#e5e7eb; color:#374151;"><i
+                                        class="ph-bold ph-user"></i> Bàn Đơn</span><br>
+                                <span class="text-muted text-sm">1-2 người</span>
+                            </td>
+                            <td><span class="badge badge--green">Chưa đặt</span></td>
+                            <td>
+                                <span class="text-muted text-sm">--</span>
+                            </td>
+                            <td><span class="text-muted text-sm">--</span></td>
+                            <td class="text-center">
+                                <button class="btn btn-outline btn-sm btn-icon" title="Xem chi tiết"
+                                    onclick="showSchedule('Bàn Cá Nhân T02')">
+                                    <i class="ph-bold ph-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Row 7: BOOKED GROUP -->
+                        <tr class="status-row" data-status="booked">
+                            <td>
+                                <b>Bàn Nhóm G2</b><br>
+                                <span class="text-muted text-sm">Mã: GR-G2</span>
+                            </td>
+                            <td>
+                                <span class="badge badge--blue"><i class="ph-bold ph-users"></i> Bàn Nhóm</span><br>
+                                <span class="text-muted text-sm">3-5 người</span>
+                            </td>
+                            <td><span class="badge badge--amber">Đã đặt</span></td>
+                            <td>
+                                <b>Trần Văn Nam</b><br>
+                                <span class="text-muted text-sm">SĐT: 0933444555 | #BK-1088</span>
+                            </td>
+                            <td><span style="font-weight: 500;">16:00 - 20:00</span></td>
+                            <td class="text-center">
+                                <button class="btn btn-outline btn-sm btn-icon" title="Xem chi tiết"
+                                    onclick="showSchedule('Bàn Nhóm G2')">
+                                    <i class="ph-bold ph-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Scheduling Modal Overlay -->
-    <div id="scheduleModal" class="schedule-modal">
-        <div class="modal-content">
-            <i class="ph-bold ph-x close-modal" onclick="closeSchedule()"></i>
+    <!-- Modal Xem Chi Tiết / Lịch đặt -->
+    <div id="scheduleModal"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div
+            style="background: #ffffff; color: #111827; width: 500px; max-width: 90%; border-radius: 16px; padding: 30px; position: relative; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+            <i class="ph-bold ph-x" onclick="closeSchedule()"
+                style="position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #6b7280;"></i>
             <h2 id="modalRoomName"
-                style="font-size: 22px; font-weight: bold; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">Lịch
-                Đặt: Tên Phòng</h2>
+                style="font-size: 20px; font-weight: bold; border-bottom: 1px solid #e5e7eb; padding-bottom: 15px; margin-bottom: 15px;">
+                Thông tin: Tên Phòng</h2>
 
-            <p style="margin-top: 15px; color: #6b7280;">Dưới đây là các khung giờ đã được khách hàng đặt tại chỗ này trong
-                ngày <span id="modalDateDisplay" style="font-weight: bold;">hôm nay</span>.</p>
+            <p style="color: #4b5563; font-size: 14px; margin-bottom: 20px;">Lịch trình ngày <span id="modalDateDisplay"
+                    style="font-weight: 600;">hôm nay</span>:</p>
 
-            <div class="timeline">
-                <!-- Mock Data -->
-                <div class="timeline-item">
-                    <div class="time-badge">08:00 - 10:30</div>
-                    <div style="font-weight: 600;">Khách: Nguyễn Minh Tâm</div>
-                    <div style="color: #6b7280; font-size: 13px;">SĐT: 0901234567 | Mã Đơn: #BK-1050</div>
+            <div style="border-left: 2px solid #e5e7eb; padding-left: 15px; margin-left: 5px;">
+                <div style="position: relative; margin-bottom: 20px;">
+                    <div
+                        style="position: absolute; left: -22px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #3b82f6;">
+                    </div>
+                    <span
+                        style="display: inline-block; background: #eff6ff; color: #1d4ed8; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 12px; margin-bottom: 5px;">08:00
+                        - 12:00</span>
+                    <div style="font-weight: 600; font-size: 15px;">Đang sử dụng</div>
+                    <div style="color: #6b7280; font-size: 13px; margin-top: 3px;">Thông tin đã được mã hóa cho Demo.</div>
                 </div>
 
-                <div class="timeline-item">
-                    <div class="time-badge">14:00 - 16:00</div>
-                    <div style="font-weight: 600;">Khách: Lê Hải Yến</div>
-                    <div style="color: #6b7280; font-size: 13px;">SĐT: 0988000111 | Mã Đơn: #BK-1058</div>
-                </div>
-
-                <div class="timeline-item">
-                    <div class="time-badge">18:30 - 21:00</div>
-                    <div style="font-weight: 600;">Khách: Đặt nhóm</div>
-                    <div style="color: #6b7280; font-size: 13px;">Mã Đơn: #BK-1062</div>
+                <div style="position: relative;">
+                    <div
+                        style="position: absolute; left: -22px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #f59e0b;">
+                    </div>
+                    <span
+                        style="display: inline-block; background: #fef3c7; color: #b45309; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 12px; margin-bottom: 5px;">14:00
+                        - 16:00</span>
+                    <div style="font-weight: 600; font-size: 15px;">Đã đặt trước</div>
+                    <div style="color: #6b7280; font-size: 13px; margin-top: 3px;">Chờ khách đến check-in.</div>
                 </div>
             </div>
 
-            <button class="btn btn-primary"
-                style="width: 100%; margin-top: 20px; padding: 12px; border: none; border-radius: 8px; background: #3b82f6; color: white; font-weight: bold; cursor: pointer;"
-                onclick="closeSchedule()">Đóng</button>
+            <div style="margin-top: 30px; display: flex; gap: 10px;">
+                <button
+                    style="flex: 1; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; background: white; color: #374151; font-weight: 600; cursor: pointer;"
+                    onclick="closeSchedule()">Đóng lại</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Đặt ngày mặc định là hôm nay
         document.addEventListener("DOMContentLoaded", function () {
+            // Thiết lập giá trị date picker là hôm nay
             var datePicker = document.getElementById('bookingDatePicker');
             if (datePicker) {
-                var today = new Date().toISOString().split('T')[0];
-                datePicker.value = today;
-
-                // Xử lý sự kiện khi thay đổi ngày
-                datePicker.addEventListener('change', function () {
-                    // Tùy chỉnh hiệu ứng hiển thị tải lại bản đồ khi đổi ngày (mock)
-                    const items = document.querySelectorAll('.space-item');
-                    items.forEach(item => {
-                        item.style.opacity = '0.5';
-                    });
-
-                    setTimeout(() => {
-                        items.forEach(item => {
-                            item.style.opacity = '1';
-                            // Giả lập random status
-                            if (item.classList.contains('status-active') || item.classList.contains('status-maintenance')) {
-                                if (Math.random() > 0.8) {
-                                    item.classList.remove('status-active');
-                                    item.classList.add('status-maintenance');
-                                    if (item.querySelector('.space-title') && !item.querySelector('.space-title').innerText.includes('Bảo trì')) {
-                                        // item.querySelector('.space-title').innerText += ' (Trống)';
-                                    }
-                                } else {
-                                    item.classList.remove('status-maintenance');
-                                    item.classList.add('status-active');
-                                }
-                            }
-                        });
-
-                        // Hiển thị thông báo Toast / Alert gọn nhẹ (tùy chọn)
-                        let selectedDateData = new Date(this.value).toLocaleDateString("vi-VN");
-                    }, 500);
-                });
+                datePicker.value = new Date().toISOString().split('T')[0];
             }
+
+            // Xử lý bộ lọc tabs
+            const tabs = document.querySelectorAll('.filter-tab');
+            const rows = document.querySelectorAll('.status-row');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function () {
+                    // Xóa class active ở tất cả các tabs
+                    tabs.forEach(t => t.classList.remove('filter-tab--active'));
+                    // Thêm class active cho tab vừa click
+                    this.classList.add('filter-tab--active');
+
+                    const statusFilter = this.getAttribute('data-status');
+
+                    rows.forEach(row => {
+                        if (statusFilter === 'all') {
+                            row.style.display = '';
+                        } else {
+                            if (row.getAttribute('data-status') === statusFilter) {
+                                row.style.display = '';
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        }
+                    });
+                });
+            });
         });
 
         function showSchedule(roomName) {
-            document.getElementById('modalRoomName').innerText = 'Lịch Đặt: ' + roomName;
+            document.getElementById('modalRoomName').innerText = 'Thông tin chỗ: ' + roomName;
 
             var datePicker = document.getElementById('bookingDatePicker');
             var displayDate = "hôm nay";

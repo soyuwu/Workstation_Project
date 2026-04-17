@@ -39,25 +39,25 @@ Route::get('/forgot-password', function () {
 
 Route::prefix('admin')->group(function () {
     Route::get('/dashboard', function () {
-        return view('layouts.admin.tongquan');
+        return view('admin.tongquan');
     });
     Route::get('/booking', function () {
-        return view('layouts.admin.booking');
+        return view('admin.booking');
     });
     Route::get('/facility', function () {
-        return view('layouts.admin.map');
+        return view('admin.map');
     });
     Route::get('/fnb', function () {
-        return view('layouts.admin.fnb');
+        return view('admin.fnb');
     });
     Route::get('/marketing', function () {
-        return view('layouts.admin.voucher');
+        return view('admin.voucher');
     });
     Route::get('/crm', function () {
-        return view('layouts.admin.user');
+        return view('admin.user');
     });
     Route::get('/settings', function () {
-        return view('layouts.admin.nhansu');
+        return view('admin.nhansu');
     });
 });
 
