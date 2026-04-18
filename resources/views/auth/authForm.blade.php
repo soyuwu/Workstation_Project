@@ -9,7 +9,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/emailVerify.js', 'resources/js/slipLoginLogout.js'])
 
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./resources/css/authForm.css">
 
     <script>
         tailwind.config = {

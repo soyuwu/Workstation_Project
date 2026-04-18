@@ -12,11 +12,11 @@ Route::get('/', function () {
 
 // đường dẫn qua trang signIn/signUp dùng chung 1 form
 Route::post('/register', [AuthController::class, 'register']);
-Route::get('/register', [AuthController::class, 'showAuthForm'])->name('register');
+Route::get('/register', [AuthController::class, 'showLoginForm'])->name('register');
 
 // Duong dan qua trang LogIn
 Route::post('/logIn', [AuthController::class, 'logIn']);
-Route::get('/logIn', [AuthController::class, 'showAuthForm'])->name('logIn');
+Route::get('/logIn', [AuthController::class, 'showLoginForm'])->name('logIn');
 
 // LogOut
 Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
