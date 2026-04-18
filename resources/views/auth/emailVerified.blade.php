@@ -1,58 +1,64 @@
-<!doctype html>
-<html lang="en">
-
+<!DOCTYPE html>
+<html lang="vi">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-    <title>WorkStation</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkStation - Quên mật khẩu</title>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/emailVerify.js', 'resources/js/slipLoginLogout.js'])
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css" />
-
-    <style>
-        /* Cấu hình thêm reset cho Tailwind để đảm bảo giống hệt bản gốc */
-        body {
-            font-family: Montserrat, sans-serif;
-            margin: 0;
-            box-sizing: border-box;
-            padding: 0;
-        }
-    </style>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+<body class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(219,234,254,0.95),_rgba(248,250,252,1)_68%)] px-4 py-6 sm:px-6 lg:px-10">
+    <main class="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl items-center justify-center">
+        <section class="grid overflow-hidden rounded-[2rem] bg-white shadow-[var(--shadow-ambient)] lg:grid-cols-[1.05fr_0.95fr]">
+            <div
+                class="hidden min-h-[620px] flex-col justify-end bg-slate-900 p-10 text-white lg:flex"
+                style="background-image: linear-gradient(160deg, rgba(37, 99, 235, 0.9), rgba(15, 23, 42, 0.9)), url('{{ asset('4872300.jpg') }}'); background-position: center; background-size: cover;"
+            >
+                <span class="mb-4 inline-flex w-fit rounded-full border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em]">
+                    Password reset
+                </span>
+                <h1 class="mb-4 font-headline text-4xl font-bold leading-tight">
+                    Lấy lại quyền truy cập vào tài khoản của bạn
+                </h1>
+                <p class="max-w-md text-base text-blue-100">
+                    Nhập email đã đăng ký. Khi backend hoàn tất luồng reset password, bạn có thể gắn trực tiếp form này vào API hiện tại mà không cần sửa lại UI.
+                </p>
+            </div>
 
-<body class="bg-linear-to-r from-[#e2e2e2] to-[#c9d6ff] flex items-center justify-center h-screen">
-    <div
-        class="flex overflow-hidden bg-white rounded-[30px] shadow-[0_5px_15px_rgba(0,0,0,0.35)] w-3xl max-w-full min-h-120">
-        <div
-            class="flex-1 bg-[url(../../public/4872300.jpg)] bg-cover bg-center bg-blend-multiply rounded-[0px_150px_100px_0]">
-        </div>
-        <div class="flex-1 flex flex-col text-center">
-            <i class="fa-regular fa-envelope-open text-4xl text-blue-400 mt-28"></i>
-            <h1 class="text-2xl font-bold text-blue-400 mt-5">
-                Forgot your password?
-            </h1>
-            <p class="text-xs mt-2 font-medium">
-                Your password will be reset by email
-            </p>
-            <div class="text-left mt-8 ml-15 h-10 w-70">
-                <p class="ml-1 text-xs font-bold">Email Address</p>
-                <input type="email"
-                    class="mt-1 border border-gray-400 h-full w-full rounded-xl hover:border-gray-900 focus:ring-4 focus:ring-blue-400 p-2 text-[13px]" />
+            <div class="flex flex-col justify-center px-8 py-10 sm:px-10 lg:px-14">
+                <a href="{{ route('logIn') }}" class="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-primary">
+                    <span class="text-lg">←</span>
+                    Quay lại đăng nhập
+                </a>
+
+                <span class="mb-4 inline-flex w-fit rounded-full bg-primary-light px-4 py-2 text-sm font-semibold text-primary">
+                    Quên mật khẩu
+                </span>
+                <h2 class="mb-3 font-headline text-4xl font-bold text-on-surface">Đặt lại mật khẩu</h2>
+                <p class="mb-8 text-slate-500">
+                    Nhập email của bạn để nhận hướng dẫn đặt lại mật khẩu. Phần xử lý gửi mail có thể nối tiếp khi backend sẵn sàng.
+                </p>
+
+                <form class="space-y-5">
+                    <label class="block">
+                        <span class="mb-2 block text-sm font-semibold text-slate-700">Email</span>
+                        <input type="email" placeholder="you@example.com" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10">
+                    </label>
+
+                    <button type="button" class="inline-flex w-full items-center justify-center rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-primary-dark active:scale-[0.99]">
+                        Gửi email khôi phục
+                    </button>
+                </form>
+
+                <p class="mt-5 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                    UI đã sẵn sàng. Bạn có thể nối nút này với endpoint reset password sau mà không cần sửa lại bố cục.
+                </p>
             </div>
-            <div class="mt-10 ml-15 h-8 w-70 px-5">
-                <button
-                    class="border w-full h-full bg-white rounded-lg text-blue-400 text-xs uppercase cursor-pointer hover:text-white hover:bg-blue-400 font-bold transition-all duration-300 ease-in-out mb-4">
-                    Send email
-                </button>
-                <button onclick="window.location.href='/logIn'"
-                    class="border w-full h-full bg-white rounded-lg text-gray-800 font-bold text-xs uppercase cursor-pointer hover:text-white hover:bg-gray-400 transition-all duration-300 ease-in-out">
-                    Back to sign in
-                </button>
-            </div>
-        </div>
-    </div>
+        </section>
+    </main>
 </body>
-
 </html>

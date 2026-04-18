@@ -1,8 +1,10 @@
-@extends('layouts.topBar')
+@extends('layouts.app')
 
-@section('page-title', 'Trang chủ')
 @section('title', 'Trang chủ')
 
 @section('content')
-    @include('layouts.HomePage')
+    @include('components.home.hero')
+    @include('components.home.about')
+    @include('components.home.services')
+    @include('components.home.review')
 @endsection
