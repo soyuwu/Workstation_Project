@@ -5,13 +5,15 @@
     {{-- list item --}}
     <div class="list">
         <div class="item">
-            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop" alt="Coworking Space">
+            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop"
+                alt="Coworking Space">
             <div class="content">
                 <div class="author">WORKSTATION</div>
                 <div class="title">KHÔNG GIAN</div>
                 <div class="topic">LÀM VIỆC CHUNG</div>
                 <div class="des">
-                    Khám phá không gian làm việc chung hiện đại, nơi kết nối cộng đồng sáng tạo. Thiết kế mở, thoáng đãng giúp bạn tập trung tối đa và nâng cao hiệu suất làm việc mỗi ngày.
+                    Khám phá không gian làm việc chung hiện đại, nơi kết nối cộng đồng sáng tạo. Thiết kế mở, thoáng
+                    đãng giúp bạn tập trung tối đa và nâng cao hiệu suất làm việc mỗi ngày.
                 </div>
                 <div class="buttons">
                     <button>KHÁM PHÁ</button>
@@ -20,13 +22,15 @@
             </div>
         </div>
         <div class="item">
-            <img src="https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?q=80&w=2070&auto=format&fit=crop" alt="Hot Desk">
+            <img src="https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?q=80&w=2070&auto=format&fit=crop"
+                alt="Hot Desk">
             <div class="content">
                 <div class="author">WORKSTATION</div>
                 <div class="title">LINH HOẠT</div>
                 <div class="topic">HOT DESK</div>
                 <div class="des">
-                    Chỗ ngồi linh hoạt, đến bất kỳ lúc nào bạn muốn. Không ràng buộc hợp đồng dài hạn, chỉ cần đặt chỗ và bắt đầu làm việc ngay với đầy đủ tiện nghi chuyên nghiệp.
+                    Chỗ ngồi linh hoạt, đến bất kỳ lúc nào bạn muốn. Không ràng buộc hợp đồng dài hạn, chỉ cần đặt chỗ
+                    và bắt đầu làm việc ngay với đầy đủ tiện nghi chuyên nghiệp.
                 </div>
                 <div class="buttons">
                     <button>KHÁM PHÁ</button>
@@ -35,13 +39,15 @@
             </div>
         </div>
         <div class="item">
-            <img src="https://images.unsplash.com/photo-1497215842964-222b430dc094?q=80&w=2070&auto=format&fit=crop" alt="Meeting Room">
+            <img src="https://images.unsplash.com/photo-1497215842964-222b430dc094?q=80&w=2070&auto=format&fit=crop"
+                alt="Meeting Room">
             <div class="content">
                 <div class="author">WORKSTATION</div>
                 <div class="title">PHÒNG HỌP</div>
                 <div class="topic">CHUYÊN NGHIỆP</div>
                 <div class="des">
-                    Phòng họp trang bị hiện đại, cách âm chuyên nghiệp. Lý tưởng cho các buổi brainstorm, họp khách hàng hay workshop với sức chứa linh hoạt từ 4 đến 30 người.
+                    Phòng họp trang bị hiện đại, cách âm chuyên nghiệp. Lý tưởng cho các buổi brainstorm, họp khách hàng
+                    hay workshop với sức chứa linh hoạt từ 4 đến 30 người.
                 </div>
                 <div class="buttons">
                     <button>KHÁM PHÁ</button>
@@ -54,21 +60,24 @@
     {{-- thumbnail --}}
     <div class="thumbnail">
         <div class="item">
-            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=500&auto=format&fit=crop" alt="Thumb 1">
+            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=500&auto=format&fit=crop"
+                alt="Thumb 1">
             <div class="content">
                 <div class="title">Coworking</div>
                 <div class="description">Không gian mở</div>
             </div>
         </div>
         <div class="item">
-            <img src="https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?q=80&w=500&auto=format&fit=crop" alt="Thumb 2">
+            <img src="https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?q=80&w=500&auto=format&fit=crop"
+                alt="Thumb 2">
             <div class="content">
                 <div class="title">Hot Desk</div>
                 <div class="description">Linh hoạt</div>
             </div>
         </div>
         <div class="item">
-            <img src="https://images.unsplash.com/photo-1497215842964-222b430dc094?q=80&w=500&auto=format&fit=crop" alt="Thumb 3">
+            <img src="https://images.unsplash.com/photo-1497215842964-222b430dc094?q=80&w=500&auto=format&fit=crop"
+                alt="Thumb 3">
             <div class="content">
                 <div class="title">Phòng họp</div>
                 <div class="description">Chuyên nghiệp</div>
@@ -78,11 +87,11 @@
 
     {{-- arrows --}}
     <div class="arrows">
-        <button id="prev"><</button>
-        <button id="next">></button>
+        <button id="prev">
+            << /button>
+                <button id="next">></button>
     </div>
 </div>
-
 
 {{-- ========================================
     SECTION 2: GIỚI THIỆU (ABOUT)
@@ -94,23 +103,25 @@
             {{-- Left: Image --}}
             <div class="reveal-left relative">
                 <div class="relative rounded-2xl overflow-hidden shadow-[var(--shadow-card)]">
-                    <img src="{{ asset('Images/Linhhoat.jpg') }}"
-                         alt="WorkStation - Không gian làm việc linh hoạt"
-                         class="w-full h-[500px] object-cover">
+                    <img src="{{ asset('Images/Linhhoat.jpg') }}" alt="WorkStation - Không gian làm việc linh hoạt"
+                        class="w-full h-[500px] object-cover">
                     {{-- Floating accent card --}}
-                    <div class="absolute -bottom-6 -right-6 bg-primary text-white rounded-2xl p-6 shadow-lg animate-float hidden lg:block">
+                    <div
+                        class="absolute -bottom-6 -right-6 bg-primary text-white rounded-2xl p-6 shadow-lg animate-float hidden lg:block">
                         <div class="text-3xl font-headline font-bold">5+</div>
                         <div class="text-sm opacity-90">Năm kinh nghiệm</div>
                     </div>
                 </div>
                 {{-- Decorative element --}}
                 <div class="absolute -top-4 -left-4 w-24 h-24 bg-primary/10 rounded-2xl -z-10"></div>
-                <div class="absolute -bottom-4 -right-4 w-32 h-32 bg-accent/10 rounded-full -z-10 hidden lg:block"></div>
+                <div class="absolute -bottom-4 -right-4 w-32 h-32 bg-accent/10 rounded-full -z-10 hidden lg:block">
+                </div>
             </div>
 
             {{-- Right: Content --}}
             <div class="reveal-right">
-                <div class="inline-flex items-center gap-2 bg-primary-light text-primary font-headline font-semibold text-sm px-4 py-2 rounded-full mb-6">
+                <div
+                    class="inline-flex items-center gap-2 bg-primary-light text-primary font-headline font-semibold text-sm px-4 py-2 rounded-full mb-6">
                     <span class="material-symbols-outlined text-lg">apartment</span>
                     Về chúng tôi
                 </div>
@@ -123,17 +134,22 @@
                 <div class="section-divider mb-8"></div>
 
                 <p class="text-slate-600 text-lg leading-relaxed mb-6">
-                    <strong class="text-on-surface">WorkStation</strong> là hệ thống không gian làm việc chung (coworking space) hàng đầu, được thiết kế dành riêng cho các startup, freelancer, và doanh nghiệp vừa & nhỏ tại Việt Nam.
+                    <strong class="text-on-surface">WorkStation</strong> là hệ thống không gian làm việc chung
+                    (coworking space) hàng đầu, được thiết kế dành riêng cho các startup, freelancer, và doanh nghiệp
+                    vừa & nhỏ tại Việt Nam.
                 </p>
 
                 <p class="text-slate-500 leading-relaxed mb-10">
-                    Chúng tôi tin rằng môi trường làm việc ảnh hưởng trực tiếp đến chất lượng công việc. Vì vậy, mỗi không gian WorkStation đều được thiết kế tỉ mỉ — từ ánh sáng tự nhiên, cây xanh, đến hệ thống cách âm — tạo nên trải nghiệm làm việc tối ưu và truyền cảm hứng.
+                    Chúng tôi tin rằng môi trường làm việc ảnh hưởng trực tiếp đến chất lượng công việc. Vì vậy, mỗi
+                    không gian WorkStation đều được thiết kế tỉ mỉ — từ ánh sáng tự nhiên, cây xanh, đến hệ thống cách
+                    âm — tạo nên trải nghiệm làm việc tối ưu và truyền cảm hứng.
                 </p>
 
                 {{-- Feature list --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
                     <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0">
+                        <div
+                            class="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0">
                             <span class="material-symbols-outlined text-primary text-xl">wifi</span>
                         </div>
                         <div>
@@ -142,7 +158,8 @@
                         </div>
                     </div>
                     <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0">
+                        <div
+                            class="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0">
                             <span class="material-symbols-outlined text-primary text-xl">local_cafe</span>
                         </div>
                         <div>
@@ -151,7 +168,8 @@
                         </div>
                     </div>
                     <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0">
+                        <div
+                            class="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0">
                             <span class="material-symbols-outlined text-primary text-xl">print</span>
                         </div>
                         <div>
@@ -160,7 +178,8 @@
                         </div>
                     </div>
                     <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0">
+                        <div
+                            class="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0">
                             <span class="material-symbols-outlined text-primary text-xl">security</span>
                         </div>
                         <div>
@@ -170,7 +189,8 @@
                     </div>
                 </div>
 
-                <a href="#services" class="inline-flex items-center gap-2 bg-primary text-white px-8 py-3.5 rounded-lg font-headline font-semibold text-sm hover:bg-primary-dark transition-all duration-300 active:scale-95 shadow-lg shadow-primary/25">
+                <a href="#services"
+                    class="inline-flex items-center gap-2 bg-primary text-white px-8 py-3.5 rounded-lg font-headline font-semibold text-sm hover:bg-primary-dark transition-all duration-300 active:scale-95 shadow-lg shadow-primary/25">
                     Khám phá dịch vụ
                     <span class="material-symbols-outlined text-lg">arrow_forward</span>
                 </a>
@@ -180,25 +200,28 @@
         {{-- Stats Counter --}}
         <div class="reveal grid grid-cols-2 md:grid-cols-4 gap-8 mt-20 pt-16 border-t border-slate-100">
             <div class="text-center">
-                <div class="stat-number font-headline text-4xl lg:text-5xl font-bold text-primary mb-2" data-target="500">0</div>
+                <div class="stat-number font-headline text-4xl lg:text-5xl font-bold text-primary mb-2"
+                    data-target="500">0</div>
                 <div class="text-slate-500 font-medium">Thành viên</div>
             </div>
             <div class="text-center">
-                <div class="stat-number font-headline text-4xl lg:text-5xl font-bold text-primary mb-2" data-target="3">0</div>
+                <div class="stat-number font-headline text-4xl lg:text-5xl font-bold text-primary mb-2"
+                    data-target="3">0</div>
                 <div class="text-slate-500 font-medium">Chi nhánh</div>
             </div>
             <div class="text-center">
-                <div class="stat-number font-headline text-4xl lg:text-5xl font-bold text-primary mb-2" data-target="50">0</div>
+                <div class="stat-number font-headline text-4xl lg:text-5xl font-bold text-primary mb-2"
+                    data-target="50">0</div>
                 <div class="text-slate-500 font-medium">Sự kiện / tháng</div>
             </div>
             <div class="text-center">
-                <div class="stat-number font-headline text-4xl lg:text-5xl font-bold text-primary mb-2" data-target="98">0</div>
+                <div class="stat-number font-headline text-4xl lg:text-5xl font-bold text-primary mb-2"
+                    data-target="98">0</div>
                 <div class="text-slate-500 font-medium">% Hài lòng</div>
             </div>
         </div>
     </div>
 </section>
-
 
 {{-- ========================================
     SECTION 3: DỊCH VỤ (SERVICES)
@@ -208,7 +231,8 @@
 
         {{-- Section Header --}}
         <div class="reveal text-center max-w-2xl mx-auto mb-16">
-            <div class="inline-flex items-center gap-2 bg-primary-light text-primary font-headline font-semibold text-sm px-4 py-2 rounded-full mb-6">
+            <div
+                class="inline-flex items-center gap-2 bg-primary-light text-primary font-headline font-semibold text-sm px-4 py-2 rounded-full mb-6">
                 <span class="material-symbols-outlined text-lg">workspace_premium</span>
                 Dịch vụ của chúng tôi
             </div>
@@ -218,7 +242,8 @@
             </h2>
             <div class="section-divider mx-auto mb-6"></div>
             <p class="text-slate-500 text-lg">
-                Lựa chọn không gian phù hợp với nhu cầu và ngân sách của bạn. Từ ghế ngồi linh hoạt đến văn phòng riêng, chúng tôi có tất cả.
+                Lựa chọn không gian phù hợp với nhu cầu và ngân sách của bạn. Từ ghế ngồi linh hoạt đến văn phòng riêng,
+                chúng tôi có tất cả.
             </p>
         </div>
 
@@ -228,10 +253,11 @@
             {{-- Card 1: Ghế đơn linh hoạt --}}
             <div class="service-card bg-white rounded-2xl overflow-hidden shadow-[var(--shadow-card)] group">
                 <div class="relative h-56 overflow-hidden">
-                    <img src="{{ asset('Images/ghedon.jpg') }}"
-                         alt="Ghế đơn linh hoạt"
-                         class="service-img w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <img src="{{ asset('Images/ghedon.jpg') }}" alt="Ghế đơn linh hoạt"
+                        class="service-img w-full h-full object-cover">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    </div>
                     <div class="absolute top-4 right-4 bg-accent text-white text-xs font-bold px-3 py-1 rounded-full">
                         Hot
                     </div>
@@ -249,7 +275,8 @@
                             <span class="text-2xl font-headline font-bold text-primary">50K</span>
                             <span class="text-slate-400 text-sm"> / giờ</span>
                         </div>
-                        <a href="#" class="inline-flex items-center gap-1 text-primary font-semibold text-sm hover:gap-2 transition-all duration-300">
+                        <a href="#"
+                            class="inline-flex items-center gap-1 text-primary font-semibold text-sm hover:gap-2 transition-all duration-300">
                             Đặt ngay
                             <span class="material-symbols-outlined text-base">arrow_forward</span>
                         </a>
@@ -260,10 +287,11 @@
             {{-- Card 2: Bàn học nhóm --}}
             <div class="service-card bg-white rounded-2xl overflow-hidden shadow-[var(--shadow-card)] group">
                 <div class="relative h-56 overflow-hidden">
-                    <img src="{{ asset('Images/Banhocnhom.jpg') }}"
-                         alt="Bàn học nhóm"
-                         class="service-img w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <img src="{{ asset('Images/Banhocnhom.jpg') }}" alt="Bàn học nhóm"
+                        class="service-img w-full h-full object-cover">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    </div>
                 </div>
                 <div class="p-6">
                     <div class="flex items-center gap-2 mb-3">
@@ -278,7 +306,8 @@
                             <span class="text-2xl font-headline font-bold text-primary">200K</span>
                             <span class="text-slate-400 text-sm"> / giờ</span>
                         </div>
-                        <a href="#" class="inline-flex items-center gap-1 text-primary font-semibold text-sm hover:gap-2 transition-all duration-300">
+                        <a href="#"
+                            class="inline-flex items-center gap-1 text-primary font-semibold text-sm hover:gap-2 transition-all duration-300">
                             Đặt ngay
                             <span class="material-symbols-outlined text-base">arrow_forward</span>
                         </a>
@@ -289,10 +318,11 @@
             {{-- Card 3: Phòng hội thảo --}}
             <div class="service-card bg-white rounded-2xl overflow-hidden shadow-[var(--shadow-card)] group">
                 <div class="relative h-56 overflow-hidden">
-                    <img src="{{ asset('Images/Phonghoithao.jpg') }}"
-                         alt="Phòng hội thảo"
-                         class="service-img w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <img src="{{ asset('Images/Phonghoithao.jpg') }}" alt="Phòng hội thảo"
+                        class="service-img w-full h-full object-cover">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    </div>
                     <div class="absolute top-4 right-4 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full">
                         Premium
                     </div>
@@ -303,14 +333,16 @@
                         <h3 class="font-headline font-bold text-lg text-on-surface">Phòng hội thảo</h3>
                     </div>
                     <p class="text-slate-500 text-sm leading-relaxed mb-4">
-                        Phòng họp lớn sức chứa 20-30 người, trang bị projector, bảng trắng và hệ thống âm thanh chuyên nghiệp.
+                        Phòng họp lớn sức chứa 20-30 người, trang bị projector, bảng trắng và hệ thống âm thanh chuyên
+                        nghiệp.
                     </p>
                     <div class="flex items-end justify-between pt-4 border-t border-slate-100">
                         <div>
                             <span class="text-2xl font-headline font-bold text-primary">500K</span>
                             <span class="text-slate-400 text-sm"> / giờ</span>
                         </div>
-                        <a href="#" class="inline-flex items-center gap-1 text-primary font-semibold text-sm hover:gap-2 transition-all duration-300">
+                        <a href="#"
+                            class="inline-flex items-center gap-1 text-primary font-semibold text-sm hover:gap-2 transition-all duration-300">
                             Đặt ngay
                             <span class="material-symbols-outlined text-base">arrow_forward</span>
                         </a>
@@ -321,10 +353,11 @@
             {{-- Card 4: Văn phòng riêng --}}
             <div class="service-card bg-white rounded-2xl overflow-hidden shadow-[var(--shadow-card)] group">
                 <div class="relative h-56 overflow-hidden">
-                    <img src="{{ asset('Images/Vanphong.webp') }}"
-                         alt="Văn phòng riêng"
-                         class="service-img w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <img src="{{ asset('Images/Vanphong.webp') }}" alt="Văn phòng riêng"
+                        class="service-img w-full h-full object-cover">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    </div>
                 </div>
                 <div class="p-6">
                     <div class="flex items-center gap-2 mb-3">
@@ -332,14 +365,16 @@
                         <h3 class="font-headline font-bold text-lg text-on-surface">Văn phòng riêng</h3>
                     </div>
                     <p class="text-slate-500 text-sm leading-relaxed mb-4">
-                        Văn phòng khép kín cho team 2-10 người. Riêng tư, yên tĩnh, có khóa. Phù hợp doanh nghiệp cần sự chuyên nghiệp.
+                        Văn phòng khép kín cho team 2-10 người. Riêng tư, yên tĩnh, có khóa. Phù hợp doanh nghiệp cần sự
+                        chuyên nghiệp.
                     </p>
                     <div class="flex items-end justify-between pt-4 border-t border-slate-100">
                         <div>
                             <span class="text-2xl font-headline font-bold text-primary">5M</span>
                             <span class="text-slate-400 text-sm"> / tháng</span>
                         </div>
-                        <a href="#" class="inline-flex items-center gap-1 text-primary font-semibold text-sm hover:gap-2 transition-all duration-300">
+                        <a href="#"
+                            class="inline-flex items-center gap-1 text-primary font-semibold text-sm hover:gap-2 transition-all duration-300">
                             Liên hệ
                             <span class="material-symbols-outlined text-base">arrow_forward</span>
                         </a>
@@ -351,7 +386,6 @@
     </div>
 </section>
 
-
 {{-- ========================================
     SECTION 4: ĐÁNH GIÁ (TESTIMONIALS)
     ======================================== --}}
@@ -360,7 +394,8 @@
 
         {{-- Section Header --}}
         <div class="reveal text-center max-w-2xl mx-auto mb-16">
-            <div class="inline-flex items-center gap-2 bg-accent-light text-accent font-headline font-semibold text-sm px-4 py-2 rounded-full mb-6">
+            <div
+                class="inline-flex items-center gap-2 bg-accent-light text-accent font-headline font-semibold text-sm px-4 py-2 rounded-full mb-6">
                 <span class="material-symbols-outlined text-lg">reviews</span>
                 Khách hàng nói gì
             </div>
@@ -381,7 +416,8 @@
 
                     {{-- Testimonial 1 --}}
                     <div class="swiper-slide">
-                        <div class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
+                        <div
+                            class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
                             <div class="flex items-center gap-1 mb-4 star-rating">
                                 <i class="fa-solid fa-star"></i>
                                 <i class="fa-solid fa-star"></i>
@@ -390,10 +426,13 @@
                                 <i class="fa-solid fa-star"></i>
                             </div>
                             <p class="text-slate-600 leading-relaxed mb-6 italic">
-                                "Mình là freelancer, trước giờ hay làm việc ở quán cà phê nhưng luôn bị phân tán. Từ khi đến WorkStation, mình tập trung hơn hẳn. Wifi nhanh, không gian yên tĩnh và cộng đồng rất thân thiện!"
+                                "Mình là freelancer, trước giờ hay làm việc ở quán cà phê nhưng luôn bị phân tán. Từ khi
+                                đến WorkStation, mình tập trung hơn hẳn. Wifi nhanh, không gian yên tĩnh và cộng đồng
+                                rất thân thiện!"
                             </p>
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-white font-bold text-lg">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-white font-bold text-lg">
                                     T
                                 </div>
                                 <div>
@@ -406,7 +445,8 @@
 
                     {{-- Testimonial 2 --}}
                     <div class="swiper-slide">
-                        <div class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
+                        <div
+                            class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
                             <div class="flex items-center gap-1 mb-4 star-rating">
                                 <i class="fa-solid fa-star"></i>
                                 <i class="fa-solid fa-star"></i>
@@ -415,10 +455,12 @@
                                 <i class="fa-solid fa-star"></i>
                             </div>
                             <p class="text-slate-600 leading-relaxed mb-6 italic">
-                                "Team mình thuê văn phòng riêng ở WorkStation được 6 tháng rồi. Giá hợp lý hơn nhiều so với thuê văn phòng truyền thống, mà mọi thứ đều đã bao gồm. Rất tiện lợi cho startup!"
+                                "Team mình thuê văn phòng riêng ở WorkStation được 6 tháng rồi. Giá hợp lý hơn nhiều so
+                                với thuê văn phòng truyền thống, mà mọi thứ đều đã bao gồm. Rất tiện lợi cho startup!"
                             </p>
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-400 flex items-center justify-center text-white font-bold text-lg">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-400 flex items-center justify-center text-white font-bold text-lg">
                                     L
                                 </div>
                                 <div>
@@ -431,7 +473,8 @@
 
                     {{-- Testimonial 3 --}}
                     <div class="swiper-slide">
-                        <div class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
+                        <div
+                            class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
                             <div class="flex items-center gap-1 mb-4 star-rating">
                                 <i class="fa-solid fa-star"></i>
                                 <i class="fa-solid fa-star"></i>
@@ -440,10 +483,12 @@
                                 <i class="fa-solid fa-star-half-stroke"></i>
                             </div>
                             <p class="text-slate-600 leading-relaxed mb-6 italic">
-                                "Phòng hội thảo của WorkStation rất chuyên nghiệp. Mình đã tổ chức 3 workshop ở đây, khách tham dự đều ấn tượng với không gian và trang thiết bị. Sẽ quay lại nhiều lần nữa!"
+                                "Phòng hội thảo của WorkStation rất chuyên nghiệp. Mình đã tổ chức 3 workshop ở đây,
+                                khách tham dự đều ấn tượng với không gian và trang thiết bị. Sẽ quay lại nhiều lần nữa!"
                             </p>
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-400 flex items-center justify-center text-white font-bold text-lg">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-400 flex items-center justify-center text-white font-bold text-lg">
                                     P
                                 </div>
                                 <div>
@@ -456,7 +501,8 @@
 
                     {{-- Testimonial 4 --}}
                     <div class="swiper-slide">
-                        <div class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
+                        <div
+                            class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
                             <div class="flex items-center gap-1 mb-4 star-rating">
                                 <i class="fa-solid fa-star"></i>
                                 <i class="fa-solid fa-star"></i>
@@ -465,10 +511,12 @@
                                 <i class="fa-solid fa-star"></i>
                             </div>
                             <p class="text-slate-600 leading-relaxed mb-6 italic">
-                                "Là sinh viên IT, mình cần chỗ yên tĩnh để code. WorkStation có chỗ ngồi giá sinh viên rất hợp lý, wifi siêu nhanh và ổ cắm ở khắp nơi. Mình giới thiệu cho cả nhóm bạn rồi!"
+                                "Là sinh viên IT, mình cần chỗ yên tĩnh để code. WorkStation có chỗ ngồi giá sinh viên
+                                rất hợp lý, wifi siêu nhanh và ổ cắm ở khắp nơi. Mình giới thiệu cho cả nhóm bạn rồi!"
                             </p>
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-400 flex items-center justify-center text-white font-bold text-lg">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-400 flex items-center justify-center text-white font-bold text-lg">
                                     N
                                 </div>
                                 <div>
@@ -481,7 +529,8 @@
 
                     {{-- Testimonial 5 --}}
                     <div class="swiper-slide">
-                        <div class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
+                        <div
+                            class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
                             <div class="flex items-center gap-1 mb-4 star-rating">
                                 <i class="fa-solid fa-star"></i>
                                 <i class="fa-solid fa-star"></i>
@@ -490,10 +539,12 @@
                                 <i class="fa-solid fa-star"></i>
                             </div>
                             <p class="text-slate-600 leading-relaxed mb-6 italic">
-                                "Đặt chỗ online trên website rất thuận tiện, chỉ vài click là xong. Đội ngũ nhân viên thân thiện, hỗ trợ nhanh. WorkStation đúng nghĩa là ngôi nhà thứ hai cho dân văn phòng!"
+                                "Đặt chỗ online trên website rất thuận tiện, chỉ vài click là xong. Đội ngũ nhân viên
+                                thân thiện, hỗ trợ nhanh. WorkStation đúng nghĩa là ngôi nhà thứ hai cho dân văn phòng!"
                             </p>
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-400 flex items-center justify-center text-white font-bold text-lg">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-400 flex items-center justify-center text-white font-bold text-lg">
                                     D
                                 </div>
                                 <div>
@@ -511,7 +562,6 @@
         </div>
     </div>
 </section>
-
 
 {{-- ========================================
     SECTION 5: CTA (CALL TO ACTION)
@@ -531,11 +581,13 @@
                 Đăng ký trải nghiệm miễn phí 1 ngày tại WorkStation. Không cần cam kết, không phí ẩn.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="#" class="inline-flex items-center justify-center gap-2 bg-white text-primary px-8 py-4 rounded-xl font-headline font-bold text-base hover:bg-slate-50 transition-all duration-300 active:scale-95 shadow-xl">
+                <a href="#"
+                    class="inline-flex items-center justify-center gap-2 bg-white text-primary px-8 py-4 rounded-xl font-headline font-bold text-base hover:bg-slate-50 transition-all duration-300 active:scale-95 shadow-xl">
                     <span class="material-symbols-outlined">calendar_today</span>
                     Đặt chỗ ngay
                 </a>
-                <a href="#" class="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm text-white border border-white/25 px-8 py-4 rounded-xl font-headline font-semibold text-base hover:bg-white/20 transition-all duration-300 active:scale-95">
+                <a href="#"
+                    class="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm text-white border border-white/25 px-8 py-4 rounded-xl font-headline font-semibold text-base hover:bg-white/20 transition-all duration-300 active:scale-95">
                     <span class="material-symbols-outlined">call</span>
                     Liên hệ tư vấn
                 </a>
@@ -543,7 +595,6 @@
         </div>
     </div>
 </section>
-
 
 {{-- ========================================
     FOOTER
@@ -556,19 +607,24 @@
             <div>
                 <h3 class="font-headline text-2xl font-bold text-white mb-4">WORKSTATION</h3>
                 <p class="text-slate-400 leading-relaxed mb-6">
-                    Hệ thống không gian làm việc chung hàng đầu dành cho startup, freelancer và doanh nghiệp tại Việt Nam.
+                    Hệ thống không gian làm việc chung hàng đầu dành cho startup, freelancer và doanh nghiệp tại Việt
+                    Nam.
                 </p>
                 <div class="flex gap-4">
-                    <a href="#" class="w-10 h-10 rounded-full bg-white/10 hover:bg-primary transition-colors duration-300 flex items-center justify-center">
+                    <a href="#"
+                        class="w-10 h-10 rounded-full bg-white/10 hover:bg-primary transition-colors duration-300 flex items-center justify-center">
                         <i class="fa-brands fa-facebook-f text-sm"></i>
                     </a>
-                    <a href="#" class="w-10 h-10 rounded-full bg-white/10 hover:bg-primary transition-colors duration-300 flex items-center justify-center">
+                    <a href="#"
+                        class="w-10 h-10 rounded-full bg-white/10 hover:bg-primary transition-colors duration-300 flex items-center justify-center">
                         <i class="fa-brands fa-instagram text-sm"></i>
                     </a>
-                    <a href="#" class="w-10 h-10 rounded-full bg-white/10 hover:bg-primary transition-colors duration-300 flex items-center justify-center">
+                    <a href="#"
+                        class="w-10 h-10 rounded-full bg-white/10 hover:bg-primary transition-colors duration-300 flex items-center justify-center">
                         <i class="fa-brands fa-linkedin-in text-sm"></i>
                     </a>
-                    <a href="#" class="w-10 h-10 rounded-full bg-white/10 hover:bg-primary transition-colors duration-300 flex items-center justify-center">
+                    <a href="#"
+                        class="w-10 h-10 rounded-full bg-white/10 hover:bg-primary transition-colors duration-300 flex items-center justify-center">
                         <i class="fa-brands fa-tiktok text-sm"></i>
                     </a>
                 </div>
@@ -578,11 +634,16 @@
             <div>
                 <h4 class="font-headline font-semibold text-white mb-4">Liên kết nhanh</h4>
                 <ul class="space-y-3">
-                    <li><a href="#" class="text-slate-400 hover:text-white transition-colors duration-300">Trang chủ</a></li>
-                    <li><a href="#about" class="text-slate-400 hover:text-white transition-colors duration-300">Giới thiệu</a></li>
-                    <li><a href="#services" class="text-slate-400 hover:text-white transition-colors duration-300">Dịch vụ</a></li>
-                    <li><a href="#reviews" class="text-slate-400 hover:text-white transition-colors duration-300">Đánh giá</a></li>
-                    <li><a href="#" class="text-slate-400 hover:text-white transition-colors duration-300">Đặt chỗ</a></li>
+                    <li><a href="#" class="text-slate-400 hover:text-white transition-colors duration-300">Trang
+                            chủ</a></li>
+                    <li><a href="#about" class="text-slate-400 hover:text-white transition-colors duration-300">Giới
+                            thiệu</a></li>
+                    <li><a href="#services"
+                            class="text-slate-400 hover:text-white transition-colors duration-300">Dịch vụ</a></li>
+                    <li><a href="#reviews" class="text-slate-400 hover:text-white transition-colors duration-300">Đánh
+                            giá</a></li>
+                    <li><a href="#" class="text-slate-400 hover:text-white transition-colors duration-300">Đặt
+                            chỗ</a></li>
                 </ul>
             </div>
 
@@ -590,11 +651,16 @@
             <div>
                 <h4 class="font-headline font-semibold text-white mb-4">Dịch vụ</h4>
                 <ul class="space-y-3">
-                    <li><a href="#" class="text-slate-400 hover:text-white transition-colors duration-300">Ghế đơn linh hoạt</a></li>
-                    <li><a href="#" class="text-slate-400 hover:text-white transition-colors duration-300">Bàn nhóm</a></li>
-                    <li><a href="#" class="text-slate-400 hover:text-white transition-colors duration-300">Phòng hội thảo</a></li>
-                    <li><a href="#" class="text-slate-400 hover:text-white transition-colors duration-300">Văn phòng riêng</a></li>
-                    <li><a href="#" class="text-slate-400 hover:text-white transition-colors duration-300">Sự kiện & Workshop</a></li>
+                    <li><a href="#" class="text-slate-400 hover:text-white transition-colors duration-300">Ghế
+                            đơn linh hoạt</a></li>
+                    <li><a href="#" class="text-slate-400 hover:text-white transition-colors duration-300">Bàn
+                            nhóm</a></li>
+                    <li><a href="#" class="text-slate-400 hover:text-white transition-colors duration-300">Phòng
+                            hội thảo</a></li>
+                    <li><a href="#" class="text-slate-400 hover:text-white transition-colors duration-300">Văn
+                            phòng riêng</a></li>
+                    <li><a href="#" class="text-slate-400 hover:text-white transition-colors duration-300">Sự
+                            kiện & Workshop</a></li>
                 </ul>
             </div>
 
@@ -608,11 +674,13 @@
                     </li>
                     <li class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-primary text-xl">phone</span>
-                        <a href="tel:0901234567" class="text-slate-400 hover:text-white transition-colors duration-300">090 123 4567</a>
+                        <a href="tel:0901234567"
+                            class="text-slate-400 hover:text-white transition-colors duration-300">090 123 4567</a>
                     </li>
                     <li class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-primary text-xl">mail</span>
-                        <a href="mailto:hello@workstation.vn" class="text-slate-400 hover:text-white transition-colors duration-300">hello@workstation.vn</a>
+                        <a href="mailto:hello@workstation.vn"
+                            class="text-slate-400 hover:text-white transition-colors duration-300">hello@workstation.vn</a>
                     </li>
                     <li class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-primary text-xl">schedule</span>
@@ -635,218 +703,153 @@
     </div>
 </footer>
 
-
 {{-- ========================================
     SCRIPTS
     ======================================== --}}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
 
-    // ---- Carousel Logic ----
-    let nextDom = document.getElementById('next');
-    let prevDom = document.getElementById('prev');
+        // ---- Carousel Logic ----
+        let nextDom = document.getElementById('next');
+        let prevDom = document.getElementById('prev');
 
-    let carouselDom = document.querySelector('.carousel');
-    if (carouselDom) {
-        let SliderDom = carouselDom.querySelector('.carousel .list');
-        let thumbnailBorderDom = document.querySelector('.carousel .thumbnail');
-        let thumbnailItemsDom = thumbnailBorderDom.querySelectorAll('.item');
+        let carouselDom = document.querySelector('.carousel');
+        if (carouselDom) {
+            let SliderDom = carouselDom.querySelector('.carousel .list');
+            let thumbnailBorderDom = document.querySelector('.carousel .thumbnail');
+            let thumbnailItemsDom = thumbnailBorderDom.querySelectorAll('.item');
 
-        thumbnailBorderDom.appendChild(thumbnailItemsDom[0]);
+            thumbnailBorderDom.appendChild(thumbnailItemsDom[0]);
 
-        let timeRunning = 800;
-        let timeAutoNext = 5000;
-        let runTimeOut;
-        let autoNextTimeout;
+            let timeRunning = 800;
+            let timeAutoNext = 5000;
+            let runTimeOut;
+            let autoNextTimeout;
 
-        nextDom.onclick = function(){
-            showSlider('next');
-        }
-
-        prevDom.onclick = function(){
-            showSlider('prev');
-        }
-
-        // Auto-slide
-        autoNextTimeout = setTimeout(() => {
-            nextDom.click();
-        }, timeAutoNext);
-
-        function showSlider(type){
-            let SliderItemsDom = SliderDom.querySelectorAll('.carousel .list .item');
-            let thumbnailItemsDom = document.querySelectorAll('.carousel .thumbnail .item');
-
-            if(type === 'next'){
-                SliderDom.appendChild(SliderItemsDom[0]);
-                thumbnailBorderDom.appendChild(thumbnailItemsDom[0]);
-                carouselDom.classList.add('next');
-            } else {
-                SliderDom.prepend(SliderItemsDom[SliderItemsDom.length - 1]);
-                thumbnailBorderDom.prepend(thumbnailItemsDom[thumbnailItemsDom.length - 1]);
-                carouselDom.classList.add('prev');
+            nextDom.onclick = function() {
+                showSlider('next');
             }
 
-            clearTimeout(runTimeOut);
-            runTimeOut = setTimeout(() => {
-                carouselDom.classList.remove('next');
-                carouselDom.classList.remove('prev');
-            }, timeRunning);
+            prevDom.onclick = function() {
+                showSlider('prev');
+            }
 
-            clearTimeout(autoNextTimeout);
+            // Auto-slide
             autoNextTimeout = setTimeout(() => {
                 nextDom.click();
             }, timeAutoNext);
-        }
-    }
 
-    // ---- Scroll Reveal (IntersectionObserver) ----
-    const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-stagger');
+            function showSlider(type) {
+                let SliderItemsDom = SliderDom.querySelectorAll('.carousel .list .item');
+                let thumbnailItemsDom = document.querySelectorAll('.carousel .thumbnail .item');
 
-    if (revealElements.length > 0) {
-        const revealObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('revealed');
-                    revealObserver.unobserve(entry.target);
+                if (type === 'next') {
+                    SliderDom.appendChild(SliderItemsDom[0]);
+                    thumbnailBorderDom.appendChild(thumbnailItemsDom[0]);
+                    carouselDom.classList.add('next');
+                } else {
+                    SliderDom.prepend(SliderItemsDom[SliderItemsDom.length - 1]);
+                    thumbnailBorderDom.prepend(thumbnailItemsDom[thumbnailItemsDom.length - 1]);
+                    carouselDom.classList.add('prev');
                 }
-            });
-        }, {
-            threshold: 0.15,
-            rootMargin: '0px 0px -60px 0px'
-        });
 
-        revealElements.forEach(el => revealObserver.observe(el));
-    }
+                clearTimeout(runTimeOut);
+                runTimeOut = setTimeout(() => {
+                    carouselDom.classList.remove('next');
+                    carouselDom.classList.remove('prev');
+                }, timeRunning);
 
-    // ---- Stats Counter Animation ----
-    const statNumbers = document.querySelectorAll('.stat-number[data-target]');
-
-    if (statNumbers.length > 0) {
-        const counterObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const el = entry.target;
-                    const target = parseInt(el.getAttribute('data-target'));
-                    const duration = 2000;
-                    const startTime = performance.now();
-
-                    function updateCounter(currentTime) {
-                        const elapsed = currentTime - startTime;
-                        const progress = Math.min(elapsed / duration, 1);
-                        // Ease out cubic
-                        const eased = 1 - Math.pow(1 - progress, 3);
-                        const current = Math.round(target * eased);
-
-                        el.textContent = current.toLocaleString() + (target === 98 ? '%' : '+');
-
-                        if (progress < 1) {
-                            requestAnimationFrame(updateCounter);
-                        }
-                    }
-
-                    requestAnimationFrame(updateCounter);
-                    counterObserver.unobserve(el);
-                }
-            });
-        }, { threshold: 0.5 });
-
-        statNumbers.forEach(el => counterObserver.observe(el));
-    }
-
-    // ---- Swiper Testimonials ----
-    if (document.querySelector('.testimonial-swiper')) {
-        new Swiper('.testimonial-swiper', {
-            slidesPerView: 1,
-            spaceBetween: 16,
-            loop: true,
-            autoplay: {
-                delay: 4000,
-                disableOnInteraction: false,
-            },
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            },
-            breakpoints: {
-                640: {
-                    slidesPerView: 2,
-                    spaceBetween: 20,
-                },
-                1024: {
-                    slidesPerView: 3,
-                    spaceBetween: 24,
-                },
-            },
-        });
-    }
-
-    // ---- Navbar scroll background + text color ----
-    const nav = document.querySelector('.ws-nav');
-    if (nav) {
-        const navLinks = nav.querySelectorAll('.ws-nav-link');
-        const projectTitle = nav.querySelector('.project-title');
-        const authLinks = nav.querySelectorAll('a[href*="logIn"], a[href*="register"]');
-        const ctaBtn = nav.querySelector('a[href="#"]');
-        const menuToggle = nav.querySelector('#menu-toggle');
-
-        function updateNavStyle() {
-            if (window.scrollY > 50) {
-                // Scrolled: white bg, dark text
-                nav.classList.add('bg-white/95', 'backdrop-blur-xl', 'shadow-md');
-                nav.classList.remove('bg-transparent');
-                navLinks.forEach(link => {
-                    link.classList.remove('text-white', 'hover:text-blue-200');
-                    link.classList.add('text-slate-600', 'hover:text-primary');
-                    link.classList.remove('after:bg-white');
-                    link.classList.add('after:bg-primary');
-                });
-                if (projectTitle) {
-                    projectTitle.classList.remove('text-white');
-                    projectTitle.classList.add('text-on-surface');
-                }
-                authLinks.forEach(link => {
-                    link.classList.remove('text-white/80', 'hover:text-white');
-                    link.classList.add('text-slate-600', 'hover:text-slate-900');
-                });
-                if (ctaBtn) {
-                    ctaBtn.classList.remove('bg-white', 'text-primary', 'hover:bg-slate-100');
-                    ctaBtn.classList.add('bg-primary', 'text-white', 'hover:opacity-90');
-                }
-                if (menuToggle) {
-                    menuToggle.classList.remove('text-white');
-                    menuToggle.classList.add('text-slate-700');
-                }
-            } else {
-                // Top: transparent, white text
-                nav.classList.remove('bg-white/95', 'backdrop-blur-xl', 'shadow-md');
-                nav.classList.add('bg-transparent');
-                navLinks.forEach(link => {
-                    link.classList.add('text-white', 'hover:text-blue-200');
-                    link.classList.remove('text-slate-600', 'hover:text-primary');
-                    link.classList.add('after:bg-white');
-                    link.classList.remove('after:bg-primary');
-                });
-                if (projectTitle) {
-                    projectTitle.classList.add('text-white');
-                    projectTitle.classList.remove('text-on-surface');
-                }
-                authLinks.forEach(link => {
-                    link.classList.add('text-white/80', 'hover:text-white');
-                    link.classList.remove('text-slate-600', 'hover:text-slate-900');
-                });
-                if (ctaBtn) {
-                    ctaBtn.classList.add('bg-white', 'text-primary', 'hover:bg-slate-100');
-                    ctaBtn.classList.remove('bg-primary', 'text-white', 'hover:opacity-90');
-                }
-                if (menuToggle) {
-                    menuToggle.classList.add('text-white');
-                    menuToggle.classList.remove('text-slate-700');
-                }
+                clearTimeout(autoNextTimeout);
+                autoNextTimeout = setTimeout(() => {
+                    nextDom.click();
+                }, timeAutoNext);
             }
         }
 
-        window.addEventListener('scroll', updateNavStyle);
-        updateNavStyle(); // Run on page load
-    }
-});
+        // ---- Scroll Reveal (IntersectionObserver) ----
+        const revealElements = document.querySelectorAll(
+            '.reveal, .reveal-left, .reveal-right, .reveal-stagger');
+
+        if (revealElements.length > 0) {
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                        revealObserver.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.15,
+                rootMargin: '0px 0px -60px 0px'
+            });
+
+            revealElements.forEach(el => revealObserver.observe(el));
+        }
+
+        // ---- Stats Counter Animation ----
+        const statNumbers = document.querySelectorAll('.stat-number[data-target]');
+
+        if (statNumbers.length > 0) {
+            const counterObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const el = entry.target;
+                        const target = parseInt(el.getAttribute('data-target'));
+                        const duration = 2000;
+                        const startTime = performance.now();
+
+                        function updateCounter(currentTime) {
+                            const elapsed = currentTime - startTime;
+                            const progress = Math.min(elapsed / duration, 1);
+                            // Ease out cubic
+                            const eased = 1 - Math.pow(1 - progress, 3);
+                            const current = Math.round(target * eased);
+
+                            el.textContent = current.toLocaleString() + (target === 98 ? '%' :
+                                '+');
+
+                            if (progress < 1) {
+                                requestAnimationFrame(updateCounter);
+                            }
+                        }
+
+                        requestAnimationFrame(updateCounter);
+                        counterObserver.unobserve(el);
+                    }
+                });
+            }, {
+                threshold: 0.5
+            });
+
+            statNumbers.forEach(el => counterObserver.observe(el));
+        }
+
+        // ---- Swiper Testimonials ----
+        if (document.querySelector('.testimonial-swiper')) {
+            new Swiper('.testimonial-swiper', {
+                slidesPerView: 1,
+                spaceBetween: 16,
+                loop: true,
+                autoplay: {
+                    delay: 4000,
+                    disableOnInteraction: false,
+                },
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                breakpoints: {
+                    640: {
+                        slidesPerView: 2,
+                        spaceBetween: 20,
+                    },
+                    1024: {
+                        slidesPerView: 3,
+                        spaceBetween: 24,
+                    },
+                },
+            });
+        }
+    });
 </script>
+

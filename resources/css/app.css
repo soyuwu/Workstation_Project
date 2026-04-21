@@ -250,3 +250,32 @@
 html {
     scroll-behavior: smooth;
 }
+
+/* ========================================
+   Megamenu Styles
+   ======================================== */
+.megamenu-panel {
+    border-bottom: 3px solid var(--color-primary);
+}
+
+.megamenu-col {
+    position: relative;
+    text-decoration: none;
+}
+
+.megamenu-col::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.megamenu-col:hover::before {
+    width: 60%;
+}
