@@ -1,0 +1,27 @@
+Feat: Xây dựng giao diện (UI) Hệ thống Đặt chỗ - Giai đoạn 1 (Mock Data)
+
+Triển khai toàn bộ quy trình đặt chỗ theo mô hình UI-First, phân làm 2 luồng chính: Thuê theo tháng và Thuê theo giờ. Đồng bộ hoàn toàn với Design System hiện tại của dự án.
+
+Các thay đổi chi tiết:
+1. Controller & Tuyến đường (Routes):
+   - Tạo mới `BookingController` để quản lý logic phân luồng. Cung cấp mảng Mock Data cho các phòng, dịch vụ.
+   - Bổ sung các Route vào `routes/web.php` cho 5 loại dịch vụ cốt lõi dưới nhánh `/booking/...`.
+
+2. Giao diện Cổng Đặt Chỗ (Gateway - index.blade.php):
+   - Cấu trúc layout chia thành 5 dịch vụ (Chỗ ngồi linh hoạt, cố định, văn phòng riêng, phòng họp, sự kiện) bằng CSS Grid.
+   - Sử dụng gradient và shadow để đồng bộ thiết kế với `app.css`.
+
+3. Giao diện Thuê Theo Tháng (monthly.blade.php):
+   - Thiết kế giao diện dành cho 'Chỗ ngồi cố định' và 'Văn phòng riêng'.
+   - Layout hai cột: Cột trái hiển thị danh sách phòng mẫu; Cột phải là Form nhập thông tin (được thiết kế dạng sticky form).
+   - Viết Javascript cho phép click chọn phòng, tự động điền tên/giá tiền vào form và cuộn mượt (smooth scroll) xuống form nhập.
+
+4. Giao diện Thuê Theo Giờ (hourly.blade.php):
+   - Thiết kế hệ thống thanh Timeline từ 0h-23h (chia mỗi ô 30 phút).
+   - Lập trình JS logic chọn ngày: Khóa cứng và vô hiệu hóa (disable) các ô giờ thuộc về quá khứ tính từ thời điểm hiện tại.
+   - Tạo bộ mock data giả lập tình trạng "Đã đặt" trên dòng thời gian.
+   - Áp dụng Event Delegation để xử lý tính năng "Kéo thả (Drag & Drop)": Người dùng nhấp và kéo chuột để bôi đen chọn nhiều giờ liền kề. Chặn hành vi mặc định của trình duyệt để kéo mượt mà.
+   - Thiết kế Popup Thanh toán (Checkout Modal) tự động bật ra khi nhả chuột, hiển thị giờ đã chọn và tạm tính tổng tiền.
+
+5. Cập nhật Navigation (nav.blade.php):
+   - Cập nhật nút "Đặt chỗ ngay" (cả trên PC lẫn Mobile) trỏ liên kết đến `route('booking.index')`.

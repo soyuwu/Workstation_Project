@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\BookingController;
 use Illuminate\Support\Facades\Mail;
 use PHPMailer\PHPMailer\PHPMailer;
 
@@ -196,6 +197,12 @@ Route::get('/forgot-password', function () {
     return view('auth.emailVerified');
 })->name('forgot.password');
 
+// Booking System
+Route::prefix('booking')->group(function () {
+    Route::get('/', [BookingController::class, 'index'])->name('booking.index');
+    Route::get('/monthly/{type}', [BookingController::class, 'monthly'])->name('booking.monthly');
+    Route::get('/hourly/{type}', [BookingController::class, 'hourly'])->name('booking.hourly');
+});
 
 
 Route::prefix('admin')->group(function () {

@@ -154,7 +154,7 @@
                       href="{{ route('register') }}">Đăng ký</a>
               @endif
               <a class="hidden md:inline-block bg-white text-primary px-6 py-2.5 font-headline text-sm font-semibold hover:bg-slate-100 transition-all active:scale-95 rounded-lg shadow-lg"
-                  href="#">Đặt chỗ ngay</a>
+                  href="{{ route('booking.index') }}">Đặt chỗ ngay</a>
 
               <button id="menu-toggle" class="md:hidden hover:cursor-pointer text-white"
                   onclick="document.getElementById('menu').classList.toggle('hidden')">
@@ -209,7 +209,7 @@
                       <a href="{{ route('register') }}"
                           class="block px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-slate-900 rounded-lg transition-colors">Đăng
                           ký</a>
-                      <a href="#"
+                      <a href="{{ route('booking.index') }}"
                           class="block mt-2 px-4 py-3 bg-primary text-white text-center font-semibold rounded-lg hover:opacity-90 transition-opacity">Đặt
                           chỗ ngay</a>
                   </nav>
