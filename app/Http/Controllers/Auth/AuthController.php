@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\loginRequest;
+use App\Http\Requests\registerRequest;
 use App\Models\User;
 use App\Models\EmailVerification;
 use Illuminate\Http\Request;
@@ -35,16 +37,8 @@ class AuthController extends Controller
     }
 
     // 2. Khách bấm nút đăng ký.
-    public function register(Request $request)
+    public function register(registerRequest $request)
     {
-        // Validation.
-        $request->validate([
-            'name' => 'required|min:2',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:4|confirmed',
-        ]);
-
-
         // Create new user.
         $this->userModel->create([
             'name' => $request->name,
@@ -79,34 +73,25 @@ class AuthController extends Controller
         return view('auth.logInForm');
     }
 
-    public function logIn(Request $request)
+    public function logIn(loginRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|min:4'
-        ]);
+        $credentials = $request->only('email', 'password');
 
-        $email = $request->input('email');
-        $password = $request->input('password');
-
-        $user = User::where('email', $email)->first();
-
-        if (!$user) {
-            return back()->withErrors(['email' => 'Email này chưa được đăng ký']);
-        }
-
-        if (Hash::check($password, $user->password)) {
-            Auth::login($user);
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+
+            $user = Auth::user();
+
             Session::put('user_id', $user->id);
             Session::put('user_role', $user->role);
-
-            return redirect('/')->with('success', 'Dang nhap thanh cong!');
+            return redirect('/');
         }
-
-        return back()->withErrors(['password' => 'Mat khau sai']);
+        return back()->withErrors(
+            [
+                'email' => 'Email hoặc mật khẩu bạn cung cấp chưa đúng',
+            ]
+        );
     }
-
     //LogOut
     public function logOut()
     {
@@ -216,6 +201,4 @@ class AuthController extends Controller
             return false;
         }
     }
-
-    public function 
 }

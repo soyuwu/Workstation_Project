@@ -1,4 +1,4 @@
-@extends('layouts.admin.admin_master')
+@extends('admin.admin_master')
 
 @section('page-title', 'Tổng quan')
 

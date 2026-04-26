@@ -110,11 +110,11 @@ Route::post('/forget-password', [AuthController::class, 'sendEmailForgetPassword
 //     return $value;
 // })->name('getCache');
 
-Route::get('/user', function () {
-    session(['name' => 'Truong Giang'], ['age' => 20]);
-    echo (Session->name);
-    return session('age');
-});
+// Route::get('/user', function () {
+//     session(['name' => 'Truong Giang'], ['age' => 20]);
+//     echo (Session->name);
+//     return session('age');
+// });
 
 // Route::get('/user', function(Request $request) {
 
