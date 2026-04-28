@@ -29,6 +29,10 @@ class AuthController extends Controller
         return view('auth.registerForm');
     }
 
+    public function showAuthForm()
+    {
+        return view('auth.auth');
+    }
 
     // 2. Khách bấm nút đăng ký.
     public function register(Request $request)
@@ -170,10 +174,7 @@ class AuthController extends Controller
         return redirect('/login')->with('error', 'Token không tồn tại hoặc đã hết hạn.');
     }
 
-    public function showAuthForm()
-    {
-        return view('auth.authForm');
-    }
+
 
 
 }
