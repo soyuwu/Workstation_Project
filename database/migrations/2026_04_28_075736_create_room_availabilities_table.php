@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('room_availabilities', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('workspace_id')->constrained('workspaces')->onDelete('cascade');
+            $table->date('availability_date');
+            $table->time('start_time');
+            $table->time('end_time');
+            $table->boolean('is_available')->default(true);
+            $table->foreignId('booked_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
     }

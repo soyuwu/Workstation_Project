@@ -13,7 +13,11 @@ return new class extends Migration
     {
         Schema::create('workspace_images', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('workspace_id')->constrained('workspaces')->onDelete('cascade');
+            $table->string('image_url');
+            $table->boolean('is_primary')->default(false);
+            $table->integer('display_order')->nullable();
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 

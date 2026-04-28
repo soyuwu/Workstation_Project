@@ -13,7 +13,14 @@ return new class extends Migration
     {
         Schema::create('system_logs', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->string('action', 100);
+            $table->string('resource_type', 50)->nullable();
+            $table->integer('resource_id')->nullable();
+            $table->text('description')->nullable();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 

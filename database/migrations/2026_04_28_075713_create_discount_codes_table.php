@@ -13,6 +13,18 @@ return new class extends Migration
     {
         Schema::create('discount_codes', function (Blueprint $table) {
             $table->id();
+            $table->string('code', 50)->unique();
+            $table->text('description')->nullable();
+            $table->enum('discount_type', ['percentage', 'fixed'])->default('percentage');
+            $table->decimal('discount_value', 10, 2);
+            $table->decimal('max_discount', 15, 2)->nullable();
+            $table->integer('usage_limit')->nullable();
+            $table->integer('usage_count')->default(0);
+            $table->timestamp('valid_from')->nullable();
+            $table->timestamp('valid_until')->nullable();
+            $table->json('applicable_workspaces')->nullable();
+            $table->decimal('min_booking_amount', 15, 2)->default(0);
+            $table->enum('status', ['active', 'expired', 'disabled'])->default('active');
             $table->timestamps();
         });
     }

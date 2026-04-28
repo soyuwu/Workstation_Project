@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('admin_replies', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('review_id')->constrained('reviews')->onDelete('cascade');
+            $table->foreignId('admin_id')->constrained('users')->onDelete('cascade');
+            $table->text('reply_text');
             $table->timestamps();
         });
     }

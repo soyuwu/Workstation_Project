@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('room_types', function (Blueprint $table) {
             $table->id();
+            $table->string('name', 100);
+            $table->text('description')->nullable();
+            $table->integer('default_capacity')->nullable();
+            $table->decimal('default_hourly_rate', 10, 2)->nullable();
+            $table->json('amenities')->nullable();
             $table->timestamps();
         });
     }
