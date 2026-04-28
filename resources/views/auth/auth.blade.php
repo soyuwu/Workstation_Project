@@ -38,7 +38,6 @@
                     </div>
                 @endif
             </div>
-
             <div class="auth-mobile-toggle absolute left-6 right-6 top-6 z-20 rounded-2xl bg-slate-100 p-1">
                 <button type="button" data-auth-target="login" data-auth-toggle class="flex-1 rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 transition-all duration-200">
                     Đăng nhập
@@ -160,22 +159,13 @@
                         <p class="mb-8 max-w-sm text-base text-blue-100">
                             Tạo tài khoản để khám phá không gian làm việc linh hoạt, quản lý booking và nhận các ưu đãi mới nhất từ WorkStation.
                         </p>
-                        <button type="button" data-auth-target="register" class="rounded-2xl border border-white/30 px-8 py-3 text-sm font-semibold text-white transition-all duration-300 hover:bg-white/10">
-                            Đăng ký ngay
-                        </button>
                     </div>
 
                     <div class="auth-overlay-panel text-white">
-                        <span class="mb-4 rounded-full border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em]">
-                            Welcome back
-                        </span>
                         <h2 class="mb-4 font-headline text-4xl font-bold">Rất vui được gặp lại bạn</h2>
                         <p class="mb-8 max-w-sm text-base text-blue-100">
                             Đăng nhập để tiếp tục đặt lịch nhanh hơn, theo dõi lịch sử sử dụng và làm việc cùng cộng đồng sáng tạo của bạn.
                         </p>
-                        <button type="button" data-auth-target="login" class="rounded-2xl border border-white/30 px-8 py-3 text-sm font-semibold text-white transition-all duration-300 hover:bg-white/10">
-                            Đăng nhập
-                        </button>
                     </div>
                 </div>
             </div>

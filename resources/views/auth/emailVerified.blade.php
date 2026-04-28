@@ -24,9 +24,6 @@
                 <h1 class="mb-4 font-headline text-4xl font-bold leading-tight">
                     Lấy lại quyền truy cập vào tài khoản của bạn
                 </h1>
-                <p class="max-w-md text-base text-blue-100">
-                    Nhập email đã đăng ký. Khi backend hoàn tất luồng reset password, bạn có thể gắn trực tiếp form này vào API hiện tại mà không cần sửa lại UI.
-                </p>
             </div>
 
             <div class="flex flex-col justify-center px-8 py-10 sm:px-10 lg:px-14">
@@ -34,29 +31,16 @@
                     <span class="text-lg">←</span>
                     Quay lại đăng nhập
                 </a>
-
-                <span class="mb-4 inline-flex w-fit rounded-full bg-primary-light px-4 py-2 text-sm font-semibold text-primary">
-                    Quên mật khẩu
-                </span>
                 <h2 class="mb-3 font-headline text-4xl font-bold text-on-surface">Đặt lại mật khẩu</h2>
-                <p class="mb-8 text-slate-500">
-                    Nhập email của bạn để nhận hướng dẫn đặt lại mật khẩu. Phần xử lý gửi mail có thể nối tiếp khi backend sẵn sàng.
-                </p>
-
                 <form class="space-y-5">
                     <label class="block">
-                        <span class="mb-2 block text-sm font-semibold text-slate-700">Email</span>
-                        <input type="email" placeholder="you@example.com" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10">
+                        <input type="email" placeholder="Nhập email đã đăng ký" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10">
                     </label>
 
                     <button type="button" class="inline-flex w-full items-center justify-center rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-primary-dark active:scale-[0.99]">
-                        Gửi email khôi phục
+                        Gửi email
                     </button>
                 </form>
-
-                <p class="mt-5 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
-                    UI đã sẵn sàng. Bạn có thể nối nút này với endpoint reset password sau mà không cần sửa lại bố cục.
-                </p>
             </div>
         </section>
     </main>

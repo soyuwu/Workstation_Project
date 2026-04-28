@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('email_verifications', function (Blueprint $table) {
-            $table->string('email');
-            $table->string('token');
+        Schema::create('admin_replies', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('review_id')->constrained('reviews')->onDelete('cascade');
+            $table->foreignId('admin_id')->constrained('users')->onDelete('cascade');
+            $table->text('reply_text');
             $table->timestamps();
         });
     }
@@ -23,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('email_verifications');
+        Schema::dropIfExists('admin_replies');
     }
 };

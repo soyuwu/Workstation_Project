@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\BookingController;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
 use PHPMailer\PHPMailer\PHPMailer;
 
 Route::get('/', function () {
@@ -230,6 +231,14 @@ Route::prefix('admin')->group(function () {
 });
 
 
+// ActiveLink
+Route::get('/activate', [AuthController::class, 'activate'])->name('activate');
+
+// ForgetPassword
+Route::get('/resetPassword', function () {
+    return view('auth.forgetPassword');
+});
+Route::post('/forget-password', [AuthController::class, 'sendEmailForgetPassword']);
 
 // Route::get('/test-mail', function () {
 //     $auth = new \App\Http\Controllers\Auth\AuthController();
@@ -269,8 +278,9 @@ Route::prefix('admin')->group(function () {
 //     return $value;
 // })->name('getCache');
 
-// Route::get('/user', function() {
+// Route::get('/user', function () {
 //     session(['name' => 'Truong Giang'], ['age' => 20]);
+//     echo (Session->name);
 //     return session('age');
 // });
 

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class EmailVerification extends Model
 {
     // Tắt timestamps mặc định vì chúng ta chỉ cần created_at
-    public $timestamps = false;
+    public $timestamps = true;
 
     // Khai báo khóa chính là email và kiểu dữ liệu là string
     protected $primaryKey = 'email';
@@ -17,6 +17,6 @@ class EmailVerification extends Model
     protected $fillable = [
         'email',
         'token',
-        'createdAt'
+        'created_at'
     ];
 }
