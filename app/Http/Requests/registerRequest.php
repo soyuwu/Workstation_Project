@@ -33,8 +33,8 @@ class registerRequest extends FormRequest
     public function messages()
     {
         return [
-            'name.required' => 'Vui lòng nhập họ tên.',
-            'email.required' => 'Email không được để trống.',
+            // 'name.required' => 'Vui lòng nhập họ tên.',
+            // 'email.required' => 'Email không được để trống.',
             'email.unique' => 'Email này đã được sử dụng.',
             'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
         ];

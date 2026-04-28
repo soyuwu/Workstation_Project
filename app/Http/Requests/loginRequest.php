@@ -28,11 +28,11 @@ class loginRequest extends FormRequest
         ];
     }
 
-    public function messages()
-    {
-        return [
-            'email.required' => 'Vui lòng nhập email',
-            'password.required' => 'Vui lòng nhập mật khẩu',
-        ];
-    }
+    // public function messages()
+    // {
+    //     return [
+    //         'email.exists' => 'Email chưa tồn tại',
+    //         'password.required' => 'Vui lòng nhập mật khẩu',
+    //     ];
+    // }
 }

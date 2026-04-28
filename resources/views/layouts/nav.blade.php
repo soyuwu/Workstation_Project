@@ -35,7 +35,7 @@
             @if (Session::has('user_id'))
                 <div class="hidden items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm text-white backdrop-blur-sm md:flex">
                     <span class="material-symbols-outlined text-base">verified_user</span>
-                    <span>User #{{ Session::get('user_id') }}</span>
+                    <span>{{ Session::get('user_name') }}</span>
                     <span class="h-1 w-1 rounded-full bg-white/70"></span>
                     <span>{{ Session::get('user_role') ?: 'member' }}</span>
                 </div>
@@ -83,7 +83,7 @@
 
             @if (Session::has('user_id'))
                 <div class="rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                    User #{{ Session::get('user_id') }} - {{ Session::get('user_role') ?: 'member' }}
+                    User #{{ Session::get('user_name') }} - {{ Session::get('user_role') ?: 'member' }}
                 </div>
                 <a href="{{ route('logOut') }}" class="rounded-lg px-4 py-3 font-medium text-red-500 transition-colors hover:bg-red-50">
                     Đăng xuất

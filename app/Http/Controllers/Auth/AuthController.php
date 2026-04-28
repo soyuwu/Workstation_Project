@@ -18,19 +18,14 @@ class AuthController extends Controller
 {
     private $userModel;
     private $emailVerification;
-    public function __construct()
+    public function __construct(User $user, EmailVerification $emailVerification)
     {
-        $this->userModel = new User();
-        $this->emailVerification = new EmailVerification();
+        $this->userModel = $user;
+        $this->emailVerification = $emailVerification;
     }
 
     //Regsister
     // 1. Show form cho người dùng.
-    public function showRegisterForm()
-    {
-        return view('auth.registerForm');
-    }
-
     public function showAuthForm()
     {
         return view('auth.auth');
@@ -55,24 +50,14 @@ class AuthController extends Controller
         //Tạo link
         $linkActive = url("/activate?token=$token");
 
-        if ($this->sendActivationEmail($request->email, $request->name, $linkActive)) {
-            AuthController::logIn($request);
-            return redirect('/')->with('success', 'Dang ky thanh cong, kiem tra email de kich hoat tai khoan.');
-        }
-
-        AuthController::logIn($request);
-
-        return redirect('/')->with('warning', 'Đăng ký thành công nhưng gửi mail lỗi. Vui lòng liên hệ Admin.');
+        // if ($this->sendActivationEmail($request->email, $request->name, $linkActive)) {
+        //     return redirect('/logIn')->with('success', 'Dang ky thanh cong, kiem tra email de kich hoat tai khoan.');
+        // }
+        return redirect('/logIn')->with('warning', 'Đăng ký thành công nhưng gửi mail lỗi. Vui lòng liên hệ Admin.');
     }
 
 
     //LogIn
-    // 3. Show form đăng nhập.
-    public function showLogInForm()
-    {
-        return view('auth.logInForm');
-    }
-
     public function logIn(loginRequest $request)
     {
         $credentials = $request->only('email', 'password');
@@ -83,6 +68,7 @@ class AuthController extends Controller
             $user = Auth::user();
 
             Session::put('user_id', $user->id);
+            Session::put('user_name', $user->name);
             Session::put('user_role', $user->role);
             return redirect('/');
         }
@@ -90,15 +76,15 @@ class AuthController extends Controller
             [
                 'email' => 'Email hoặc mật khẩu bạn cung cấp chưa đúng',
             ]
-        );
+        `)->withInput($request->only('email'));
     }
     //LogOut
-    public function logOut()
+    public function logOut(Request $request)
     {
-        Session::forget('user_id');
-        Session::forget('user_role');
-
-        return redirect('/')->with('success', 'Ban da dang xuat thanh cong');
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect('/')->with('success', 'Đăng xuất thành công');
     }
 
     //Show activate 
