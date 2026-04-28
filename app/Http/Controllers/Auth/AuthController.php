@@ -76,7 +76,7 @@ class AuthController extends Controller
             [
                 'email' => 'Email hoặc mật khẩu bạn cung cấp chưa đúng',
             ]
-        `)->withInput($request->only('email'));
+        )->withInput($request->only('email'));
     }
     //LogOut
     public function logOut(Request $request)
