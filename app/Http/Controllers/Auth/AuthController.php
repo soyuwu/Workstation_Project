@@ -7,10 +7,12 @@ use App\Http\Requests\loginRequest;
 use App\Http\Requests\registerRequest;
 use App\Models\User;
 use App\Models\EmailVerification;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -18,6 +20,7 @@ class AuthController extends Controller
 {
     private $userModel;
     private $emailVerification;
+
     public function __construct(User $user, EmailVerification $emailVerification)
     {
         $this->userModel = $user;
@@ -50,9 +53,9 @@ class AuthController extends Controller
         //Tạo link
         $linkActive = url("/activate?token=$token");
 
-        // if ($this->sendActivationEmail($request->email, $request->name, $linkActive)) {
-        //     return redirect('/logIn')->with('success', 'Dang ky thanh cong, kiem tra email de kich hoat tai khoan.');
-        // }
+        if ($this->sendActivationEmail($request->email, $request->name, $linkActive)) {
+            return redirect('/logIn')->with('success', 'Dang ky thanh cong, kiem tra email de kich hoat tai khoan.');
+        }
         return redirect('/logIn')->with('warning', 'Đăng ký thành công nhưng gửi mail lỗi. Vui lòng liên hệ Admin.');
     }
 
@@ -87,11 +90,6 @@ class AuthController extends Controller
         return redirect('/')->with('success', 'Đăng xuất thành công');
     }
 
-    //Show activate 
-    public function showActivation()
-    {
-        return view('Auth.activate');
-    }
     //Activate Email
     public function sendActivationEmail($email, $name, $link)
     {
@@ -124,44 +122,93 @@ class AuthController extends Controller
 
     public function activate(Request $request)
     {
-        // Lấy token từ URL (?token=...)
         $token = $request->query('token');
-
         if (!$token) {
             return redirect('/')->with('error', 'Mã xác thực không hợp lệ.');
         }
 
-        // Tự tìm User có token này trong DB
-        $email = EmailVerification::where('token', $token)->first();
+        $verification = EmailVerification::where('token', $token)->first();
 
-        if ($email) {
-            // Cập nhật thủ công
-            //Chay thu va can sua lai kha nhieu
-            $user = User::where('email', $email->email)->first();
-
-            $user->email_verified_at = now();
-            $user->save();
-
-            $email->delete();
-
-            return redirect('/')->with('success', 'Tài khoản đã kích hoạt thành công!');
+        if ($verification) {
+            $user = User::where('email', $verification->email)->first();
+            if ($user) {
+                $user->email_verified_at = now();
+                $user->save();
+                $verification->delete();
+                return redirect('/logIn')->with('success', 'Tài khoản đã kích hoạt thành công!');
+            }
         }
 
         return redirect('/')->with('error', 'Token không tồn tại hoặc đã hết hạn.');
     }
 
     //Forget password
-    public function createLink($email)
+    public function showForgetPasswordForm()
     {
-        $token = bin2hex(random_bytes(32));
-        $linkActive = url("/forget-password?token=$token");
-
-        return $linkActive;
+        return view('auth.forgetPasswordForm');
     }
 
-    public function sendEmailForgetPassword(Request $request)
+    public function sendResetLinkEmail(Request $request)
     {
-        $link = AuthController::createLink($request->email);
+        $request->validate(['email' => 'required|email|exists:users,email']);
+        $user = User::where('email', $request->email)->first();
+
+        $token = bin2hex(random_bytes(32));
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'user_id' => $user->id,
+                'email' => $request->email,
+                'token' => $token,
+                'created_at' => now(),
+            ]
+        );
+
+        $link = url("/reset-password/$token?email=" . urlencode($request->email));
+
+        if ($this->sendEmailForgetPassword($request->email, $link)) {
+            return back()->with('success', 'Chúng tôi đã gửi liên kết đặt lại mật khẩu vào email của bạn.');
+        }
+
+        return back()->with('error', 'Có lỗi xảy ra khi gửi email.');
+    }
+
+    //ĐẶT LẠI MẬT KHẨU (RESET PASSWORD)
+
+    public function showResetPasswordForm(Request $request, $token)
+    {
+        return view('auth.reset-password', ['token' => $token, 'email' => $request->email]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required|min:4|confirmed',
+        ]);
+
+        $reset = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->where('token', $request->token)
+            ->first();
+
+        if (!$reset) {
+            return back()->withErrors(['email' => 'Mã xác nhận không hợp lệ hoặc đã hết hạn.']);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return redirect('/logIn')->with('success', 'Mật khẩu đã được đặt lại thành công. Bạn có thể đăng nhập ngay.');
+    }
+
+    public function sendEmailForgetPassword($email, $link)
+    {
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();
@@ -172,23 +219,14 @@ class AuthController extends Controller
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             $mail->Port = 465;
             $mail->CharSet = 'UTF-8';
-
-            $mail->setFrom(env('MAIL_FROM_ADDRESS'), 'WORKSTAION TEAM');
-            $mail->addAddress($request->email);
-
+            $mail->setFrom(env('MAIL_FROM_ADDRESS'), 'WORKSTATION TEAM');
+            $mail->addAddress($email);
             $mail->isHTML(true);
-            $mail->Subject = 'WORKSTATION TEAM: Xac nhan Email';
-            $mail->Body = "
-                <h2>Xac nhan Email de doi mat khau</h2>
-                <p><a href = '$link'>Vui long bam vao day de xac nhan link.</p>
-            ";
+            $mail->Subject = 'WORKSTATION TEAM: Đặt lại mật khẩu';
+            $mail->Body = "<h2>Yêu cầu đặt lại mật khẩu</h2><p>Vui lòng bấm vào liên kết bên dưới để đổi mật khẩu mới:</p><p><a href='$link'>Đặt lại mật khẩu ngay</a></p>";
             return $mail->send();
         } catch (Exception $e) {
             return false;
         }
     }
-
-
-
-
 }

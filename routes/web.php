@@ -14,11 +14,11 @@ Route::get('/', function () {
 
 // đường dẫn qua trang signIn/signUp dùng chung 1 form
 Route::post('/register', [AuthController::class, 'register']);
-Route::get('/register', [AuthController::class, 'showLoginForm'])->name('register');
+Route::get('/register', [AuthController::class, 'showAuthForm'])->name('register');
 
 // Duong dan qua trang LogIn
 Route::post('/logIn', [AuthController::class, 'logIn']);
-Route::get('/logIn', [AuthController::class, 'showLoginForm'])->name('logIn');
+Route::get('/logIn', [AuthController::class, 'showAuthForm'])->name('logIn');
 
 // LogOut
 Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
@@ -194,10 +194,10 @@ Route::get('/dich-vu/{slug}', function ($slug) {
 })->name('dichvu.detail');
 
 // Forgot Password
-Route::get('/forgot-password', function () {
-    return view('auth.emailVerified');
-})->name('forgot.password');
-
+Route::get('/forgot-password', [AuthController::class, 'showForgetPasswordForm'])->name('forgot.password');
+Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail']);
+Route::get('/reset-password', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+Route::post('/reset-password/{token}', [AuthController::class, 'resetPassword'])->name('password.update');
 // Booking System
 Route::prefix('booking')->group(function () {
     Route::get('/', [BookingController::class, 'index'])->name('booking.index');
@@ -230,15 +230,6 @@ Route::prefix('admin')->group(function () {
     });
 });
 
-
-// ActiveLink
-Route::get('/activate', [AuthController::class, 'activate'])->name('activate');
-
-// ForgetPassword
-Route::get('/resetPassword', function () {
-    return view('auth.forgetPassword');
-});
-Route::post('/forget-password', [AuthController::class, 'sendEmailForgetPassword']);
 
 // Route::get('/test-mail', function () {
 //     $auth = new \App\Http\Controllers\Auth\AuthController();
