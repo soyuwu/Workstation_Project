@@ -101,7 +101,7 @@
 
                     <!-- Room Tracks -->
                     @foreach($rooms as $room)
-                        <div class="timeline-grid group hover:bg-slate-50 transition-colors" data-room-id="{{ $room['id'] }}" data-room-name="{{ $room['name'] }}" data-room-price="{{ $room['price'] }}" data-room-image="{{ $room['image'] }}">
+                        <div class="timeline-grid group hover:bg-slate-50 transition-colors" data-room-id="{{ $room['id'] }}" data-room-name="{{ $room['name'] }}" data-room-price="{{ $room['price'] }}" data-room-image="{{ $room['image'] }}" data-room-capacity="{{ $room['capacity'] }}">
                             <!-- Room Info Sticky Column -->
                             <div class="p-3 bg-white group-hover:bg-slate-50 sticky left-0 z-10 border-r border-slate-200 flex items-center gap-3 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] transition-colors">
                                 <img src="{{ $room['image'] }}" class="w-10 h-10 rounded-lg object-cover" alt="room">
@@ -171,7 +171,8 @@
                     id: currentRow.dataset.roomId,
                     name: currentRow.dataset.roomName,
                     price: parseInt(currentRow.dataset.roomPrice),
-                    image: currentRow.dataset.roomImage
+                    image: currentRow.dataset.roomImage,
+                    capacity: currentRow.dataset.roomCapacity
                 };
                 
                 clearSelection();
@@ -285,27 +286,32 @@
             updateTimelineState();
             
             // Handle Checkout Redirect
-            window.openCheckoutModal = () => {
-                if(selectedSlots.length === 0) return;
-                
-                const startSlotIdx = Math.min(...selectedSlots);
-                const endSlotIdx = Math.max(...selectedSlots) + 1; // +1 to mean "up to the end of that slot"
-                
-                const startTime = formatTime(startSlotIdx);
-                const endTime = formatTime(endSlotIdx);
-                
-                const params = new URLSearchParams({
-                    room_id: currentRoomData.id,
-                    room_name: currentRoomData.name,
-                    room_price: currentRoomData.price,
-                    room_image: currentRoomData.image,
-                    room_capacity: currentRow.querySelector('.text-xs.text-slate-500').innerText.split('•')[0].trim(),
-                    date: dateInput.value,
-                    start_time: startTime,
-                    end_time: endTime
-                });
+            function openCheckoutModal() {
+                try {
+                    if(selectedSlots.length === 0) return;
+                    
+                    const startSlotIdx = Math.min(...selectedSlots);
+                    const endSlotIdx = Math.max(...selectedSlots) + 1; // +1 to mean "up to the end of that slot"
+                    
+                    const startTime = formatTime(startSlotIdx);
+                    const endTime = formatTime(endSlotIdx);
+                    
+                    const params = new URLSearchParams({
+                        room_id: currentRoomData.id,
+                        room_name: currentRoomData.name,
+                        room_price: currentRoomData.price,
+                        room_image: currentRoomData.image,
+                        room_capacity: currentRoomData.capacity,
+                        date: dateInput.value,
+                        start_time: startTime,
+                        end_time: endTime
+                    });
 
-                window.location.href = `/booking/checkout?${params.toString()}`;
+                    window.location.href = `/booking/checkout?${params.toString()}`;
+                } catch (error) {
+                    console.error("Lỗi khi chuyển trang:", error);
+                    alert("Có lỗi xảy ra khi chuyển trang: " + error.message);
+                }
             }
         })();
     </script>

@@ -149,14 +149,15 @@ class BookingController extends Controller
             return redirect()->back()->with('error', 'Thiếu thông tin đặt phòng.');
         }
 
-        // Tính thời lượng (ví dụ: start_time='08:00', end_time='10:30')
+        // Tính thời lượng
         $start = \Carbon\Carbon::parse($startTime);
         $end = \Carbon\Carbon::parse($endTime);
-        $duration = $end->diffInMinutes($start) / 60;
         
-        if ($duration <= 0) {
+        if ($end->lessThanOrEqualTo($start)) {
             return redirect()->back()->with('error', 'Thời gian không hợp lệ.');
         }
+        
+        $duration = $start->diffInMinutes($end) / 60;
 
         $subtotal = $duration * $roomPrice;
         $tax = $subtotal * 0.08; // Thuế 8%
