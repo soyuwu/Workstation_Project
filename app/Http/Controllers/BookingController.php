@@ -134,4 +134,44 @@ class BookingController extends Controller
             'rooms' => $mockRooms
         ]);
     }
+    public function checkout(Request $request)
+    {
+        $roomId = $request->query('room_id');
+        $date = $request->query('date');
+        $startTime = $request->query('start_time');
+        $endTime = $request->query('end_time');
+        $roomPrice = $request->query('room_price', 0);
+        $roomName = $request->query('room_name', 'Phòng không xác định');
+        $roomImage = $request->query('room_image', null);
+        $roomCapacity = $request->query('room_capacity', 'N/A');
+
+        if (!$roomId || !$date || !$startTime || !$endTime) {
+            return redirect()->back()->with('error', 'Thiếu thông tin đặt phòng.');
+        }
+
+        // Tính thời lượng (ví dụ: start_time='08:00', end_time='10:30')
+        $start = \Carbon\Carbon::parse($startTime);
+        $end = \Carbon\Carbon::parse($endTime);
+        $duration = $end->diffInMinutes($start) / 60;
+        
+        if ($duration <= 0) {
+            return redirect()->back()->with('error', 'Thời gian không hợp lệ.');
+        }
+
+        $subtotal = $duration * $roomPrice;
+        $tax = $subtotal * 0.08; // Thuế 8%
+        $total = $subtotal + $tax;
+
+        $room = [
+            'id' => $roomId,
+            'name' => $roomName,
+            'price' => $roomPrice,
+            'image' => $roomImage,
+            'capacity' => $roomCapacity
+        ];
+
+        return view('booking.checkout', compact(
+            'room', 'roomId', 'date', 'startTime', 'endTime', 'duration', 'subtotal', 'tax', 'total'
+        ));
+    }
 }

@@ -203,6 +203,7 @@ Route::prefix('booking')->group(function () {
     Route::get('/', [BookingController::class, 'index'])->name('booking.index');
     Route::get('/monthly/{type}', [BookingController::class, 'monthly'])->name('booking.monthly');
     Route::get('/hourly/{type}', [BookingController::class, 'hourly'])->name('booking.hourly');
+    Route::get('/checkout', [BookingController::class, 'checkout'])->name('booking.checkout');
 });
 
 

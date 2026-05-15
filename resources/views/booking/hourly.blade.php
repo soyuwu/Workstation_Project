@@ -59,13 +59,7 @@
             border-bottom-right-radius: 4px;
         }
         
-        /* Modal checkout */
-        .checkout-modal {
-            display: none;
-        }
-        .checkout-modal.active {
-            display: flex;
-        }
+
     </style>
 
     <x-common.sub-page-hero
@@ -130,54 +124,7 @@
         </div>
     </section>
 
-    <!-- Checkout Modal -->
-    <div id="checkout_modal" class="checkout-modal fixed inset-0 z-50 items-center justify-center bg-slate-900/40 backdrop-blur-sm">
-        <div class="w-full max-w-lg rounded-3xl bg-white shadow-2xl animate-scale-in overflow-hidden">
-            <div class="flex items-center justify-between border-b border-slate-100 p-6">
-                <h3 class="font-headline text-xl font-bold text-on-surface">Xác nhận đặt chỗ</h3>
-                <button onclick="closeModal()" class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
-                    <span class="material-symbols-outlined text-sm">close</span>
-                </button>
-            </div>
-            
-            <div class="p-6">
-                <div class="flex gap-4 mb-6">
-                    <img id="modal_room_img" src="" class="w-24 h-24 rounded-xl object-cover shadow-sm">
-                    <div>
-                        <h4 id="modal_room_name" class="font-bold text-lg text-on-surface mb-1">Room Name</h4>
-                        <p class="text-sm text-slate-500 mb-2">Giá: <span id="modal_room_price" class="font-medium text-primary">0đ/h</span></p>
-                    </div>
-                </div>
 
-                <div class="rounded-xl bg-slate-50 p-4 border border-slate-100 mb-6 space-y-3">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-slate-500">Ngày đặt:</span>
-                        <span id="modal_date" class="font-semibold text-slate-700">DD/MM/YYYY</span>
-                    </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-slate-500">Khung giờ:</span>
-                        <span id="modal_time" class="font-semibold text-slate-700">00:00 - 00:00</span>
-                    </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-slate-500">Thời lượng:</span>
-                        <span id="modal_duration" class="font-semibold text-slate-700">0 giờ</span>
-                    </div>
-                    <div class="border-t border-slate-200 pt-3 flex justify-between">
-                        <span class="text-slate-700 font-medium">Tổng tiền tạm tính:</span>
-                        <span id="modal_total" class="font-bold text-xl text-primary">0 đ</span>
-                    </div>
-                </div>
-
-                <form action="#" method="POST" class="space-y-4">
-                    @csrf
-                    <!-- Mock fields for demo -->
-                    <button type="button" class="w-full rounded-xl bg-primary py-3.5 text-sm font-semibold text-white transition-all hover:bg-primary-dark hover:shadow-lg">
-                        Tiến hành thanh toán
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
 
     <script>
         (function() {
@@ -337,34 +284,28 @@
             // Init state
             updateTimelineState();
             
-            // Modal Logic
+            // Handle Checkout Redirect
             window.openCheckoutModal = () => {
                 if(selectedSlots.length === 0) return;
                 
                 const startSlotIdx = Math.min(...selectedSlots);
                 const endSlotIdx = Math.max(...selectedSlots) + 1; // +1 to mean "up to the end of that slot"
                 
-                const durationHours = selectedSlots.length * 0.5;
-                const total = currentRoomData.price * durationHours;
-
-                document.getElementById('modal_room_img').src = currentRoomData.image;
-                document.getElementById('modal_room_name').innerText = currentRoomData.name;
-                document.getElementById('modal_room_price').innerText = currentRoomData.price.toLocaleString('vi-VN') + 'đ/h';
+                const startTime = formatTime(startSlotIdx);
+                const endTime = formatTime(endSlotIdx);
                 
-                // Format date DD/MM/YYYY
-                const dArr = dateInput.value.split('-');
-                document.getElementById('modal_date').innerText = `${dArr[2]}/${dArr[1]}/${dArr[0]}`;
-                
-                document.getElementById('modal_time').innerText = `${formatTime(startSlotIdx)} - ${formatTime(endSlotIdx)}`;
-                document.getElementById('modal_duration').innerText = `${durationHours} giờ`;
-                document.getElementById('modal_total').innerText = total.toLocaleString('vi-VN') + ' đ';
+                const params = new URLSearchParams({
+                    room_id: currentRoomData.id,
+                    room_name: currentRoomData.name,
+                    room_price: currentRoomData.price,
+                    room_image: currentRoomData.image,
+                    room_capacity: currentRow.querySelector('.text-xs.text-slate-500').innerText.split('•')[0].trim(),
+                    date: dateInput.value,
+                    start_time: startTime,
+                    end_time: endTime
+                });
 
-                document.getElementById('checkout_modal').classList.add('active');
-            }
-
-            window.closeModal = () => {
-                document.getElementById('checkout_modal').classList.remove('active');
-                clearSelection();
+                window.location.href = `/booking/checkout?${params.toString()}`;
             }
         })();
     </script>
