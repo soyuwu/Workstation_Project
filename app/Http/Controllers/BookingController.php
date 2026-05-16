@@ -183,6 +183,7 @@ class BookingController extends Controller
     {
         $validated = $request->validate([
             'room_id' => 'required',
+            'room_price' => 'required|numeric',
             'date' => 'required|date',
             'start_time' => 'required',
             'end_time' => 'required',
@@ -193,8 +194,8 @@ class BookingController extends Controller
         $end = \Carbon\Carbon::parse($validated['end_time']);
         $duration = $start->diffInMinutes($end) / 60;
 
-        // Tạm thời lấy giá phòng 250k làm ví dụ do DB chưa có dữ liệu thật cho phòng
-        $basePrice = 250000 * $duration;
+        // Tính tiền dựa theo giá phòng gửi lên
+        $basePrice = $validated['room_price'] * $duration;
         $tax = $basePrice * 0.08;
         $totalAmount = $basePrice + $tax;
 
@@ -232,17 +233,19 @@ class BookingController extends Controller
         if ($validated['payment_method'] === 'momo') {
             $orderInfo = "Thanh toan don dat phong " . $bookingCode;
             
-            // Gọi Service tạo link thanh toán
-            $momoResult = $momoService->createPaymentUrl((string)$booking->id, (int)$totalAmount, $orderInfo);
+            // Gọi Service tạo link thanh toán (Dùng $bookingCode làm orderId để đảm bảo không trùng với ai khác trên môi trường Test public)
+            $momoResult = $momoService->createPaymentUrl($bookingCode, (int)$totalAmount, $orderInfo);
 
             if ($momoResult['success']) {
                 return redirect($momoResult['payUrl']);
             } else {
                 return redirect()->back()->with('error', $momoResult['message']);
             }
+        } elseif ($validated['payment_method'] === 'bank_transfer') {
+            // Nếu chọn chuyển khoản ngân hàng (VietQR)
+            return redirect()->route('payment.vietqr', ['booking_code' => $bookingCode]);
         }
 
-        // Tạm thời xử lý mặc định nếu chọn chuyển khoản
         return redirect()->route('booking.index')->with('success', 'Đã đặt phòng thành công, vui lòng chuyển khoản.');
     }
 }

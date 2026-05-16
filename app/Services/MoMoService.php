@@ -61,8 +61,8 @@ class MoMoService
         ];
 
         try {
-            // Gửi HTTP POST request lên MoMo API
-            $response = Http::post($endpoint, $data);
+            // Gửi HTTP POST request lên MoMo API (bỏ qua xác thực SSL ở môi trường test/local)
+            $response = Http::withoutVerifying()->post($endpoint, $data);
             $jsonResult = $response->json();
 
             Log::info("MoMo Create Payment Response", $jsonResult);

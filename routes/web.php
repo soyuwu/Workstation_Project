@@ -207,11 +207,16 @@ Route::prefix('booking')->group(function () {
     Route::post('/process', [BookingController::class, 'processBooking'])->name('booking.process');
 });
 
-// Payment System (MoMo)
+// Payment System
 use App\Http\Controllers\PaymentController;
 Route::prefix('payment')->group(function () {
+    // Thanh toán MoMo
     Route::get('/momo-return', [PaymentController::class, 'momoReturn'])->name('payment.momo_return');
     Route::post('/momo-ipn', [PaymentController::class, 'momoIPN'])->name('payment.momo_ipn');
+
+    // Thanh toán VietQR
+    Route::get('/vietqr/{booking_code}', [PaymentController::class, 'vietqr'])->name('payment.vietqr');
+    Route::post('/vietqr/confirm/{booking_code}', [PaymentController::class, 'confirmVietqr'])->name('payment.vietqr.confirm');
 });
 
 

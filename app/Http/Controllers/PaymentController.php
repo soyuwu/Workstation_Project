@@ -46,7 +46,7 @@ class PaymentController extends Controller
         $resultCode = $data['resultCode'];
 
         // 2. Tìm Booking và Payment trong DB
-        $booking = \App\Models\Booking::find($orderId);
+        $booking = \App\Models\Booking::where('booking_code', $orderId)->first();
         if (!$booking) {
             return response()->json(['message' => 'Booking not found'], 404);
         }
@@ -80,5 +80,54 @@ class PaymentController extends Controller
 
         // Bắt buộc trả về HTTP 204 cho MoMo biết mình đã nhận IPN thành công
         return response()->noContent();
+    }
+
+    /**
+     * Hiển thị trang quét mã VietQR
+     */
+    public function vietqr($booking_code)
+    {
+        $booking = \App\Models\Booking::where('booking_code', $booking_code)->firstOrFail();
+        
+        // Lấy thông tin tài khoản từ cấu hình (Khách hàng cần tự điền số tài khoản thật của họ vào file .env)
+        // Nếu dùng số ảo (123456789), nhiều App Ngân hàng sẽ báo lỗi "Mã QR không hợp lệ" và KHÔNG TỰ ĐIỀN SỐ TIỀN/NỘI DUNG.
+        $bankId = env('VIETQR_BANK_ID', '970436'); // BIN của Vietcombank
+        $accountNo = env('VIETQR_ACCOUNT_NO', '0123456789'); // <--- BẠN CẦN THAY THÀNH SỐ TÀI KHOẢN CỦA BẠN
+        $accountName = env('VIETQR_ACCOUNT_NAME', 'WORKSTATION CO LTD'); 
+
+        $template = 'compact';
+        // Ép kiểu ép số tiền về số nguyên (bỏ số thập phân .00) để API VietQR đọc được
+        $amount = (int) $booking->total_amount; 
+        $addInfo = urlencode($booking_code);
+
+        $qrUrl = "https://img.vietqr.io/image/{$bankId}-{$accountNo}-{$template}.png?amount={$amount}&addInfo={$addInfo}&accountName=" . urlencode($accountName);
+
+        return view('payment.vietqr', compact('booking', 'qrUrl', 'accountNo', 'accountName'));
+    }
+
+    /**
+     * Xử lý khi khách hàng bấm "Tôi đã chuyển khoản"
+     */
+    public function confirmVietqr(Request $request, $booking_code)
+    {
+        $booking = \App\Models\Booking::where('booking_code', $booking_code)->firstOrFail();
+        $payment = \App\Models\Payment::where('booking_id', $booking->id)->first();
+
+        // Đổi trạng thái thanh toán
+        // Vì enum trong DB chỉ có ['pending', 'completed', 'failed', 'refunded']
+        // Nên ta giữ nguyên 'pending' cho payment, nhưng thêm ghi chú vào booking để Admin biết khách đã báo chuyển khoản
+        if ($payment) {
+            $payment->payment_status = 'pending';
+            $payment->save();
+        }
+
+        $booking->notes = ($booking->notes ? $booking->notes . ' | ' : '') . 'Khách đã báo chuyển khoản, chờ Admin check biến động số dư.';
+        $booking->save();
+
+        // Chuyển sang trang báo thành công
+        return view('payment.success', [
+            'booking' => $booking,
+            'message' => 'Cảm ơn bạn! Hệ thống đang kiểm tra biến động số dư và sẽ xác nhận đặt phòng trong ít phút.'
+        ]);
     }
 }
