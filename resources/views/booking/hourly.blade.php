@@ -281,20 +281,28 @@
             }
 
             function updateTimelineState() {
-                const selectedDate = new Date(dateInput.value);
+                const selectedDateStr = dateInput.value;
                 const now = new Date();
-                const isToday = selectedDate.toDateString() === now.toDateString();
+                const yyyy = now.getFullYear();
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                const todayStr = `${yyyy}-${mm}-${dd}`;
+
+                const isToday = (selectedDateStr === todayStr);
+                // Khung giờ hiện tại (mỗi slot 30 phút)
                 const currentSlot = (now.getHours() * 2) + (now.getMinutes() >= 30 ? 1 : 0);
 
-                document.querySelectorAll('.time-slot').forEach(slot => {
-                    slot.classList.remove('disabled');
-                    const slotIndex = parseInt(slot.dataset.slot);
-                    
-                    if (isToday && slotIndex <= currentSlot) {
-                        slot.classList.add('disabled');
-                        slot.title = 'Đã qua thời gian';
-                    }
-                });
+                document.querySelectorAll('.time-slot').forEach(slot => { slot.classList.remove('disabled'); });
+
+                if (isToday) {
+                    document.querySelectorAll('.time-slot').forEach(slot => {
+                        const slotIndex = parseInt(slot.dataset.slot);
+                        if (slotIndex <= currentSlot) {
+                            slot.classList.add('disabled');
+                            slot.title = 'Đã qua thời gian';
+                        }
+                    });
+                }
             }
 
             // Init state
