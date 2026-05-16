@@ -137,30 +137,20 @@
                         <input type="hidden" name="date" value="{{ $date }}">
                         <input type="hidden" name="start_time" value="{{ $startTime }}">
                         <input type="hidden" name="end_time" value="{{ $endTime }}">
-                        
-                        <div class="mb-6 space-y-3">
-                            <h4 class="text-sm font-bold text-slate-800 mb-3">Phương thức thanh toán</h4>
-                            
-                            <label class="flex items-center justify-between p-4 border border-slate-200 rounded-xl cursor-pointer hover:border-primary hover:bg-blue-50/50 transition-colors">
-                                <div class="flex items-center gap-3">
-                                    <input type="radio" name="payment_method" value="momo" class="w-4 h-4 text-primary focus:ring-primary" checked>
-                                    <span class="font-medium text-sm text-slate-700">Ví MoMo</span>
-                                </div>
-                                <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" alt="MoMo" class="h-6">
-                            </label>
+                        <input type="hidden" name="payment_method" value="bank_transfer">
 
-                            <label class="flex items-center justify-between p-4 border border-slate-200 rounded-xl cursor-pointer hover:border-primary hover:bg-blue-50/50 transition-colors">
-                                <div class="flex items-center gap-3">
-                                    <input type="radio" name="payment_method" value="bank_transfer" class="w-4 h-4 text-primary focus:ring-primary">
-                                    <span class="font-medium text-sm text-slate-700">Chuyển khoản Ngân hàng</span>
-                                </div>
-                                <span class="material-symbols-outlined text-slate-400">account_balance</span>
-                            </label>
+                        <!-- Thông báo phương thức thanh toán -->
+                        <div class="mb-6 flex items-center gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4">
+                            <span class="material-symbols-outlined text-blue-500 text-2xl">account_balance</span>
+                            <div>
+                                <p class="font-semibold text-sm text-slate-800">Chuyển khoản VietQR</p>
+                                <p class="text-xs text-slate-500 mt-0.5">Quét mã QR bằng App ngân hàng bất kỳ – tự động điền số tiền và nội dung.</p>
+                            </div>
                         </div>
 
                         <button type="submit" class="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-4 text-sm font-bold text-white transition-all hover:bg-primary-dark hover:shadow-lg">
-                            <span class="material-symbols-outlined text-lg">lock</span>
-                            Thanh toán an toàn
+                            <span class="material-symbols-outlined text-lg">qr_code_2</span>
+                            Tiến hành thanh toán VietQR
                         </button>
                     </form>
 
