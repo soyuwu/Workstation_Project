@@ -158,7 +158,13 @@
                             for (let i = startSlot; i < endSlot && i < 48; i++) {
                                 if (slots[i]) {
                                     slots[i].classList.add('booked');
-                                    slots[i].title = 'Đã có người đặt';
+                                    // Nếu đơn đã sử dụng xong (completed), ta thêm class disabled (xám) kèm title để phân biệt
+                                    if (booking.status === 'completed') {
+                                        slots[i].classList.add('disabled');
+                                        slots[i].title = 'Đã sử dụng xong (Quá khứ)';
+                                    } else {
+                                        slots[i].title = 'Đã có người đặt';
+                                    }
                                 }
                             }
                         }

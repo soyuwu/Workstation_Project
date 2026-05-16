@@ -232,7 +232,7 @@ class BookingController extends Controller
         // Lấy danh sách các booking thực tế trong ngày (đã xác nhận hoặc đã báo thanh toán)
         $confirmedBookings = \App\Models\Booking::where('status', '!=', 'cancelled')
             ->where('is_paid', true)
-            ->get(['booking_date', 'start_time', 'end_time', 'notes'])
+            ->get(['booking_date', 'start_time', 'end_time', 'notes', 'status'])
             ->map(function ($b) {
                 // Parse room_id từ cột notes (ví dụ: "Room ID đặt: R1")
                 $roomId = '';
@@ -244,6 +244,7 @@ class BookingController extends Controller
                     'date' => $b->booking_date,
                     'start_time' => $b->start_time,
                     'end_time' => $b->end_time,
+                    'status' => $b->status,
                 ];
             })
             ->filter(fn($b) => !empty($b['room_id']))
