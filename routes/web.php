@@ -204,6 +204,14 @@ Route::prefix('booking')->group(function () {
     Route::get('/monthly/{type}', [BookingController::class, 'monthly'])->name('booking.monthly');
     Route::get('/hourly/{type}', [BookingController::class, 'hourly'])->name('booking.hourly');
     Route::get('/checkout', [BookingController::class, 'checkout'])->name('booking.checkout');
+    Route::post('/process', [BookingController::class, 'processBooking'])->name('booking.process');
+});
+
+// Payment System (MoMo)
+use App\Http\Controllers\PaymentController;
+Route::prefix('payment')->group(function () {
+    Route::get('/momo-return', [PaymentController::class, 'momoReturn'])->name('payment.momo_return');
+    Route::post('/momo-ipn', [PaymentController::class, 'momoIPN'])->name('payment.momo_ipn');
 });
 
 

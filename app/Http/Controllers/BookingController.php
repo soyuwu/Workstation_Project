@@ -175,4 +175,74 @@ class BookingController extends Controller
             'room', 'roomId', 'date', 'startTime', 'endTime', 'duration', 'subtotal', 'tax', 'total'
         ));
     }
+
+    /**
+     * Xử lý yêu cầu đặt phòng khi người dùng bấm nút Thanh Toán.
+     */
+    public function processBooking(Request $request, \App\Services\MoMoService $momoService)
+    {
+        $validated = $request->validate([
+            'room_id' => 'required',
+            'date' => 'required|date',
+            'start_time' => 'required',
+            'end_time' => 'required',
+            'payment_method' => 'required|in:momo,bank_transfer',
+        ]);
+
+        $start = \Carbon\Carbon::parse($validated['start_time']);
+        $end = \Carbon\Carbon::parse($validated['end_time']);
+        $duration = $start->diffInMinutes($end) / 60;
+
+        // Tạm thời lấy giá phòng 250k làm ví dụ do DB chưa có dữ liệu thật cho phòng
+        $basePrice = 250000 * $duration;
+        $tax = $basePrice * 0.08;
+        $totalAmount = $basePrice + $tax;
+
+        // Tạo mã booking ngẫu nhiên
+        $bookingCode = 'BK' . time() . rand(100, 999);
+
+        // Lưu vào bảng bookings
+        $booking = \App\Models\Booking::create([
+            'booking_code' => $bookingCode,
+            'user_id' => null, // Chưa có đăng nhập
+            'workspace_id' => null, // Tạm null do room_id hiện là string R1, R2...
+            'booking_date' => $validated['date'],
+            'start_time' => $validated['start_time'],
+            'end_time' => $validated['end_time'],
+            'duration_hours' => $duration,
+            'base_price' => $basePrice,
+            'tax' => $tax,
+            'total_amount' => $totalAmount,
+            'status' => 'pending',
+            'notes' => 'Room ID đặt: ' . $validated['room_id'],
+        ]);
+
+        // Lưu vào bảng payments
+        $payment = \App\Models\Payment::create([
+            'booking_id' => $booking->id,
+            'user_id' => null, // Chưa có đăng nhập
+            'amount' => $basePrice,
+            'tax' => $tax,
+            'final_amount' => $totalAmount,
+            'payment_method' => $validated['payment_method'],
+            'payment_status' => 'pending',
+        ]);
+
+        // Nếu chọn MoMo, chuyển hướng sang MoMo
+        if ($validated['payment_method'] === 'momo') {
+            $orderInfo = "Thanh toan don dat phong " . $bookingCode;
+            
+            // Gọi Service tạo link thanh toán
+            $momoResult = $momoService->createPaymentUrl((string)$booking->id, (int)$totalAmount, $orderInfo);
+
+            if ($momoResult['success']) {
+                return redirect($momoResult['payUrl']);
+            } else {
+                return redirect()->back()->with('error', $momoResult['message']);
+            }
+        }
+
+        // Tạm thời xử lý mặc định nếu chọn chuyển khoản
+        return redirect()->route('booking.index')->with('success', 'Đã đặt phòng thành công, vui lòng chuyển khoản.');
+    }
 }

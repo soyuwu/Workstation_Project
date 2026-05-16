@@ -123,7 +123,7 @@
                     </div>
 
                     <!-- Phương thức thanh toán -->
-                    <form action="#" method="POST">
+                    <form action="{{ route('booking.process') }}" method="POST">
                         @csrf
                         <input type="hidden" name="room_id" value="{{ $roomId }}">
                         <input type="hidden" name="date" value="{{ $date }}">
