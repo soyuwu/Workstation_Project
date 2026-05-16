@@ -229,10 +229,32 @@ class BookingController extends Controller
             ],
         ];
 
+        // Lấy danh sách các booking thực tế trong ngày (đã xác nhận hoặc đã báo thanh toán)
+        $confirmedBookings = \App\Models\Booking::where('status', '!=', 'cancelled')
+            ->where('is_paid', true)
+            ->get(['booking_date', 'start_time', 'end_time', 'notes'])
+            ->map(function ($b) {
+                // Parse room_id từ cột notes (ví dụ: "Room ID đặt: R1")
+                $roomId = '';
+                if (preg_match('/Room ID đặt:\s*([A-Za-z0-9]+)/', $b->notes, $matches)) {
+                    $roomId = $matches[1];
+                }
+                return [
+                    'room_id' => $roomId,
+                    'date' => $b->booking_date,
+                    'start_time' => $b->start_time,
+                    'end_time' => $b->end_time,
+                ];
+            })
+            ->filter(fn($b) => !empty($b['room_id']))
+            ->values()
+            ->toArray();
+
         return view('booking.hourly', [
             'serviceType' => $type,
             'serviceInfo' => $this->services[$type],
-            'rooms' => $mockRooms
+            'rooms' => $mockRooms,
+            'confirmedBookings' => $confirmedBookings
         ]);
     }
     public function checkout(Request $request)

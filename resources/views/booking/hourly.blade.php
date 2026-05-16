@@ -137,12 +137,49 @@
             dateInput.value = `${yyyy}-${mm}-${dd}`;
             dateInput.min = `${yyyy}-${mm}-${dd}`;
 
-            // Mock some booked slots for realism
-            mockBookings();
+            // Dữ liệu booking thực tế từ DB (được Controller truyền ra)
+            const confirmedBookings = @json($confirmedBookings ?? []);
+
+            function renderConfirmedBookings() {
+                // Xóa trạng thái booked cũ
+                document.querySelectorAll('.time-slot.booked').forEach(el => el.classList.remove('booked'));
+                const selectedDateStr = dateInput.value; // YYYY-MM-DD
+
+                confirmedBookings.forEach(booking => {
+                    // Kiểm tra nếu booking thuộc ngày đang chọn
+                    if (booking.date === selectedDateStr) {
+                        const track = document.querySelector(`.timeline-grid[data-room-id="${booking.room_id}"]`);
+                        if (track) {
+                            // Chuyển start_time và end_time thành slot index
+                            const startSlot = timeToSlot(booking.start_time);
+                            const endSlot = timeToSlot(booking.end_time);
+                            const slots = track.querySelectorAll('.time-slot');
+
+                            for (let i = startSlot; i < endSlot && i < 48; i++) {
+                                if (slots[i]) {
+                                    slots[i].classList.add('booked');
+                                    slots[i].title = 'Đã có người đặt';
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function timeToSlot(timeStr) {
+                // timeStr có dạng "HH:MM:SS" hoặc "HH:MM"
+                const parts = timeStr.split(':');
+                const hours = parseInt(parts[0], 10);
+                const minutes = parseInt(parts[1], 10);
+                return (hours * 2) + (minutes >= 30 ? 1 : 0);
+            }
+
+            // Render lần đầu
+            renderConfirmedBookings();
 
             dateInput.addEventListener('change', () => {
                 updateTimelineState();
-                mockBookings(); // Randomize mock data on date change
+                renderConfirmedBookings(); // Cập nhật lại danh sách booking khi đổi ngày
             });
 
             let isDragging = false;
@@ -256,28 +293,6 @@
                     if (isToday && slotIndex <= currentSlot) {
                         slot.classList.add('disabled');
                         slot.title = 'Đã qua thời gian';
-                    }
-                });
-            }
-
-            function mockBookings() {
-                // Clear existing
-                document.querySelectorAll('.time-slot.booked').forEach(el => el.classList.remove('booked'));
-                
-                // Randomly book some slots for demo
-                tracks.forEach(track => {
-                    const slots = track.querySelectorAll('.time-slot');
-                    // 30% chance to have a booking block per room
-                    if (Math.random() > 0.4) {
-                        let start = Math.floor(Math.random() * 30) + 8; // Random start between 4:00 and 19:00
-                        let length = Math.floor(Math.random() * 4) + 2; // 1 to 2 hours
-                        
-                        for(let i = start; i < start + length && i < 48; i++) {
-                            if(!slots[i].classList.contains('disabled')) {
-                                slots[i].classList.add('booked');
-                                slots[i].title = 'Đã có người đặt';
-                            }
-                        }
                     }
                 });
             }
