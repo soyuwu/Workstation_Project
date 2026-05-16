@@ -27,8 +27,9 @@ class CleanupPendingBookings extends Command
     {
         $cutoffTime = \Carbon\Carbon::now()->subMinutes(10);
 
-        // Tìm các booking ở trạng thái pending và tạo trước cutoffTime
+        // Tìm các booking ở trạng thái pending, chưa báo thanh toán (is_paid = false) và tạo trước cutoffTime
         $expiredBookings = \App\Models\Booking::where('status', 'pending')
+            ->where('is_paid', false)
             ->where('created_at', '<', $cutoffTime)
             ->get();
 

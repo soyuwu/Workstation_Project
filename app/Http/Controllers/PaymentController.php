@@ -122,6 +122,7 @@ class PaymentController extends Controller
         }
 
         $booking->notes = ($booking->notes ? $booking->notes . ' | ' : '') . 'Khách đã báo chuyển khoản, chờ Admin check biến động số dư.';
+        $booking->is_paid = true;
         $booking->save();
 
         // Chuyển sang trang báo thành công
