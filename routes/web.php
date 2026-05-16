@@ -205,6 +205,9 @@ Route::prefix('booking')->group(function () {
     Route::get('/hourly/{type}', [BookingController::class, 'hourly'])->name('booking.hourly');
     Route::get('/checkout', [BookingController::class, 'checkout'])->name('booking.checkout');
     Route::post('/process', [BookingController::class, 'processBooking'])->name('booking.process');
+    // Luồng đặt tháng
+    Route::get('/monthly-checkout', [BookingController::class, 'monthlyCheckout'])->name('booking.monthly.checkout');
+    Route::post('/monthly-process', [BookingController::class, 'processMonthlyBooking'])->name('booking.monthly.process');
 });
 
 // Payment System
