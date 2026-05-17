@@ -23,6 +23,7 @@ Route::get('/logIn', [AuthController::class, 'showAuthForm'])->name('logIn');
 // LogOut
 Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
 
+Route::get('activate', [AuthController::class, 'activate'])->name('activate');
 // Trang Dịch vụ
 Route::get('/khong-gian', function () {
     return view('services.khong-gian');

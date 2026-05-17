@@ -133,6 +133,7 @@ class AuthController extends Controller
             $user = User::where('email', $verification->email)->first();
             if ($user) {
                 $user->email_verified_at = now();
+                $user->status = 'active';
                 $user->save();
                 $verification->delete();
                 return redirect('/logIn')->with('success', 'Tài khoản đã kích hoạt thành công!');
