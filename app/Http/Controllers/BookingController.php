@@ -154,10 +154,11 @@ class BookingController extends Controller
         $startDate   = $validated['start_date'];
         $endDate     = \Carbon\Carbon::parse($startDate)->addMonths($durationMonths)->toDateString();
         $bookingCode = 'BK' . time() . rand(100, 999);
+        $userId = auth()->id();
 
         $booking = \App\Models\Booking::create([
             'booking_code'   => $bookingCode,
-            'user_id'        => null,
+            'user_id'        => $userId,
             'workspace_id'   => null,
             'booking_date'   => $startDate,
             'start_time'     => '08:00:00',
@@ -172,7 +173,7 @@ class BookingController extends Controller
 
         \App\Models\Payment::create([
             'booking_id'     => $booking->id,
-            'user_id'        => null,
+            'user_id'        => $userId,
             'amount'         => $subtotal,
             'discount'       => $discount,
             'tax'            => $tax,
@@ -231,7 +232,6 @@ class BookingController extends Controller
 
         // Lấy danh sách các booking thực tế trong ngày (đã xác nhận hoặc đã báo thanh toán)
         $confirmedBookings = \App\Models\Booking::where('status', '!=', 'cancelled')
-            ->where('is_paid', true)
             ->get(['booking_date', 'start_time', 'end_time', 'notes', 'status'])
             ->map(function ($b) {
                 // Parse room_id từ cột notes (ví dụ: "Room ID đặt: R1")
@@ -323,10 +323,11 @@ class BookingController extends Controller
         $totalAmount = $basePrice + $tax;
 
         $bookingCode = 'BK' . time() . rand(100, 999);
+        $userId = auth()->id();
 
         $booking = \App\Models\Booking::create([
             'booking_code'  => $bookingCode,
-            'user_id'       => null,
+            'user_id'       => $userId,
             'workspace_id'  => null,
             'booking_date'  => $validated['date'],
             'start_time'    => $validated['start_time'],
@@ -341,7 +342,7 @@ class BookingController extends Controller
 
         \App\Models\Payment::create([
             'booking_id'    => $booking->id,
-            'user_id'       => null,
+            'user_id'       => $userId,
             'amount'        => $basePrice,
             'tax'           => $tax,
             'final_amount'  => $totalAmount,

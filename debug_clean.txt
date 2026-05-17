@@ -1,0 +1,16 @@
+$str = 'Khách đã báo chuyển khoản, chờ Admin check biến động số dư.';
+$booking = \App\Models\Booking::where('booking_code', 'BK1778987593388')->first();
+if ($booking) {
+    echo "Before: " . $booking->notes . "\n";
+    $cleaned = str_replace(' | ' . $str, '', $booking->notes);
+    $cleaned = str_replace($str, '', $cleaned);
+    $cleaned = trim($cleaned, ' |');
+    $newNotes = $cleaned ? $cleaned . ' | ' . $str : $str;
+    echo "After: " . $newNotes . "\n";
+    
+    // Use DB facade to force update in case Eloquent has issues
+    \Illuminate\Support\Facades\DB::table('bookings')->where('id', $booking->id)->update(['notes' => $newNotes]);
+    echo "Updated directly via DB facade.\n";
+} else {
+    echo "Booking not found.\n";
+}

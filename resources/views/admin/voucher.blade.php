@@ -1,4 +1,4 @@
-@extends('layouts.admin.admin_master')
+@extends('admin.admin_master')
 @section('page-title', 'Marketing & Vouchers')
 @section('content')
       {{-- ============================================== --}}
@@ -8,7 +8,6 @@
             <div class="section-header">
                   <div>
                         <h1 class="page-title">Vouchers Khuyến Mãi</h1>
-                        <p class="page-subtitle">Tạo và quản lý chiến dịch voucher, mã giảm giá.</p>
                   </div>
                   <div class="section-actions">
                         <button class="btn btn-primary" id="btnCreateVoucher">
@@ -22,7 +21,6 @@
                   <button class="filter-tab filter-tab--active" data-filter="all">Tất cả</button>
                   <button class="filter-tab" data-filter="active">Đang chạy</button>
                   <button class="filter-tab" data-filter="expired">Hết hạn / Hết lượt</button>
-                  <button class="filter-tab" data-filter="scheduled">Chưa bắt đầu</button>
             </div>
 
             {{-- Vouchers Table --}}
@@ -40,145 +38,65 @@
                               </tr>
                         </thead>
                         <tbody>
-                              <tr data-status="active">
+                              @foreach($vouchers as $voucher)
+                              @php 
+                                    $percent = $voucher->usage_limit > 0 ? min(100, ($voucher->usage_count / $voucher->usage_limit) * 100) : 0;
+                                    $daysLeft = null;
+                                    if ($voucher->valid_until) {
+                                        $daysLeft = \Carbon\Carbon::now()->diffInDays(\Carbon\Carbon::parse($voucher->valid_until), false);
+                                    }
+                                    $isActive = $voucher->status == 'active' && $percent < 100 && ($daysLeft === null || $daysLeft >= 0);
+                              @endphp
+                              <tr data-status="{{ $isActive ? 'active' : 'expired' }}" data-id="{{ $voucher->id }}">
                                     <td>
-                                          <b class="voucher-code">SUMMER20</b>
+                                          <b class="voucher-code {{ !$isActive ? 'voucher-code--expired' : '' }}">{{ $voucher->code }}</b>
                                     </td>
-                                    <td><b>20%</b></td>
-                                    <td>50.000 ₫</td>
+                                    <td class="{{ !$isActive ? 'text-muted' : '' }}"><b>{{ $voucher->discount_value }}{{ $voucher->discount_type == 'percentage' ? '%' : 'đ' }}</b></td>
+                                    <td class="{{ !$isActive ? 'text-muted' : '' }}">{{ $voucher->max_discount ? number_format($voucher->max_discount, 0, ',', '.') . ' ₫' : '-' }}</td>
                                     <td>
-                                          01/05/2026 - 30/05/2026<br>
-                                          <span class="text-muted text-sm">Còn 28 ngày</span>
+                                          <span class="{{ !$isActive ? 'text-muted' : '' }}">{{ $voucher->valid_until ? \Carbon\Carbon::parse($voucher->valid_until)->format('Y-m-d') : 'Không giới hạn' }}</span><br>
+                                          @if($voucher->valid_until)
+                                                @if($daysLeft >= 0)
+                                                      <span class="text-muted text-sm">Còn {{ (int)$daysLeft }} ngày</span>
+                                                @else
+                                                      <span class="text-muted text-sm">Đã kết thúc</span>
+                                                @endif
+                                          @else
+                                                <span class="text-muted text-sm">Voucher cố định</span>
+                                          @endif
                                     </td>
                                     <td>
-                                          <div class="usage-bar">
-                                                <div class="usage-bar__fill" style="width: 15%;"></div>
+                                          <div class="usage-bar {{ $percent >= 100 ? 'usage-bar--full' : '' }}">
+                                                <div class="usage-bar__fill" style="width: {{ $percent }}%;"></div>
                                           </div>
-                                          <span class="text-sm">15 / 100 lượt</span>
+                                          <span class="text-sm {{ $percent >= 100 ? 'text-muted' : '' }}">{{ $voucher->usage_count }} / {{ $voucher->usage_limit ?: '∞' }} lượt {{ $percent >= 100 ? '(Hết)' : '' }}</span>
                                     </td>
-                                    <td><span class="badge badge--green">Đang chạy</span></td>
+                                    <td>
+                                          @if($isActive)
+                                                <span class="badge badge--green">Đang chạy</span>
+                                          @else
+                                                <span class="badge badge--red">Hết hạn / Hết lượt</span>
+                                          @endif
+                                    </td>
                                     <td class="text-center">
                                           <div class="action-group">
-                                                <button class="btn btn-outline btn-sm btn-icon" title="Chỉnh sửa">
+                                                <button class="btn btn-outline btn-sm btn-icon edit-btn" title="Chỉnh sửa">
                                                       <i class="ph-bold ph-pencil-simple"></i>
                                                 </button>
-                                                <button class="btn btn-outline btn-sm btn-icon btn-icon--danger"
-                                                      title="Tắt voucher">
+                                                <button class="btn btn-outline btn-sm btn-icon btn-icon--danger delete-btn"
+                                                      title="Tắt / Xóa voucher">
                                                       <i class="ph-bold ph-power"></i>
                                                 </button>
                                           </div>
                                     </td>
                               </tr>
-                              <tr data-status="active">
-                                    <td>
-                                          <b class="voucher-code">NEWUSER</b>
-                                    </td>
-                                    <td><b>50%</b></td>
-                                    <td>100.000 ₫</td>
-                                    <td>
-                                          Không giới hạn<br>
-                                          <span class="text-muted text-sm">Voucher cố định</span>
-                                    </td>
-                                    <td>
-                                          <div class="usage-bar">
-                                                <div class="usage-bar__fill" style="width: 24%;"></div>
-                                          </div>
-                                          <span class="text-sm">120 / 500 lượt</span>
-                                    </td>
-                                    <td><span class="badge badge--green">Đang chạy</span></td>
-                                    <td class="text-center">
-                                          <div class="action-group">
-                                                <button class="btn btn-outline btn-sm btn-icon" title="Chỉnh sửa">
-                                                      <i class="ph-bold ph-pencil-simple"></i>
-                                                </button>
-                                                <button class="btn btn-outline btn-sm btn-icon btn-icon--danger"
-                                                      title="Tắt voucher">
-                                                      <i class="ph-bold ph-power"></i>
-                                                </button>
-                                          </div>
-                                    </td>
-                              </tr>
-                              <tr data-status="expired">
-                                    <td>
-                                          <b class="voucher-code voucher-code--expired">FLASH10</b>
-                                    </td>
-                                    <td class="text-muted">10%</td>
-                                    <td class="text-muted">20.000 ₫</td>
-                                    <td>
-                                          <span class="text-muted">01/04/2026 - 05/04/2026</span><br>
-                                          <span class="text-muted text-sm">Đã kết thúc</span>
-                                    </td>
-                                    <td>
-                                          <div class="usage-bar usage-bar--full">
-                                                <div class="usage-bar__fill" style="width: 100%;"></div>
-                                          </div>
-                                          <span class="text-muted text-sm">50 / 50 lượt (Hết)</span>
-                                    </td>
-                                    <td><span class="badge badge--red">Hết hạn / Hết lượt</span></td>
-                                    <td class="text-center">
-                                          <button class="btn btn-outline btn-sm btn-icon" title="Xem chi tiết">
-                                                <i class="ph-bold ph-eye"></i>
-                                          </button>
-                                    </td>
-                              </tr>
+                              @endforeach
                         </tbody>
                   </table>
             </div>
       </div>
 
       {{-- Modal Create/Edit Voucher --}}
-      <style>
-            .modal-overlay {
-                  position: fixed;
-                  top: 0;
-                  left: 0;
-                  right: 0;
-                  bottom: 0;
-                  background: rgba(15, 23, 42, 0.8);
-                  backdrop-filter: blur(4px);
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  z-index: 1000;
-            }
-
-            .modal-container {
-                  background: #ffffff;
-                  border-radius: 8px;
-                  width: 90%;
-                  max-width: 500px;
-                  padding: 24px;
-                  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-                  border: 1px solid #e5e7eb;
-            }
-
-            .modal-header {
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  margin-bottom: 20px;
-                  border-bottom: 1px solid #e5e7eb;
-                  padding-bottom: 12px;
-            }
-
-            .modal-title {
-                  font-size: 1.1rem;
-                  font-weight: 600;
-                  color: #111827;
-            }
-
-            .modal-body {
-                  margin-bottom: 20px;
-            }
-
-            .modal-footer {
-                  display: flex;
-                  justify-content: flex-end;
-                  gap: 12px;
-                  border-top: 1px solid #e5e7eb;
-                  padding-top: 16px;
-            }
-      </style>
       <div class="modal-overlay" id="voucherModal" style="display: none;">
             <div class="modal-container">
                   <div class="modal-header">
@@ -206,9 +124,8 @@
                                           style="width: 100%;">
                               </div>
                               <div class="form-group">
-                                    <label for="voucherTime" class="form-label">Thời gian áp dụng</label>
-                                    <input type="text" id="voucherTime" class="input-field"
-                                          placeholder="VD: 01/05/2026 - 30/05/2026" style="width: 100%;">
+                                    <label for="voucherTime" class="form-label">Hạn áp dụng (YYYY-MM-DD)</label>
+                                    <input type="date" id="voucherTime" class="input-field" style="width: 100%;">
                               </div>
                               <div class="form-group">
                                     <label for="voucherLimit" class="form-label">Giới hạn lượt</label>
@@ -256,72 +173,58 @@
             }
 
             // Hàm Thêm mới / Cập nhật Voucher
-            function saveVoucher() {
+            async function saveVoucher() {
                   const id = document.getElementById('voucherId').value;
                   const code = document.getElementById('voucherCode').value;
                   const discount = document.getElementById('voucherDiscount').value;
-                  const maxDiscount = document.getElementById('voucherMaxDiscount').value;
-                  const time = document.getElementById('voucherTime').value || 'Không giới hạn';
-                  const limit = document.getElementById('voucherLimit').value || '0';
+                  const maxDiscount = document.getElementById('voucherMaxDiscount').value || null;
+                  const time = document.getElementById('voucherTime').value || null;
+                  const limit = document.getElementById('voucherLimit').value || null;
 
                   if (!code || !discount) {
                         alert('Vui lòng điền mã voucher và phần trăm giảm giá.');
                         return;
                   }
 
-                  if (editingRow) {
-                        // Cập nhật dòng hiện tại
-                        editingRow.querySelector('.voucher-code').textContent = code;
-                        editingRow.cells[1].innerHTML = `<b>${discount}%</b>`;
-                        editingRow.cells[2].textContent = maxDiscount || '-';
-                        editingRow.cells[3].innerHTML = `${time}<br><span class="text-muted text-sm">Đã cập nhật</span>`;
-                        editingRow.cells[4].innerHTML = `<div class="usage-bar"><div class="usage-bar__fill" style="width: 0%;"></div></div><span class="text-sm">0 / ${limit} lượt</span>`;
-                        alert('Cập nhật voucher ' + code + ' thành công!');
-                  } else {
-                        // Thêm dòng mới
-                        const tr = document.createElement('tr');
-                        tr.setAttribute('data-status', 'active');
+                  const payload = {
+                      code: code,
+                      discount_value: discount,
+                      max_discount: maxDiscount ? maxDiscount.replace(/\D/g, '') : null,
+                      valid_until: time,
+                      usage_limit: limit,
+                      _token: '{{ csrf_token() }}'
+                  };
 
-                        const trId = 'voucher-' + Date.now();
-                        tr.setAttribute('id', trId);
+                  let url = '{{ route('admin.voucher.store') }}';
+                  let method = 'POST';
 
-                        tr.innerHTML = `
-                                      <td><b class="voucher-code">${code}</b></td>
-                                      <td><b>${discount}%</b></td>
-                                      <td>${maxDiscount || '-'}</td>
-                                      <td>${time}<br><span class="text-muted text-sm">Vừa tạo</span></td>
-                                      <td>
-                                          <div class="usage-bar">
-                                              <div class="usage-bar__fill" style="width: 0%;"></div>
-                                          </div>
-                                          <span class="text-sm">0 / ${limit} lượt</span>
-                                      </td>
-                                      <td><span class="badge badge--green">Đang chạy</span></td>
-                                      <td class="text-center">
-                                          <div class="action-group">
-                                              <button class="btn btn-outline btn-sm btn-icon edit-btn" title="Chỉnh sửa">
-                                                  <i class="ph-bold ph-pencil-simple"></i>
-                                              </button>
-                                              <button class="btn btn-outline btn-sm btn-icon btn-icon--danger delete-btn" title="Tắt / Xóa voucher">
-                                                  <i class="ph-bold ph-power"></i>
-                                              </button>
-                                          </div>
-                                      </td>
-                                  `;
-
-                        // Gắn sự kiện cho nút Sửa / Xóa của dòng mới
-                        tr.querySelector('.edit-btn').addEventListener('click', function () {
-                              openEditVoucher(tr);
-                        });
-                        tr.querySelector('.delete-btn').addEventListener('click', function () {
-                              deleteVoucher(tr);
-                        });
-
-                        vouchersTableBody.insertBefore(tr, vouchersTableBody.firstChild);
-                        alert('Thêm voucher ' + code + ' thành công!');
+                  if (id) {
+                      url = `{{ url('admin/voucher') }}/${id}`;
+                      payload._method = 'PUT';
                   }
 
-                  closeVoucherModal();
+                  try {
+                      const response = await fetch(url, {
+                          method: 'POST',
+                          headers: {
+                              'Content-Type': 'application/json',
+                              'Accept': 'application/json'
+                          },
+                          body: JSON.stringify(payload)
+                      });
+
+                      const data = await response.json();
+                      if (data.success) {
+                          alert(id ? 'Cập nhật thành công!' : 'Thêm thành công!');
+                          location.reload();
+                      } else {
+                          alert('Có lỗi xảy ra, vui lòng thử lại.');
+                          console.log(data);
+                      }
+                  } catch (error) {
+                      console.error('Error:', error);
+                      alert('Lỗi kết nối server!');
+                  }
             }
 
             // Mở UI Sửa từ Row
@@ -329,20 +232,21 @@
                   editingRow = row;
                   voucherModalTitle.textContent = 'Chỉnh sửa Voucher';
 
+                  const id = row.getAttribute('data-id');
                   const code = row.querySelector('.voucher-code').textContent.trim();
                   const discountText = row.cells[1].textContent.trim();
-                  const discount = parseInt(discountText.replace('%', ''));
-                  const maxDiscount = row.cells[2].textContent.trim() === '-' ? '' : row.cells[2].textContent.trim();
+                  const discount = parseInt(discountText.replace('%', '').replace('đ', ''));
+                  const maxDiscountText = row.cells[2].textContent.trim();
+                  const maxDiscount = maxDiscountText === '-' ? '' : maxDiscountText.replace(/\D/g, '');
 
-                  const timeRaw = row.cells[3].innerHTML.split('<br>')[0].trim();
+                  const timeRaw = row.cells[3].querySelector('span').textContent.trim();
                   const time = timeRaw === 'Không giới hạn' ? '' : timeRaw;
 
                   const limitText = row.cells[4].querySelector('.text-sm').textContent.trim();
-                  // Lấy ra số lượng giới hạn: ví dụ "15 / 100 lượt" -> "100"
                   let limitMatch = limitText.match(/\/ (\d+) lượt/);
                   const limit = limitMatch ? limitMatch[1] : '';
 
-                  document.getElementById('voucherId').value = '1'; // Phân biệt đã có ID
+                  document.getElementById('voucherId').value = id;
                   document.getElementById('voucherCode').value = code;
                   document.getElementById('voucherDiscount').value = discount;
                   document.getElementById('voucherMaxDiscount').value = maxDiscount;
@@ -353,17 +257,35 @@
             }
 
             // Xóa Row
-            function deleteVoucher(row) {
+            async function deleteVoucher(row) {
                   if (confirm('Bạn có chắc chắn muốn xóa voucher này không? Dữ liệu không thể khôi phục.')) {
-                        row.remove();
-                        alert('Đã xóa voucher thành công!');
+                        const id = row.getAttribute('data-id');
+                        try {
+                              const response = await fetch(`{{ url('admin/voucher') }}/${id}`, {
+                                    method: 'POST',
+                                    headers: {
+                                          'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                          _method: 'DELETE',
+                                          _token: '{{ csrf_token() }}'
+                                    })
+                              });
+                              const data = await response.json();
+                              if (data.success) {
+                                    row.remove();
+                                    alert('Đã xóa voucher thành công!');
+                              }
+                        } catch (error) {
+                              console.error('Error:', error);
+                        }
                   }
             }
 
             // Gắn sự kiện cho các nút ban đầu trên giao diện
             document.addEventListener('DOMContentLoaded', function () {
                   // Nút sửa ban đầu
-                  const editButtons = document.querySelectorAll('#vouchersTable tbody .action-group .btn[title="Chỉnh sửa"]');
+                  const editButtons = document.querySelectorAll('#vouchersTable tbody .action-group .edit-btn');
                   editButtons.forEach(btn => {
                         btn.addEventListener('click', function () {
                               openEditVoucher(btn.closest('tr'));
@@ -371,7 +293,7 @@
                   });
 
                   // Nút xóa ban đầu 
-                  const deleteButtons = document.querySelectorAll('#vouchersTable tbody .action-group .btn[title="Tắt voucher"]');
+                  const deleteButtons = document.querySelectorAll('#vouchersTable tbody .action-group .delete-btn');
                   deleteButtons.forEach(btn => {
                         btn.addEventListener('click', function () {
                               deleteVoucher(btn.closest('tr'));
