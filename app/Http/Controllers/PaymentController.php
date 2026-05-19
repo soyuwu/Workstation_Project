@@ -113,8 +113,6 @@ class PaymentController extends Controller
         $payment = \App\Models\Payment::where('booking_id', $booking->id)->first();
 
         // Đổi trạng thái thanh toán
-        // Vì enum trong DB chỉ có ['pending', 'completed', 'failed', 'refunded']
-        // Nên ta giữ nguyên 'pending' cho payment, nhưng thêm ghi chú vào booking để Admin biết khách đã báo chuyển khoản
         if ($payment) {
             $payment->payment_status = 'pending';
             $payment->save();
@@ -124,11 +122,41 @@ class PaymentController extends Controller
         $booking->is_paid = true;
         $booking->save();
 
-        // Chuyển sang trang báo thành công
-        return view('payment.success', [
-            'booking' => $booking,
-            'message' => 'Cảm ơn bạn! Hệ thống đang kiểm tra biến động số dư và sẽ xác nhận đặt phòng trong ít phút.'
-        ]);
+        // Redirect sang trang success (GET) để tránh bị reload form
+        return redirect()->route('payment.success', ['booking_code' => $booking_code]);
+    }
+
+    /**
+     * Lấy trạng thái Booking hiện tại (dùng cho AJAX Polling kiểm tra realtime)
+     */
+    public function checkStatus($booking_code)
+    {
+        $booking = \App\Models\Booking::where('booking_code', $booking_code)->first();
+
+        if ($booking) {
+            return response()->json([
+                'status' => $booking->status,
+                'is_paid' => (bool)$booking->is_paid
+            ]);
+        }
+
+        return response()->json(['error' => 'Booking not found'], 404);
+    }
+
+    /**
+     * Hiển thị trang kết quả đặt phòng (GET)
+     */
+    public function successPage($booking_code)
+    {
+        $booking = \App\Models\Booking::where('booking_code', $booking_code)->firstOrFail();
+
+        if ($booking->status === 'confirmed') {
+            $message = 'Cảm ơn bạn! Giao dịch của bạn đã được hệ thống xác nhận thanh toán tự động thành công.';
+        } else {
+            $message = 'Cảm ơn bạn! Hệ thống đang chờ kiểm tra biến động số dư và sẽ xác nhận đặt phòng trong ít phút.';
+        }
+
+        return view('payment.success', compact('booking', 'message'));
     }
 
     /**
