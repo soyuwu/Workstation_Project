@@ -186,13 +186,53 @@
         </div>
         <div class="flex items-center gap-6">
             @if (Session::has('user_id'))
-                <span style="color: #6b7280; margin-right: 15px;">Chào, User ID: {{ Session::get('user_id') }}</span>
-                <span style="color: #6b7280; margin-right: 15px;">Role: {{ Session::get('user_role') }}</span>
-                <form action="{{ route('logOut') }}" method="GET" style="display: inline;">
-                    @csrf
-                    <button type="submit"
-                        style="background: none; border: none; color: red; cursor: pointer;">LogOut</button>
-                </form>
+                <div class="relative group" id="profile-dropdown-wrapper">
+                    <button class="flex items-center gap-2 focus:outline-none ws-nav-link transition-colors {{ $isDynamic ? 'text-white hover:text-blue-200' : 'text-slate-600 hover:text-primary' }}">
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white/20">
+                            {{ mb_strtoupper(mb_substr(Session::get('user_name', 'U'), 0, 1)) }}
+                        </div>
+                        <span class="font-headline font-medium text-sm hidden lg:block">
+                            {{ Session::get('user_name') }}
+                        </span>
+                        <span class="material-symbols-outlined text-[20px] transition-transform duration-300 group-hover:rotate-180">expand_more</span>
+                    </button>
+                    
+                    {{-- Dropdown Panel --}}
+                    <div class="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] border border-slate-100 rounded-2xl opacity-0 invisible translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0" style="top: 100%; z-index: 100;">
+                        {{-- Dropdown Arrow Triangle --}}
+                        <div class="absolute -top-2 right-6 w-4 h-4 bg-white border-l border-t border-slate-100 rotate-45"></div>
+                        
+                        <div class="relative p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl z-10">
+                            <p class="font-headline font-bold text-on-surface text-sm truncate">{{ Session::get('user_name') }}</p>
+                            <p class="text-[11px] text-primary mt-1 uppercase tracking-wider font-bold">{{ Session::get('user_role', 'Member') }}</p>
+                        </div>
+                        <div class="relative p-2 z-10 bg-white">
+                            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary-light rounded-xl transition-all duration-200">
+                                <span class="material-symbols-outlined text-[20px]">person</span>
+                                Hồ sơ cá nhân
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary-light rounded-xl transition-all duration-200">
+                                <span class="material-symbols-outlined text-[20px]">history</span>
+                                Lịch sử đặt chỗ
+                            </a>
+                            @if(Session::get('user_role') === 'admin')
+                                <a href="/admin/dashboard" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary-light rounded-xl transition-all duration-200">
+                                    <span class="material-symbols-outlined text-[20px]">dashboard</span>
+                                    Quản trị hệ thống
+                                </a>
+                            @endif
+                        </div>
+                        <div class="relative p-2 border-t border-slate-100 bg-white rounded-b-2xl z-10">
+                            <form action="{{ route('logOut') }}" method="GET" class="w-full m-0">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 text-left">
+                                    <span class="material-symbols-outlined text-[20px]">logout</span>
+                                    Đăng xuất
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             @else
                 <a class="hidden md:inline-block font-headline font-medium tracking-tight text-sm transition-all active:scale-95 duration-200 {{ $isDynamic ? 'text-white/80 hover:text-white' : 'text-slate-600 hover:text-slate-900' }}"
                     href="{{ route('logIn') }}">Đăng nhập</a>
@@ -257,12 +297,40 @@
 
                     <hr class="my-2 border-slate-200">
 
-                    <a href="{{ route('logIn') }}"
-                        class="block px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-slate-900 rounded-lg transition-colors">Đăng
-                        nhập</a>
-                    <a href="{{ route('register') }}"
-                        class="block px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-slate-900 rounded-lg transition-colors">Đăng
-                        ký</a>
+                    @if(Session::has('user_id'))
+                        <div class="px-4 py-3 bg-slate-50/80 rounded-xl mb-2 mx-2 border border-slate-100">
+                            <p class="font-headline font-bold text-on-surface text-sm">{{ Session::get('user_name') }}</p>
+                            <p class="text-[11px] text-primary mt-1 uppercase font-bold">{{ Session::get('user_role', 'Member') }}</p>
+                        </div>
+                        <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">person</span>
+                            Hồ sơ cá nhân
+                        </a>
+                        <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">history</span>
+                            Lịch sử đặt chỗ
+                        </a>
+                        @if(Session::get('user_role') === 'admin')
+                            <a href="/admin/dashboard" class="flex items-center gap-3 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">
+                                <span class="material-symbols-outlined text-[20px]">dashboard</span>
+                                Quản trị hệ thống
+                            </a>
+                        @endif
+                        <form action="{{ route('logOut') }}" method="GET" class="w-full m-0">
+                            @csrf
+                            <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-red-600 font-medium hover:bg-red-50 rounded-lg transition-colors text-left">
+                                <span class="material-symbols-outlined text-[20px]">logout</span>
+                                Đăng xuất
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('logIn') }}"
+                            class="block px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-slate-900 rounded-lg transition-colors">Đăng
+                            nhập</a>
+                        <a href="{{ route('register') }}"
+                            class="block px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-slate-900 rounded-lg transition-colors">Đăng
+                            ký</a>
+                    @endif
                     <a href="{{ route('booking.index') }}"
                         class="block mt-2 px-4 py-3 bg-primary text-white text-center font-semibold rounded-lg hover:opacity-90 transition-opacity">Đặt
                         chỗ ngay</a>
@@ -272,116 +340,4 @@
     </div>
 </nav>
 
-{{-- Megamenu & Dynamic Scroll Script --}}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Megamenu Hover logic
-        const wrapper = document.getElementById('megamenu-wrapper');
-        const panel = document.getElementById('megamenu-panel');
-        const arrow = document.getElementById('megamenu-arrow');
-        let closeTimeout;
 
-        function openMenu() {
-            clearTimeout(closeTimeout);
-            panel.classList.remove('opacity-0', 'invisible', '-translate-y-2');
-            panel.classList.add('opacity-100', 'visible', 'translate-y-0');
-            if (arrow) arrow.classList.add('rotate-180');
-        }
-
-        function closeMenu() {
-            closeTimeout = setTimeout(() => {
-                panel.classList.add('opacity-0', 'invisible', '-translate-y-2');
-                panel.classList.remove('opacity-100', 'visible', 'translate-y-0');
-                if (arrow) arrow.classList.remove('rotate-180');
-            }, 150);
-        }
-
-        if (wrapper && panel) {
-            wrapper.addEventListener('mouseenter', openMenu);
-            wrapper.addEventListener('mouseleave', closeMenu);
-            panel.addEventListener('mouseenter', openMenu);
-            panel.addEventListener('mouseleave', closeMenu);
-        }
-
-        // Dynamic Scroll logic
-        const nav = document.querySelector('.ws-nav');
-        const navMode = document.body.getAttribute('data-nav-mode') || 'solid';
-
-        if (nav && navMode === 'dynamic') {
-            const navLinks = nav.querySelectorAll('.ws-nav-link');
-            const projectTitle = nav.querySelector('.project-title');
-            const authLinks = nav.querySelectorAll('a[href*="logIn"], a[href*="register"]');
-            const ctaBtn = nav.querySelector('a[href*="booking"]');
-            const menuToggle = nav.querySelector('#menu-toggle');
-
-            function updateNavStyle() {
-                if (window.scrollY > 50) {
-                    // Scrolled: white bg, dark text
-                    nav.classList.add('bg-white/95', 'backdrop-blur-xl', 'shadow-md', 'border-b',
-                        'border-slate-100/80');
-                    nav.classList.remove('bg-transparent');
-                    navLinks.forEach(link => {
-                        link.classList.remove('text-white', 'hover:text-blue-200');
-                        link.classList.add('text-slate-600', 'hover:text-primary');
-                        link.classList.remove('after:bg-white');
-                        link.classList.add('after:bg-primary');
-                    });
-                    if (projectTitle) {
-                        projectTitle.classList.remove('text-white');
-                        projectTitle.classList.add('text-on-surface');
-                    }
-                    if (arrow) {
-                        arrow.classList.remove('text-white');
-                        arrow.classList.add('text-slate-600');
-                    }
-                    authLinks.forEach(link => {
-                        link.classList.remove('text-white/80', 'hover:text-white');
-                        link.classList.add('text-slate-600', 'hover:text-slate-900');
-                    });
-                    if (ctaBtn) {
-                        ctaBtn.classList.remove('bg-white', 'text-primary', 'hover:bg-slate-100');
-                        ctaBtn.classList.add('bg-primary', 'text-white', 'hover:opacity-90');
-                    }
-                    if (menuToggle) {
-                        menuToggle.classList.remove('text-white');
-                        menuToggle.classList.add('text-slate-700');
-                    }
-                } else {
-                    // Top: transparent, white text
-                    nav.classList.remove('bg-white/95', 'backdrop-blur-xl', 'shadow-md', 'border-b',
-                        'border-slate-100/80');
-                    nav.classList.add('bg-transparent');
-                    navLinks.forEach(link => {
-                        link.classList.add('text-white', 'hover:text-blue-200');
-                        link.classList.remove('text-slate-600', 'hover:text-primary');
-                        link.classList.add('after:bg-white');
-                        link.classList.remove('after:bg-primary');
-                    });
-                    if (projectTitle) {
-                        projectTitle.classList.add('text-white');
-                        projectTitle.classList.remove('text-on-surface');
-                    }
-                    if (arrow) {
-                        arrow.classList.add('text-white');
-                        arrow.classList.remove('text-slate-600');
-                    }
-                    authLinks.forEach(link => {
-                        link.classList.add('text-white/80', 'hover:text-white');
-                        link.classList.remove('text-slate-600', 'hover:text-slate-900');
-                    });
-                    if (ctaBtn) {
-                        ctaBtn.classList.add('bg-white', 'text-primary', 'hover:bg-slate-100');
-                        ctaBtn.classList.remove('bg-primary', 'text-white', 'hover:opacity-90');
-                    }
-                    if (menuToggle) {
-                        menuToggle.classList.add('text-white');
-                        menuToggle.classList.remove('text-slate-700');
-                    }
-                }
-            }
-
-            window.addEventListener('scroll', updateNavStyle);
-            updateNavStyle(); // Run on page load
-        }
-    });
-</script>
