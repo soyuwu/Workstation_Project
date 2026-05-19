@@ -220,6 +220,9 @@ Route::prefix('payment')->group(function () {
     // Thanh toán VietQR
     Route::get('/vietqr/{booking_code}', [PaymentController::class, 'vietqr'])->name('payment.vietqr');
     Route::post('/vietqr/confirm/{booking_code}', [PaymentController::class, 'confirmVietqr'])->name('payment.vietqr.confirm');
+
+    // Webhook tự động từ SePay
+    Route::post('/webhook', [PaymentController::class, 'sepayWebhook'])->name('payment.sepay_webhook');
 });
 
 
