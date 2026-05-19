@@ -1,3 +1,10 @@
+@php
+    try {
+        $footerServices = \App\Models\Service::active()->ordered()->take(5)->get();
+    } catch (\Exception $e) {
+        $footerServices = collect();
+    }
+@endphp
 <footer class="bg-inverse-surface pb-8 pt-16 text-slate-300">
     <div class="mx-auto max-w-7xl px-6 lg:px-12">
         <div class="mb-12 grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
@@ -36,11 +43,17 @@
             <div>
                 <h4 class="mb-4 font-headline font-semibold text-white">Dịch vụ nổi bật</h4>
                 <ul class="space-y-3">
-                    <li><a href="{{ route('khongGian') }}" class="text-slate-400 transition-colors duration-300 hover:text-white">Ghế đơn linh hoạt</a></li>
-                    <li><a href="{{ route('khongGian') }}" class="text-slate-400 transition-colors duration-300 hover:text-white">Bàn nhóm</a></li>
-                    <li><a href="{{ route('khongGian') }}" class="text-slate-400 transition-colors duration-300 hover:text-white">Phòng họp</a></li>
-                    <li><a href="{{ route('khongGian') }}" class="text-slate-400 transition-colors duration-300 hover:text-white">Văn phòng riêng</a></li>
-                    <li><a href="{{ route('dichVu') }}" class="text-slate-400 transition-colors duration-300 hover:text-white">Sự kiện & Workshop</a></li>
+                    @if($footerServices->isNotEmpty())
+                        @foreach($footerServices as $srv)
+                            <li><a href="{{ route('dichvu.detail', $srv->slug) }}" class="text-slate-400 transition-colors duration-300 hover:text-white">{{ $srv->name }}</a></li>
+                        @endforeach
+                    @else
+                        <li><a href="{{ route('khongGian') }}" class="text-slate-400 transition-colors duration-300 hover:text-white">Ghế đơn linh hoạt</a></li>
+                        <li><a href="{{ route('khongGian') }}" class="text-slate-400 transition-colors duration-300 hover:text-white">Bàn nhóm</a></li>
+                        <li><a href="{{ route('khongGian') }}" class="text-slate-400 transition-colors duration-300 hover:text-white">Phòng họp</a></li>
+                        <li><a href="{{ route('khongGian') }}" class="text-slate-400 transition-colors duration-300 hover:text-white">Văn phòng riêng</a></li>
+                        <li><a href="{{ route('dichVu') }}" class="text-slate-400 transition-colors duration-300 hover:text-white">Sự kiện & Workshop</a></li>
+                    @endif
                 </ul>
             </div>
 

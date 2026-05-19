@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Trang chủ')
+@section('nav-mode', 'dynamic')
 
 @section('content')
     @include('components.home.hero')

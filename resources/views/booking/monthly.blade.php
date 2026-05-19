@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Đặt ' . $serviceInfo['name'])
+@section('title', 'Đặt ' . $serviceInfo->name)
 @section('nav-mode', 'solid')
 
 @section('content')
     <x-common.sub-page-hero
-        icon="{{ $serviceInfo['icon'] }}"
+        icon="{{ $serviceInfo->icon }}"
         subtitle="Thuê theo tháng"
-        :title="$serviceInfo['name']"
-        :description="$serviceInfo['desc']"
+        :title="$serviceInfo->name"
+        :description="$serviceInfo->booking_desc"
     />
 
     <section class="bg-slate-50 py-16">
@@ -102,21 +102,5 @@
         </div>
     </section>
 
-    <script>
-        function selectRoom(event, name, price) {
-            const input = document.getElementById('selected_room');
-            input.value = name + ' (' + price + ')';
-            
-            // Xóa style active cũ
-            document.querySelectorAll('article').forEach(el => {
-                el.classList.remove('ring-2', 'ring-primary', 'border-primary');
-            });
-
-            // Thêm style active cho thẻ hiện tại
-            event.currentTarget.classList.add('ring-2', 'ring-primary', 'border-primary');
-            
-            // Cuộn xuống form
-            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    </script>
+    @vite('resources/js/booking-monthly.js')
 @endsection
