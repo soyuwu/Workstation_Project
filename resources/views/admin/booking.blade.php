@@ -11,13 +11,6 @@
                   <div>
                         <h1 class="page-title">Thông Tin Booking</h1>
                   </div>
-                  <div class="section-actions">
-                        <div class="qr-input-group">
-                              <i class="ph ph-qr-code"></i>
-                              <input type="text" id="qrCodeInput" placeholder="Quét QR hoặc nhập mã booking..."
-                                    class="input-field">
-                        </div>
-                  </div>
             </div>
 
             {{-- Booking Status Filter Tabs --}}

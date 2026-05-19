@@ -65,8 +65,8 @@
                               <h2 class="card__title">Biểu đồ Doanh thu theo ngày (7 ngày gần nhất)</h2>
                               <span class="badge badge--gray">Cập nhật Live</span>
                         </div>
-                        <div class="bar-chart" id="revenueChart">
-                              {{-- Render chart items dynamically --}}
+                        <div class="bar-chart" id="revenueChart" style="height: 300px; position: relative; width: 100%;">
+                              <canvas id="revenueChartCanvas"></canvas>
                         </div>
                   </div>
 
@@ -75,11 +75,8 @@
                         <div class="card__header">
                               <h2 class="card__title">Tỉ lệ loại phòng được đặt</h2>
                         </div>
-                        <div class="pie-chart-wrapper">
-                              <div class="pie-chart" id="roomTypePie"></div>
-                              <div class="pie-chart__legend">
-                                    {{-- Render legend items dynamically --}}
-                              </div>
+                        <div class="pie-chart-wrapper" style="height: 300px; position: relative; width: 100%; display: flex; justify-content: center; align-items: center; padding: 20px;">
+                              <canvas id="roomTypePieCanvas"></canvas>
                         </div>
                   </div>
             </div>
@@ -127,4 +124,86 @@
                   </table>
             </div>
       </div>
+@endsection
+
+@section('extra-js')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Revenue Chart (Bar)
+        const revenueCtx = document.getElementById('revenueChartCanvas');
+        if (revenueCtx) {
+            new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: {!! json_encode($revenueDates ?? []) !!},
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: {!! json_encode($revenueValues ?? []) !!},
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumSignificantDigits: 3 }).format(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Room Type Chart (Pie)
+        const roomTypeCtx = document.getElementById('roomTypePieCanvas');
+        if (roomTypeCtx) {
+            new Chart(roomTypeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: {!! json_encode($roomTypeLabels ?? []) !!},
+                    datasets: [{
+                        data: {!! json_encode($roomTypeCounts ?? []) !!},
+                        backgroundColor: [
+                            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
 @endsection

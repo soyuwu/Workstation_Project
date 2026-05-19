@@ -56,10 +56,7 @@
                               <span>Quản Lý Không Gian</span>
                         </a>
 
-                        <a class="sidebar__link {{ Request::is('admin/review') ? 'sidebar__link--active' : '' }}"
-                              href="{{ route('admin.review') }}">
-                              <span>Đánh Giá & Phản Hồi</span>
-                        </a>
+
                   </nav>
 
                   <div class="sidebar__user">
@@ -76,10 +73,8 @@
             <main class="main-content" id="mainContent">
 
                   <!-- TOP HEADER BAR -->
-                  <header class="top-header" id="topHeader">
-                        <div class="search-box">
-                              <input type="text" placeholder="Tìm kiếm nhanh..." class="search-input" id="globalSearch">
-                        </div>
+                  <header class="top-header" id="topHeader" style="justify-content: flex-end;">
+
                         <div class="header-actions">
                               <button class="btn btn-outline btn-sm" id="btnLogout">
                                     Đăng xuất
@@ -149,20 +144,7 @@
                         });
                   });
 
-                  // =============================================
-                  // 2. GLOBAL SEARCH (filter rows in active page)
-                  // =============================================
-                  const globalSearch = document.getElementById('globalSearch');
-                  if (globalSearch) {
-                        globalSearch.addEventListener('input', function () {
-                              const query = this.value.toLowerCase().trim();
-                              const rows = document.querySelectorAll('.page-container tbody tr');
-                              rows.forEach(row => {
-                                    const text = row.textContent.toLowerCase();
-                                    row.style.display = (!query || text.includes(query)) ? '' : 'none';
-                              });
-                        });
-                  }
+
 
             });
       </script>

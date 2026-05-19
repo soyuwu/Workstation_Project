@@ -31,7 +31,38 @@ class AdminController extends Controller
             ->take(5)
             ->get();
 
-        return view('admin.tongquan', compact('todayRevenue', 'monthRevenue', 'newBookingsCount', 'activities'));
+        // Data for Revenue Chart (7 days)
+        $revenueDates = [];
+        $revenueValues = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i)->toDateString();
+            $revenueDates[] = now()->subDays($i)->format('d/m');
+            $revenueValues[] = Booking::where('status', 'confirmed')
+                ->whereDate('created_at', $date)
+                ->sum('total_amount');
+        }
+
+        // Data for Room Type Pie Chart
+        $roomTypeStats = Booking::where('bookings.status', 'confirmed')
+            ->join('workspaces', 'bookings.workspace_id', '=', 'workspaces.id')
+            ->join('room_types', 'workspaces.room_type_id', '=', 'room_types.id')
+            ->select('room_types.name', \Illuminate\Support\Facades\DB::raw('count(*) as count'))
+            ->groupBy('room_types.name')
+            ->get();
+            
+        $roomTypeLabels = $roomTypeStats->pluck('name')->toArray();
+        $roomTypeCounts = $roomTypeStats->pluck('count')->toArray();
+
+        return view('admin.tongquan', compact(
+            'todayRevenue', 
+            'monthRevenue', 
+            'newBookingsCount', 
+            'activities',
+            'revenueDates',
+            'revenueValues',
+            'roomTypeLabels',
+            'roomTypeCounts'
+        ));
     }
 
     public function booking()
@@ -202,31 +233,5 @@ class AdminController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function review()
-    {
-        $reviews = \App\Models\Review::with(['user', 'workspace', 'booking', 'adminReplies'])->orderBy('created_at', 'desc')->get();
-        return view('admin.review', compact('reviews'));
-    }
 
-    public function replyReview(Request $request, $id)
-    {
-        $request->validate(['reply_text' => 'required|string']);
-        
-        \App\Models\AdminReply::create([
-            'review_id' => $id,
-            'admin_id' => auth()->id() ?? 1,
-            'reply_text' => $request->reply_text
-        ]);
-
-        return response()->json(['success' => true]);
-    }
-
-    public function updateReviewStatus(Request $request, $id)
-    {
-        $request->validate(['status' => 'required|in:pending,approved,rejected']);
-        $review = \App\Models\Review::findOrFail($id);
-        $review->status = $request->status;
-        $review->save();
-        return response()->json(['success' => true]);
-    }
 }

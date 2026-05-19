@@ -255,9 +255,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('/workspace/{id}', [AdminController::class, 'storeWorkspace']);
     Route::delete('/workspace/{id}', [AdminController::class, 'destroyWorkspace']);
 
-    Route::get('/review', [AdminController::class, 'review'])->name('review');
-    Route::post('/review/{id}/reply', [AdminController::class, 'replyReview'])->name('review.reply');
-    Route::post('/review/{id}/status', [AdminController::class, 'updateReviewStatus'])->name('review.status');
+
 });
 
 
