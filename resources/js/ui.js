@@ -2,70 +2,12 @@ const solidNavClasses = ["bg-white/95", "backdrop-blur-xl", "shadow-md"];
 const transparentNavClasses = ["bg-transparent"];
 
 function applyNavState(nav, isSolid) {
-    const navLinks = nav.querySelectorAll(".ws-nav-link");
-    const projectTitle = nav.querySelector(".project-title");
-    const authLinks = nav.querySelectorAll(".ws-nav-auth");
-    const ctaButton = nav.querySelector("[data-nav-cta]");
-    const menuToggle = nav.querySelector("[data-menu-toggle]");
-
     if (isSolid) {
         nav.classList.add(...solidNavClasses);
         nav.classList.remove(...transparentNavClasses);
-
-        navLinks.forEach((link) => {
-            link.classList.remove("text-white", "hover:text-blue-200", "after:bg-white");
-            link.classList.add("text-slate-600", "hover:text-primary", "after:bg-primary");
-        });
-
-        authLinks.forEach((link) => {
-            link.classList.remove("text-white/80", "hover:text-white");
-            link.classList.add("text-slate-600", "hover:text-slate-900");
-        });
-
-        if (projectTitle) {
-            projectTitle.classList.remove("text-white");
-            projectTitle.classList.add("text-on-surface");
-        }
-
-        if (ctaButton) {
-            ctaButton.classList.remove("bg-white", "text-primary", "hover:bg-slate-100");
-            ctaButton.classList.add("bg-primary", "text-white", "hover:opacity-90");
-        }
-
-        if (menuToggle) {
-            menuToggle.classList.remove("text-white");
-            menuToggle.classList.add("text-slate-700");
-        }
-
-        return;
-    }
-
-    nav.classList.remove(...solidNavClasses);
-    nav.classList.add(...transparentNavClasses);
-
-    navLinks.forEach((link) => {
-        link.classList.add("text-white", "hover:text-blue-200", "after:bg-white");
-        link.classList.remove("text-slate-600", "hover:text-primary", "after:bg-primary");
-    });
-
-    authLinks.forEach((link) => {
-        link.classList.add("text-white/80", "hover:text-white");
-        link.classList.remove("text-slate-600", "hover:text-slate-900");
-    });
-
-    if (projectTitle) {
-        projectTitle.classList.add("text-white");
-        projectTitle.classList.remove("text-on-surface");
-    }
-
-    if (ctaButton) {
-        ctaButton.classList.add("bg-white", "text-primary", "hover:bg-slate-100");
-        ctaButton.classList.remove("bg-primary", "text-white", "hover:opacity-90");
-    }
-
-    if (menuToggle) {
-        menuToggle.classList.add("text-white");
-        menuToggle.classList.remove("text-slate-700");
+    } else {
+        nav.classList.remove(...solidNavClasses);
+        nav.classList.add(...transparentNavClasses);
     }
 }
 
@@ -76,13 +18,9 @@ function initNavigation() {
         return;
     }
 
-    const navMode = document.body.dataset.navMode || "dynamic";
+    const navMode = document.body.dataset.navMode || "solid";
     const menuToggle = nav.querySelector("[data-menu-toggle]");
     const mobileMenu = nav.querySelector("[data-mobile-menu]");
-
-    const updateNav = () => {
-        applyNavState(nav, navMode === "solid" || window.scrollY > 50);
-    };
 
     if (menuToggle && mobileMenu) {
         menuToggle.addEventListener("click", () => {
@@ -100,76 +38,11 @@ function initNavigation() {
         });
     }
 
-    if (navMode === "dynamic") {
-        window.addEventListener("scroll", updateNav, { passive: true });
+    if (navMode === "solid") {
+        applyNavState(nav, true);
     }
-
-    updateNav();
 }
 
-function initCarousel() {
-    const carousel = document.querySelector(".carousel");
-
-    if (!carousel) {
-        return;
-    }
-
-    const slider = carousel.querySelector(".list");
-    const thumbnail = carousel.querySelector(".thumbnail");
-    const nextButton = carousel.querySelector("#next");
-    const prevButton = carousel.querySelector("#prev");
-
-    if (!slider || !thumbnail || !nextButton || !prevButton) {
-        return;
-    }
-
-    const thumbnailItems = thumbnail.querySelectorAll(".item");
-
-    if (thumbnailItems.length > 0) {
-        thumbnail.appendChild(thumbnailItems[0]);
-    }
-
-    const timeRunning = 800;
-    const timeAutoNext = 5000;
-    let runningTimeout;
-    let autoNextTimeout;
-
-    const showSlider = (direction) => {
-        const sliderItems = slider.querySelectorAll(".item");
-        const nextThumbnailItems = thumbnail.querySelectorAll(".item");
-
-        if (sliderItems.length === 0 || nextThumbnailItems.length === 0) {
-            return;
-        }
-
-        if (direction === "next") {
-            slider.appendChild(sliderItems[0]);
-            thumbnail.appendChild(nextThumbnailItems[0]);
-            carousel.classList.add("next");
-        } else {
-            slider.prepend(sliderItems[sliderItems.length - 1]);
-            thumbnail.prepend(nextThumbnailItems[nextThumbnailItems.length - 1]);
-            carousel.classList.add("prev");
-        }
-
-        window.clearTimeout(runningTimeout);
-        runningTimeout = window.setTimeout(() => {
-            carousel.classList.remove("next", "prev");
-        }, timeRunning);
-
-        window.clearTimeout(autoNextTimeout);
-        autoNextTimeout = window.setTimeout(() => {
-            nextButton.click();
-        }, timeAutoNext);
-    };
-
-    nextButton.addEventListener("click", () => showSlider("next"));
-    prevButton.addEventListener("click", () => showSlider("prev"));
-
-    autoNextTimeout = window.setTimeout(() => {
-        nextButton.click();
-    }, timeAutoNext);
-}
 
 function initRevealAnimations() {
     const revealElements = document.querySelectorAll(
@@ -215,7 +88,10 @@ function initCounterAnimations() {
                 }
 
                 const element = entry.target;
-                const target = Number.parseInt(element.dataset.target || "0", 10);
+                const target = Number.parseInt(
+                    element.dataset.target || "0",
+                    10,
+                );
                 const duration = 2000;
                 const startTime = performance.now();
 
@@ -283,7 +159,8 @@ function initWorkspaceFilter() {
 
     const updateFilter = (filter) => {
         cards.forEach((card) => {
-            const shouldShow = filter === "all" || card.dataset.category === filter;
+            const shouldShow =
+                filter === "all" || card.dataset.category === filter;
 
             if (shouldShow) {
                 card.style.display = "";
@@ -333,7 +210,12 @@ function initAuthPanel() {
                 (toggle.dataset.authTarget === "register" && isRegister) ||
                 (toggle.dataset.authTarget === "login" && !isRegister);
 
-            if (Object.prototype.hasOwnProperty.call(toggle.dataset, "authToggle")) {
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    toggle.dataset,
+                    "authToggle",
+                )
+            ) {
                 toggle.classList.toggle("bg-white", isActive);
                 toggle.classList.toggle("text-primary", isActive);
                 toggle.classList.toggle("shadow-sm", isActive);
@@ -358,7 +240,7 @@ function initAuthPanel() {
 
 function initUi() {
     initNavigation();
-    initCarousel();
+
     initRevealAnimations();
     initCounterAnimations();
     initTestimonials();

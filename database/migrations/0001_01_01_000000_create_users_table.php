@@ -19,6 +19,7 @@ return new class extends Migration
             $table->enum('status', ['active', 'inactive', 'banned'])->default('inactive');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
         });
