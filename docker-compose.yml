@@ -1,40 +1,17 @@
-version: '3.8'
-services:
-  app:
-    build: .
-    container_name: workstation-app
-    restart: unless-stopped
-    volumes:
-      - ./:/var/www
-    networks:
-      - workstation-network
-
-  db:
+db:
     image: mysql:8.0
     container_name: workstation-db
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: workstation_db
-      MYSQL_ROOT_PASSWORD: your_strong_password
+      MYSQL_DATABASE: laravel_prod
+      # XÓA DÒNG MYSQL_USER: root Ở ĐÂY
+      MYSQL_ROOT_PASSWORD: supersecret
     volumes:
       - dbdata:/var/lib/mysql
     networks:
       - workstation-network
 
-  nginx:
-    image: nginx:alpine
-    container_name: workstation-nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    volumes:
-      - ./:/var/www
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-    networks:
-      - workstation-network
-
-networks:
-  workstation-network:
-    driver: bridge
+# Đảm bảo phần này ở cuối file có nội dung như sau:
 volumes:
   dbdata:
+    driver: local
