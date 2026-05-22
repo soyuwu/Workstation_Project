@@ -63,9 +63,7 @@ class AuthController extends Controller
     //LogIn
     public function logIn(loginRequest $request)
     {
-        $credentials = $request->only('email', 'password');
-
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password, 'status' => 'active'])) {
             $request->session()->regenerate();
 
             $user = Auth::user();
