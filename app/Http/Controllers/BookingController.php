@@ -7,6 +7,39 @@ use Illuminate\Http\Request;
 
 class BookingController extends Controller
 {
+    private $services = [
+        'cho-ngoi-linh-hoat' => [
+            'name' => 'Chỗ ngồi linh hoạt',
+            'type' => 'hourly',
+            'icon' => 'event_seat',
+            'desc' => 'Tự do chọn chỗ, thanh toán theo giờ hoặc ngày. Không cần đặt cọc.',
+        ],
+        'cho-ngoi-co-dinh' => [
+            'name' => 'Chỗ ngồi cố định',
+            'type' => 'monthly',
+            'icon' => 'chair',
+            'desc' => 'Bàn làm việc riêng, vị trí cố định – không gian quen thuộc mỗi ngày.',
+        ],
+        'phong-lam-viec-rieng' => [
+            'name' => 'Phòng làm việc riêng',
+            'type' => 'monthly',
+            'icon' => 'corporate_fare',
+            'desc' => 'Văn phòng khép kín, riêng tư tuyệt đối cho team 2-10 người.',
+        ],
+        'phong-hop-tieu-chuan' => [
+            'name' => 'Phòng họp tiêu chuẩn',
+            'type' => 'hourly',
+            'icon' => 'meeting_room',
+            'desc' => 'Phòng họp chuyên nghiệp, sức chứa 4-12 người, đầy đủ tiện nghi.',
+        ],
+        'khong-gian-su-kien' => [
+            'name' => 'Không gian sự kiện',
+            'type' => 'hourly',
+            'icon' => 'celebration',
+            'desc' => 'Không gian linh hoạt, sức chứa 20-100 người, phù hợp mọi sự kiện.',
+        ],
+    ];
+
     public function index()
     {
         $services = Service::active()->ordered()->get();

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -88,15 +89,15 @@ class PaymentController extends Controller
     public function vietqr($booking_code)
     {
         $booking = \App\Models\Booking::where('booking_code', $booking_code)->firstOrFail();
-        
+
         // Lấy thông tin tài khoản từ cấu hình (Khách hàng cần tự điền số tài khoản thật của họ vào file .env)
         $bankId = env('VIETQR_BANK_ID', '970416'); // BIN của Vietcombank
         $accountNo = env('VIETQR_ACCOUNT_NO', '27800607'); // <--- BẠN CẦN THAY THÀNH SỐ TÀI KHOẢN CỦA BẠN
-        $accountName = env('VIETQR_ACCOUNT_NAME', 'LUONG LAM KHANH'); 
+        $accountName = env('VIETQR_ACCOUNT_NAME', 'LUONG LAM KHANH');
 
         $template = 'compact';
         // Ép kiểu ép số tiền về số nguyên (bỏ số thập phân .00) để API VietQR đọc được
-        $amount = (int) $booking->total_amount; 
+        $amount = (int) $booking->total_amount;
         $addInfo = urlencode($booking_code);
 
         $qrUrl = "https://img.vietqr.io/image/{$bankId}-{$accountNo}-{$template}.png?amount={$amount}&addInfo={$addInfo}&accountName=" . urlencode($accountName);
@@ -140,8 +141,8 @@ class PaymentController extends Controller
     {
         // 1. Kiểm tra API Key (Secure Token) từ SePay cấu hình trong file .env để bảo mật
         $authHeader = $request->header('Authorization');
-        $sepayToken = env('SEPAY_WEBHOOK_TOKEN'); 
-        
+        $sepayToken = env('SEPAY_WEBHOOK_TOKEN');
+
         if ($sepayToken && $authHeader !== 'Apikey ' . $sepayToken) {
             return response()->json([
                 'success' => false,
@@ -151,9 +152,9 @@ class PaymentController extends Controller
 
         // 2. Lấy dữ liệu payload từ SePay gửi về
         $payload = $request->all();
-        
+
         // Ghi log để tiện theo dõi và đối soát
-        \Log::info('SePay Webhook Received:', $payload);
+        Log::info('SePay Webhook Received:', $payload);
 
         $content = $payload['content'] ?? '';
         $transferAmount = (float) ($payload['transferAmount'] ?? 0);
@@ -161,10 +162,10 @@ class PaymentController extends Controller
         // 3. Tìm mã booking (định dạng BK + chuỗi chữ số, ví dụ BK1716123456) trong nội dung chuyển khoản
         if (preg_match('/(BK\d+)/i', $content, $matches)) {
             $bookingCode = strtoupper($matches[1]);
-            
+
             // Tìm Booking tương ứng trong cơ sở dữ liệu
             $booking = \App\Models\Booking::where('booking_code', $bookingCode)->first();
-            
+
             if ($booking) {
                 // Nếu đơn hàng đã được xác nhận từ trước
                 if ($booking->status === 'confirmed') {
