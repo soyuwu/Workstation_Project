@@ -109,4 +109,31 @@ document.addEventListener('DOMContentLoaded', function() {
         window.addEventListener('scroll', updateNavStyle);
         updateNavStyle(); // Run on page load
     }
+
+    // Mobile Menu Toggle logic
+    const menuToggleBtn = document.getElementById('menu-toggle');
+    const menuDropdown = document.getElementById('menu');
+    if (menuToggleBtn && menuDropdown) {
+        menuToggleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            menuDropdown.classList.toggle('hidden');
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!menuDropdown.contains(e.target) && !menuToggleBtn.contains(e.target)) {
+                menuDropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    // Mobile Services Accordion logic
+    const mobileServicesToggle = document.getElementById('mobile-services-toggle');
+    const mobileServicesMenu = document.getElementById('mobile-services');
+    if (mobileServicesToggle && mobileServicesMenu) {
+        mobileServicesToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            mobileServicesMenu.classList.toggle('hidden');
+        });
+    }
 });

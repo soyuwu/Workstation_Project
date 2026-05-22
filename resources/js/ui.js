@@ -1,47 +1,4 @@
-const solidNavClasses = ["bg-white/95", "backdrop-blur-xl", "shadow-md"];
-const transparentNavClasses = ["bg-transparent"];
 
-function applyNavState(nav, isSolid) {
-    if (isSolid) {
-        nav.classList.add(...solidNavClasses);
-        nav.classList.remove(...transparentNavClasses);
-    } else {
-        nav.classList.remove(...solidNavClasses);
-        nav.classList.add(...transparentNavClasses);
-    }
-}
-
-function initNavigation() {
-    const nav = document.querySelector(".ws-nav");
-
-    if (!nav) {
-        return;
-    }
-
-    const navMode = document.body.dataset.navMode || "solid";
-    const menuToggle = nav.querySelector("[data-menu-toggle]");
-    const mobileMenu = nav.querySelector("[data-mobile-menu]");
-
-    if (menuToggle && mobileMenu) {
-        menuToggle.addEventListener("click", () => {
-            const isOpen = !mobileMenu.classList.contains("hidden");
-
-            mobileMenu.classList.toggle("hidden", isOpen);
-            menuToggle.setAttribute("aria-expanded", String(!isOpen));
-        });
-
-        mobileMenu.querySelectorAll("a").forEach((link) => {
-            link.addEventListener("click", () => {
-                mobileMenu.classList.add("hidden");
-                menuToggle.setAttribute("aria-expanded", "false");
-            });
-        });
-    }
-
-    if (navMode === "solid") {
-        applyNavState(nav, true);
-    }
-}
 
 
 function initRevealAnimations() {
@@ -239,8 +196,6 @@ function initAuthPanel() {
 }
 
 function initUi() {
-    initNavigation();
-
     initRevealAnimations();
     initCounterAnimations();
     initTestimonials();

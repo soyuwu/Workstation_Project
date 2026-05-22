@@ -8,9 +8,11 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/css/booking-hourly.css',
+                'resources/css/profile.css',
                 'resources/js/app.js',
                 'resources/js/booking-hourly.js',
                 'resources/js/booking-monthly.js',
+                'resources/js/profile.js',
             ],
             refresh: true,
         }),

@@ -207,11 +207,11 @@
                             <p class="text-[11px] text-primary mt-1 uppercase tracking-wider font-bold">{{ Session::get('user_role', 'Member') }}</p>
                         </div>
                         <div class="relative p-2 z-10 bg-white">
-                            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary-light rounded-xl transition-all duration-200">
+                            <a href="{{ route('profile') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary-light rounded-xl transition-all duration-200">
                                 <span class="material-symbols-outlined text-[20px]">person</span>
                                 Hồ sơ cá nhân
                             </a>
-                            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary-light rounded-xl transition-all duration-200">
+                            <a href="{{ route('profile') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary-light rounded-xl transition-all duration-200">
                                 <span class="material-symbols-outlined text-[20px]">history</span>
                                 Lịch sử đặt chỗ
                             </a>
@@ -243,8 +243,7 @@
                 href="{{ route('booking.index') }}">Đặt chỗ ngay</a>
 
             <button id="menu-toggle"
-                class="md:hidden hover:cursor-pointer {{ $isDynamic ? 'text-white' : 'text-slate-700' }}"
-                onclick="document.getElementById('menu').classList.toggle('hidden')">
+                class="md:hidden hover:cursor-pointer {{ $isDynamic ? 'text-white' : 'text-slate-700' }}">
                 <span class="material-symbols-outlined text-2xl">menu</span>
             </button>
 
@@ -260,7 +259,7 @@
 
                     {{-- Mobile: Dịch vụ accordion --}}
                     <div>
-                        <button onclick="document.getElementById('mobile-services').classList.toggle('hidden')"
+                        <button id="mobile-services-toggle"
                             class="w-full flex items-center justify-between px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">
                             Dịch vụ
                             <span class="material-symbols-outlined text-lg">expand_more</span>
@@ -302,11 +301,11 @@
                             <p class="font-headline font-bold text-on-surface text-sm">{{ Session::get('user_name') }}</p>
                             <p class="text-[11px] text-primary mt-1 uppercase font-bold">{{ Session::get('user_role', 'Member') }}</p>
                         </div>
-                        <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">
+                        <a href="{{ route('profile') }}" class="flex items-center gap-3 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">
                             <span class="material-symbols-outlined text-[20px]">person</span>
                             Hồ sơ cá nhân
                         </a>
-                        <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">
+                        <a href="{{ route('profile') }}" class="flex items-center gap-3 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">
                             <span class="material-symbols-outlined text-[20px]">history</span>
                             Lịch sử đặt chỗ
                         </a>

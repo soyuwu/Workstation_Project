@@ -51,6 +51,17 @@ Route::prefix('booking')->group(function () {
     Route::get('/hourly/{type}', [BookingController::class, 'hourly'])->name('booking.hourly');
 });
 
+// User Profile & Dashboard
+use App\Http\Controllers\ProfileController;
+Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+Route::post('/profile/update', [ProfileController::class, 'updateInfo'])->name('profile.update');
+Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+Route::post('/profile/verify-quick', [ProfileController::class, 'quickVerify'])->name('profile.verify_quick');
+Route::post('/profile/booking/{id}/cancel', [ProfileController::class, 'cancelBooking'])->name('profile.booking.cancel');
+Route::post('/profile/booking/review', [ProfileController::class, 'submitReview'])->name('profile.booking.review');
+Route::get('/profile/payment/{payment_id}/pay', [ProfileController::class, 'payAgain'])->name('profile.payment.pay');
+Route::post('/profile/payment/{payment_id}/confirm', [ProfileController::class, 'confirmPayment'])->name('profile.payment.confirm');
+
 
 Route::prefix('admin')->group(function () {
     Route::get('/dashboard', function () {

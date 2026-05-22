@@ -15,7 +15,25 @@ class Review extends Model
         'author_name',
         'author_role',
         'is_approved',
+        'user_id',
+        'booking_id',
+        'workspace_id',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function booking()
+    {
+        return $this->belongsTo(Booking::class);
+    }
+
+    public function workspace()
+    {
+        return $this->belongsTo(Workspace::class);
+    }
 
     public function adminReplies()
     {
