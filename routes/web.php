@@ -66,6 +66,8 @@ Route::prefix('payment')->group(function () {
     // Thanh toán VietQR
     Route::get('/vietqr/{booking_code}', [PaymentController::class, 'vietqr'])->name('payment.vietqr');
     Route::post('/vietqr/confirm/{booking_code}', [PaymentController::class, 'confirmVietqr'])->name('payment.vietqr.confirm');
+    Route::get('/check-status/{booking_code}', [PaymentController::class, 'checkStatus'])->name('payment.check_status');
+    Route::get('/success/{booking_code}', [PaymentController::class, 'successPage'])->name('payment.success');
 
     // Webhook tự động từ SePay
     Route::post('/webhook', [PaymentController::class, 'sepayWebhook'])->name('payment.sepay_webhook');

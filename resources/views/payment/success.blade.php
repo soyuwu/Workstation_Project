@@ -13,7 +13,12 @@
                 <span class="material-symbols-outlined text-4xl text-green-500">check_circle</span>
             </div>
 
-            <h1 class="text-2xl font-bold text-slate-800 mb-2">Đã ghi nhận yêu cầu!</h1>
+            @if($booking->status === 'confirmed')
+                <h1 class="text-2xl font-bold text-slate-800 mb-2">Thanh toán thành công!</h1>
+            @else
+                <h1 class="text-2xl font-bold text-slate-800 mb-2">Đã ghi nhận yêu cầu!</h1>
+            @endif
+            
             <p class="text-slate-500 mb-8 leading-relaxed">{{ $message ?? 'Yêu cầu của bạn đã được ghi nhận. Chúng tôi sẽ xử lý trong thời gian sớm nhất.' }}</p>
 
             <div class="bg-slate-50 rounded-xl p-4 mb-8 text-left">
@@ -27,18 +32,45 @@
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-slate-500">Trạng thái thanh toán</span>
-                    <span class="font-medium text-orange-500 flex items-center gap-1">
-                        <span class="material-symbols-outlined text-sm">pending</span> Chờ xác nhận
-                    </span>
+                    @if($booking->status === 'confirmed' || $booking->is_paid)
+                        <span class="font-medium text-green-600 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">check_circle</span> Đã thanh toán
+                        </span>
+                    @else
+                        <span class="font-medium text-orange-500 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">pending</span> Chờ xác nhận
+                        </span>
+                    @endif
                 </div>
             </div>
 
             <a href="{{ url('/') }}" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 text-sm font-bold text-white transition-all hover:bg-primary-dark">
                 Trở về trang chủ
             </a>
+
+            <p class="text-xs text-slate-400 mt-4">Hệ thống sẽ tự động chuyển về trang chủ sau <span id="countdown-num" class="font-bold text-primary">10</span> giây...</p>
             
         </div>
 
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let count = 10;
+        const countdownEl = document.getElementById("countdown-num");
+        
+        const countdownTimer = setInterval(function() {
+            count--;
+            if (countdownEl) {
+                countdownEl.textContent = count;
+            }
+            
+            if (count <= 0) {
+                clearInterval(countdownTimer);
+                window.location.href = "{{ url('/') }}";
+            }
+        }, 1000);
+    });
+</script>
 @endsection

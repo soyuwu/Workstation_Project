@@ -58,17 +58,37 @@
             </div>
 
             <div class="bg-slate-50 p-6 border-t border-slate-100">
-                <form action="{{ route('payment.vietqr.confirm', $booking->booking_code) }}" method="POST">
-                    @csrf
-                    <button type="submit" class="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-4 text-base font-bold text-white transition-all hover:bg-primary-dark hover:shadow-lg">
-                        <span class="material-symbols-outlined">check_circle</span>
-                        Tôi đã chuyển khoản thành công
-                    </button>
-                </form>
-                <p class="text-xs text-center text-slate-400 mt-4">Vui lòng chỉ bấm nút sau khi bạn đã thực hiện chuyển tiền thành công.</p>
+                 <form action="{{ route('payment.vietqr.confirm', $booking->booking_code) }}" method="POST">
+                     @csrf
+                     <button type="submit" class="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-4 text-base font-bold text-white transition-all hover:bg-primary-dark hover:shadow-lg">
+                         <span class="material-symbols-outlined">check_circle</span>
+                         Tôi đã chuyển khoản thành công
+                     </button>
+                 </form>
+                 <p class="text-xs text-center text-slate-400 mt-4">Vui lòng chỉ bấm nút sau khi bạn đã thực hiện chuyển tiền thành công.</p>
             </div>
         </div>
 
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Cứ mỗi 3 giây gọi API checkStatus kiểm tra biến động số dư đã cập nhật chưa
+        const checkStatusInterval = setInterval(function() {
+            fetch("{{ route('payment.check_status', $booking->booking_code) }}")
+                .then(response => response.json())
+                .then(data => {
+                    // Nếu status là 'confirmed' (thành công)
+                    if (data.status === 'confirmed') {
+                        clearInterval(checkStatusInterval);
+                        
+                        // Tự động điều hướng sang trang Success
+                        window.location.href = "{{ route('payment.success', $booking->booking_code) }}";
+                    }
+                })
+                .catch(error => console.error("Lỗi đồng bộ hóa thanh toán:", error));
+        }, 3000);
+    });
+</script>
 @endsection
