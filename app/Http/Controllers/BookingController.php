@@ -7,12 +7,12 @@ use Illuminate\Http\Request;
 
 class BookingController extends Controller
 {
-        public function index()
-        {
-            $services = Service::active()->ordered()->get();
+    public function index()
+    {
+        $services = Service::active()->ordered()->get();
 
-            return view('booking.index', compact('services'));
-        }
+        return view('booking.index', compact('services'));
+    }
 
     public function monthly($type)
     {
@@ -21,26 +21,29 @@ class BookingController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        // Mock data cho 3 không gian mẫu
+        // Mock data cho 3 không gian mẫu (price_raw dùng để tính toán, price dùng để hiển thị)
         $mockRooms = [
             [
-                'id' => 1,
-                'name' => 'Không gian ' . $service->name . ' A',
+                'id' => 'M1',
+                'name' => 'Không gian ' . $this->services[$type]['name'] . ' A',
                 'capacity' => '1 người',
+                'price_raw' => 2500000,
                 'price' => '2.500.000đ/tháng',
                 'image' => 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=600&auto=format&fit=crop'
             ],
             [
-                'id' => 2,
-                'name' => 'Không gian ' . $service->name . ' B',
+                'id' => 'M2',
+                'name' => 'Không gian ' . $this->services[$type]['name'] . ' B',
                 'capacity' => '2 người',
+                'price_raw' => 4800000,
                 'price' => '4.800.000đ/tháng',
                 'image' => 'https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?q=80&w=600&auto=format&fit=crop'
             ],
             [
-                'id' => 3,
-                'name' => 'Không gian ' . $service->name . ' C',
+                'id' => 'M3',
+                'name' => 'Không gian ' . $this->services[$type]['name'] . ' C',
                 'capacity' => '4 người',
+                'price_raw' => 8500000,
                 'price' => '8.500.000đ/tháng',
                 'image' => 'https://images.unsplash.com/photo-1497215842964-222b430dc094?q=80&w=600&auto=format&fit=crop'
             ],
@@ -51,6 +54,112 @@ class BookingController extends Controller
             'serviceInfo' => $service,
             'rooms' => $mockRooms
         ]);
+    }
+
+    /**
+     * Hiển thị trang Checkout cho đặt chỗ theo tháng.
+     */
+    public function monthlyCheckout(Request $request)
+    {
+        $roomId      = $request->query('room_id');
+        $roomPrice   = (float) $request->query('room_price', 0);
+        $roomName    = $request->query('room_name', 'Không gian không xác định');
+        $roomImage   = $request->query('room_image', null);
+        $roomCap     = $request->query('room_capacity', 'N/A');
+        $startDate   = $request->query('start_date');
+        $durationMonths = (int) $request->query('duration_months', 1);
+
+        if (!$roomId || !$startDate) {
+            return redirect()->back()->with('error', 'Thiếu thông tin đặt chỗ.');
+        }
+
+        // Bảng chiết khấu theo số tháng
+        $discountRates = [1 => 0, 3 => 0.05, 6 => 0.10, 12 => 0.15];
+        $discountRate  = $discountRates[$durationMonths] ?? 0;
+        $discountPercent = $discountRate * 100;
+
+        $subtotal  = $roomPrice * $durationMonths;
+        $discount  = $subtotal * $discountRate;
+        $afterDiscount = $subtotal - $discount;
+        $tax       = $afterDiscount * 0.08;
+        $total     = $afterDiscount + $tax;
+
+        $room = [
+            'id'        => $roomId,
+            'name'      => $roomName,
+            'price_raw' => $roomPrice,
+            'image'     => $roomImage,
+            'capacity'  => $roomCap,
+        ];
+
+        return view('booking.checkout_monthly', compact(
+            'room',
+            'startDate',
+            'durationMonths',
+            'subtotal',
+            'discount',
+            'discountPercent',
+            'tax',
+            'total'
+        ));
+    }
+
+    /**
+     * Xử lý đặt chỗ theo tháng: lưu DB và redirect sang VietQR.
+     */
+    public function processMonthlyBooking(Request $request)
+    {
+        $validated = $request->validate([
+            'room_id'         => 'required',
+            'room_price'      => 'required|numeric',
+            'start_date'      => 'required|date',
+            'duration_months' => 'required|integer|min:1',
+            'payment_method'  => 'required|in:bank_transfer',
+        ]);
+
+        $durationMonths  = (int) $validated['duration_months'];
+        $roomPrice       = (float) $validated['room_price'];
+        $discountRates   = [1 => 0, 3 => 0.05, 6 => 0.10, 12 => 0.15];
+        $discountRate    = $discountRates[$durationMonths] ?? 0;
+
+        $subtotal      = $roomPrice * $durationMonths;
+        $discount      = $subtotal * $discountRate;
+        $afterDiscount = $subtotal - $discount;
+        $tax           = $afterDiscount * 0.08;
+        $totalAmount   = $afterDiscount + $tax;
+
+        $startDate   = $validated['start_date'];
+        $endDate     = \Carbon\Carbon::parse($startDate)->addMonths($durationMonths)->toDateString();
+        $bookingCode = 'BK' . time() . rand(100, 999);
+        $userId = auth()->id();
+
+        $booking = \App\Models\Booking::create([
+            'booking_code'   => $bookingCode,
+            'user_id'        => $userId,
+            'workspace_id'   => null,
+            'booking_date'   => $startDate,
+            'start_time'     => '08:00:00',
+            'end_time'       => '18:00:00',
+            'duration_hours' => $durationMonths * 30 * 8,
+            'base_price'     => $subtotal,
+            'tax'            => $tax,
+            'total_amount'   => $totalAmount,
+            'status'         => 'pending',
+            'notes'          => 'Đặt tháng | Room ID: ' . $validated['room_id'] . ' | Tháng: ' . $durationMonths . ' | Kết thúc: ' . $endDate,
+        ]);
+
+        \App\Models\Payment::create([
+            'booking_id'     => $booking->id,
+            'user_id'        => $userId,
+            'amount'         => $subtotal,
+            'discount'       => $discount,
+            'tax'            => $tax,
+            'final_amount'   => $totalAmount,
+            'payment_method' => 'bank_transfer',
+            'payment_status' => 'pending',
+        ]);
+
+        return redirect()->route('payment.vietqr', ['booking_code' => $bookingCode]);
     }
 
     public function hourly($type)
@@ -99,10 +208,134 @@ class BookingController extends Controller
             ],
         ];
 
+        // Lấy danh sách các booking thực tế trong ngày (đã xác nhận hoặc đã báo thanh toán)
+        $confirmedBookings = \App\Models\Booking::where('status', '!=', 'cancelled')
+            ->get(['booking_date', 'start_time', 'end_time', 'notes', 'status'])
+            ->map(function ($b) {
+                // Parse room_id từ cột notes (ví dụ: "Room ID đặt: R1")
+                $roomId = '';
+                if (preg_match('/Room ID đặt:\s*([A-Za-z0-9]+)/', $b->notes, $matches)) {
+                    $roomId = $matches[1];
+                }
+                return [
+                    'room_id' => $roomId,
+                    'date' => $b->booking_date,
+                    'start_time' => $b->start_time,
+                    'end_time' => $b->end_time,
+                    'status' => $b->status,
+                ];
+            })
+            ->filter(fn($b) => !empty($b['room_id']))
+            ->values()
+            ->toArray();
+
         return view('booking.hourly', [
             'serviceType' => $type,
-            'serviceInfo' => $service,
-            'rooms' => $mockRooms
+            'serviceInfo' => $this->services[$type],
+            'rooms' => $mockRooms,
+            'confirmedBookings' => $confirmedBookings
         ]);
+    }
+    public function checkout(Request $request)
+    {
+        $roomId = $request->query('room_id');
+        $date = $request->query('date');
+        $startTime = $request->query('start_time');
+        $endTime = $request->query('end_time');
+        $roomPrice = $request->query('room_price', 0);
+        $roomName = $request->query('room_name', 'Phòng không xác định');
+        $roomImage = $request->query('room_image', null);
+        $roomCapacity = $request->query('room_capacity', 'N/A');
+
+        if (!$roomId || !$date || !$startTime || !$endTime) {
+            return redirect()->back()->with('error', 'Thiếu thông tin đặt phòng.');
+        }
+
+        // Tính thời lượng
+        $start = \Carbon\Carbon::parse($startTime);
+        $end = \Carbon\Carbon::parse($endTime);
+
+        if ($end->lessThanOrEqualTo($start)) {
+            return redirect()->back()->with('error', 'Thời gian không hợp lệ.');
+        }
+
+        $duration = $start->diffInMinutes($end) / 60;
+
+        $subtotal = $duration * $roomPrice;
+        $tax = $subtotal * 0.08; // Thuế 8%
+        $total = $subtotal + $tax;
+
+        $room = [
+            'id' => $roomId,
+            'name' => $roomName,
+            'price' => $roomPrice,
+            'image' => $roomImage,
+            'capacity' => $roomCapacity
+        ];
+
+        return view('booking.checkout_hourly', compact(
+            'room',
+            'roomId',
+            'date',
+            'startTime',
+            'endTime',
+            'duration',
+            'subtotal',
+            'tax',
+            'total'
+        ));
+    }
+
+    /**
+     * Xử lý yêu cầu đặt phòng theo giờ – luôn dùng VietQR.
+     */
+    public function processBooking(Request $request)
+    {
+        $validated = $request->validate([
+            'room_id'        => 'required',
+            'room_price'     => 'required|numeric',
+            'date'           => 'required|date',
+            'start_time'     => 'required',
+            'end_time'       => 'required',
+            'payment_method' => 'required|in:bank_transfer',
+        ]);
+
+        $start    = \Carbon\Carbon::parse($validated['start_time']);
+        $end      = \Carbon\Carbon::parse($validated['end_time']);
+        $duration = $start->diffInMinutes($end) / 60;
+
+        $basePrice   = $validated['room_price'] * $duration;
+        $tax         = $basePrice * 0.08;
+        $totalAmount = $basePrice + $tax;
+
+        $bookingCode = 'BK' . time() . rand(100, 999);
+        $userId = auth()->id();
+
+        $booking = \App\Models\Booking::create([
+            'booking_code'  => $bookingCode,
+            'user_id'       => $userId,
+            'workspace_id'  => null,
+            'booking_date'  => $validated['date'],
+            'start_time'    => $validated['start_time'],
+            'end_time'      => $validated['end_time'],
+            'duration_hours' => $duration,
+            'base_price'    => $basePrice,
+            'tax'           => $tax,
+            'total_amount'  => $totalAmount,
+            'status'        => 'pending',
+            'notes'         => 'Room ID đặt: ' . $validated['room_id'],
+        ]);
+
+        \App\Models\Payment::create([
+            'booking_id'    => $booking->id,
+            'user_id'       => $userId,
+            'amount'        => $basePrice,
+            'tax'           => $tax,
+            'final_amount'  => $totalAmount,
+            'payment_method' => 'bank_transfer',
+            'payment_status' => 'pending',
+        ]);
+
+        return redirect()->route('payment.vietqr', ['booking_code' => $bookingCode]);
     }
 }

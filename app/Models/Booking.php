@@ -10,7 +10,26 @@ class Booking extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['booking_code', 'user_id', 'workspace_id', 'booking_date', 'start_time', 'end_time', 'duration_hours', 'actual_check_in', 'actual_check_out', 'base_price', 'surcharge', 'tax', 'id_discount', 'total_amount', 'status', 'qr_code', 'notes', 'cancellation_reason'];
+    protected $fillable = [
+        'booking_code',
+        'user_id',
+        'workspace_id',
+        'booking_date',
+        'start_time',
+        'end_time',
+        'duration_hours',
+        'actual_check_in',
+        'actual_check_out',
+        'base_price',
+        'surcharge',
+        'tax',
+        'id_discount',
+        'total_amount',
+        'status',
+        'qr_code',
+        'notes',
+        'cancellation_reason',
+    ];
 
     public function user()
     {

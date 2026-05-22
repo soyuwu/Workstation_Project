@@ -10,7 +10,6 @@
             <div class="section-header">
                   <div>
                         <h1 class="page-title">Tổng Quan</h1>
-                        <p class="page-subtitle">Theo dõi hiệu suất kinh doanh Workstation theo thời gian thực.</p>
                   </div>
             </div>
 
@@ -22,9 +21,9 @@
                         </div>
                         <div class="metric-body">
                               <span class="metric-label">Doanh thu trong ngày</span>
-                              <span class="metric-value">15.450.000 ₫</span>
+                              <span class="metric-value">{{ number_format($todayRevenue ?? 0, 0, ',', '.') }} ₫</span>
                               <span class="metric-change metric-change--up">
-                                    <i class="ph-bold ph-trend-up"></i> +12% so với hôm qua
+                                    {{-- Thêm logic so sánh sau --}}
                               </span>
                         </div>
                   </div>
@@ -35,9 +34,9 @@
                         </div>
                         <div class="metric-body">
                               <span class="metric-label">Doanh thu trong tháng</span>
-                              <span class="metric-value">420.000.000 ₫</span>
+                              <span class="metric-value">{{ number_format($monthRevenue ?? 0, 0, ',', '.') }} ₫</span>
                               <span class="metric-change metric-change--up">
-                                    <i class="ph-bold ph-trend-up"></i> +8% so với tháng trước
+                                    {{-- Thêm logic so sánh sau --}}
                               </span>
                         </div>
                   </div>
@@ -48,9 +47,9 @@
                         </div>
                         <div class="metric-body">
                               <span class="metric-label">Đơn đặt phòng mới</span>
-                              <span class="metric-value">42</span>
+                              <span class="metric-value">{{ $newBookingsCount ?? 0 }}</span>
                               <span class="metric-change metric-change--up">
-                                    <i class="ph-bold ph-trend-up"></i> +5 Bookings hôm nay
+                                    {{-- Thêm logic so sánh sau --}}
                               </span>
                         </div>
                   </div>
@@ -66,50 +65,8 @@
                               <h2 class="card__title">Biểu đồ Doanh thu theo ngày (7 ngày gần nhất)</h2>
                               <span class="badge badge--gray">Cập nhật Live</span>
                         </div>
-                        <div class="bar-chart" id="revenueChart">
-                              <div class="bar-chart__item">
-                                    <div class="bar-chart__bar" style="height: 40%;" data-value="6.2tr">
-                                          <span class="bar-chart__tooltip">6.200.000 ₫</span>
-                                    </div>
-                                    <span class="bar-chart__label">27/03</span>
-                              </div>
-                              <div class="bar-chart__item">
-                                    <div class="bar-chart__bar" style="height: 55%;" data-value="8.5tr">
-                                          <span class="bar-chart__tooltip">8.500.000 ₫</span>
-                                    </div>
-                                    <span class="bar-chart__label">28/03</span>
-                              </div>
-                              <div class="bar-chart__item">
-                                    <div class="bar-chart__bar" style="height: 70%;" data-value="10.8tr">
-                                          <span class="bar-chart__tooltip">10.800.000 ₫</span>
-                                    </div>
-                                    <span class="bar-chart__label">29/03</span>
-                              </div>
-                              <div class="bar-chart__item">
-                                    <div class="bar-chart__bar" style="height: 45%;" data-value="7.0tr">
-                                          <span class="bar-chart__tooltip">7.000.000 ₫</span>
-                                    </div>
-                                    <span class="bar-chart__label">30/03</span>
-                              </div>
-                              <div class="bar-chart__item">
-                                    <div class="bar-chart__bar" style="height: 80%;" data-value="12.3tr">
-                                          <span class="bar-chart__tooltip">12.300.000 ₫</span>
-                                    </div>
-                                    <span class="bar-chart__label">31/03</span>
-                              </div>
-                              <div class="bar-chart__item">
-                                    <div class="bar-chart__bar" style="height: 60%;" data-value="9.1tr">
-                                          <span class="bar-chart__tooltip">9.100.000 ₫</span>
-                                    </div>
-                                    <span class="bar-chart__label">01/04</span>
-                              </div>
-                              <div class="bar-chart__item">
-                                    <div class="bar-chart__bar bar-chart__bar--active" style="height: 95%;"
-                                          data-value="15.4tr">
-                                          <span class="bar-chart__tooltip">15.450.000 ₫</span>
-                                    </div>
-                                    <span class="bar-chart__label">Hôm nay</span>
-                              </div>
+                        <div class="bar-chart" id="revenueChart" style="height: 300px; position: relative; width: 100%;">
+                              <canvas id="revenueChartCanvas"></canvas>
                         </div>
                   </div>
 
@@ -118,22 +75,8 @@
                         <div class="card__header">
                               <h2 class="card__title">Tỉ lệ loại phòng được đặt</h2>
                         </div>
-                        <div class="pie-chart-wrapper">
-                              <div class="pie-chart" id="roomTypePie"></div>
-                              <div class="pie-chart__legend">
-                                    <div class="pie-chart__legend-item">
-                                          <span class="legend-dot legend-dot--blue"></span>
-                                          Chỗ ngồi tự do (60%)
-                                    </div>
-                                    <div class="pie-chart__legend-item">
-                                          <span class="legend-dot legend-dot--green"></span>
-                                          Phòng họp (25%)
-                                    </div>
-                                    <div class="pie-chart__legend-item">
-                                          <span class="legend-dot legend-dot--amber"></span>
-                                          Pod Cá nhân (15%)
-                                    </div>
-                              </div>
+                        <div class="pie-chart-wrapper" style="height: 300px; position: relative; width: 100%; display: flex; justify-content: center; align-items: center; padding: 20px;">
+                              <canvas id="roomTypePieCanvas"></canvas>
                         </div>
                   </div>
             </div>
@@ -154,38 +97,113 @@
                               </tr>
                         </thead>
                         <tbody>
-                              <tr>
-                                    <td><i class="ph-fill ph-sign-in activity-icon activity-icon--green"></i></td>
-                                    <td><b>Khách Nguyễn Phương</b> vừa Check-in</td>
-                                    <td>Phòng Họp M1</td>
-                                    <td class="text-muted">Vài giây trước</td>
-                              </tr>
-                              <tr>
-                                    <td><i class="ph-fill ph-coffee activity-icon activity-icon--amber"></i></td>
-                                    <td>Đơn F&B mới từ <b>Phòng M1</b></td>
-                                    <td>2x Cà phê, 1x Trà đào</td>
-                                    <td class="text-muted">2 phút trước</td>
-                              </tr>
-                              <tr>
-                                    <td><i class="ph-fill ph-calendar-plus activity-icon activity-icon--blue"></i></td>
-                                    <td>Booking mới: <b>Bàn C-10</b></td>
-                                    <td>Co-working Khu B</td>
-                                    <td class="text-muted">15 phút trước</td>
-                              </tr>
-                              <tr>
-                                    <td><i class="ph-fill ph-sign-out activity-icon activity-icon--red"></i></td>
-                                    <td><b>Trần Thị C</b> đã Check-out</td>
-                                    <td>Pod P-01</td>
-                                    <td class="text-muted">30 phút trước</td>
-                              </tr>
-                              <tr>
-                                    <td><i class="ph-fill ph-credit-card activity-icon activity-icon--green"></i></td>
-                                    <td>Thanh toán MoMo thành công <b>#BK-1029</b></td>
-                                    <td>300.000 ₫</td>
-                                    <td class="text-muted">1 giờ trước</td>
-                              </tr>
+                              @forelse($activities ?? [] as $activity)
+                                    <tr>
+                                          <td>
+                                                <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: {{ $activity->status == 'confirmed' ? '#d1fae5' : ($activity->status == 'cancelled' ? '#fee2e2' : '#fef3c7') }}; color: {{ $activity->status == 'confirmed' ? '#059669' : ($activity->status == 'cancelled' ? '#dc2626' : '#d97706') }};">
+                                                      <i class="ph-bold {{ $activity->status == 'confirmed' ? 'ph-check' : ($activity->status == 'cancelled' ? 'ph-x' : 'ph-clock') }}"></i>
+                                                </div>
+                                          </td>
+                                          <td>
+                                                <div style="font-weight: 500;">{{ $activity->status == 'confirmed' ? 'Đã xác nhận' : ($activity->status == 'cancelled' ? 'Đã hủy' : 'Đơn mới') }} {{ $activity->booking_code }}</div>
+                                                <div class="text-sm text-muted">Khách hàng: {{ $activity->user ? $activity->user->name : 'Khách vãng lai' }}</div>
+                                          </td>
+                                          <td>
+                                                {{ $activity->workspace ? $activity->workspace->name : 'Phòng / Bàn' }}
+                                          </td>
+                                          <td>
+                                                <div class="text-sm text-muted">{{ \Carbon\Carbon::parse($activity->updated_at)->diffForHumans() }}</div>
+                                          </td>
+                                    </tr>
+                              @empty
+                                    <tr>
+                                          <td colspan="4" class="text-center py-4 text-muted">Chưa có hoạt động nào</td>
+                                    </tr>
+                              @endforelse
                         </tbody>
                   </table>
             </div>
       </div>
+@endsection
+
+@section('extra-js')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Revenue Chart (Bar)
+        const revenueCtx = document.getElementById('revenueChartCanvas');
+        if (revenueCtx) {
+            new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: {!! json_encode($revenueDates ?? []) !!},
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: {!! json_encode($revenueValues ?? []) !!},
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumSignificantDigits: 3 }).format(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Room Type Chart (Pie)
+        const roomTypeCtx = document.getElementById('roomTypePieCanvas');
+        if (roomTypeCtx) {
+            new Chart(roomTypeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: {!! json_encode($roomTypeLabels ?? []) !!},
+                    datasets: [{
+                        data: {!! json_encode($roomTypeCounts ?? []) !!},
+                        backgroundColor: [
+                            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
 @endsection

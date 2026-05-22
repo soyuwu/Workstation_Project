@@ -49,31 +49,59 @@ Route::prefix('booking')->group(function () {
     Route::get('/', [BookingController::class, 'index'])->name('booking.index');
     Route::get('/monthly/{type}', [BookingController::class, 'monthly'])->name('booking.monthly');
     Route::get('/hourly/{type}', [BookingController::class, 'hourly'])->name('booking.hourly');
+    Route::get('/checkout', [BookingController::class, 'checkout'])->name('booking.checkout');
+    Route::post('/process', [BookingController::class, 'processBooking'])->name('booking.process');
+    // Luồng đặt tháng
+    Route::get('/monthly-checkout', [BookingController::class, 'monthlyCheckout'])->name('booking.monthly.checkout');
+    Route::post('/monthly-process', [BookingController::class, 'processMonthlyBooking'])->name('booking.monthly.process');
+});
+
+// Payment System
+use App\Http\Controllers\PaymentController;
+Route::prefix('payment')->group(function () {
+    // Thanh toán MoMo
+    Route::get('/momo-return', [PaymentController::class, 'momoReturn'])->name('payment.momo_return');
+    Route::post('/momo-ipn', [PaymentController::class, 'momoIPN'])->name('payment.momo_ipn');
+
+    // Thanh toán VietQR
+    Route::get('/vietqr/{booking_code}', [PaymentController::class, 'vietqr'])->name('payment.vietqr');
+    Route::post('/vietqr/confirm/{booking_code}', [PaymentController::class, 'confirmVietqr'])->name('payment.vietqr.confirm');
+
+    // Webhook tự động từ SePay
+    Route::post('/webhook', [PaymentController::class, 'sepayWebhook'])->name('payment.sepay_webhook');
 });
 
 
-Route::prefix('admin')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('admin.tongquan');
-    });
-    Route::get('/booking', function () {
-        return view('admin.booking');
-    });
+use App\Http\Controllers\AdminController;
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/tongquan', [AdminController::class, 'tongquan'])->name('tongquan');
+    Route::get('/booking', [AdminController::class, 'booking'])->name('booking');
+    Route::post('/booking/{id}/approve', [AdminController::class, 'approveBooking'])->name('booking.approve');
+    Route::post('/booking/{id}/cancel', [AdminController::class, 'cancelBooking'])->name('booking.cancel');
     Route::get('/facility', function () {
         return view('admin.map');
-    });
+    })->name('facility');
     Route::get('/fnb', function () {
         return view('admin.fnb');
-    });
-    Route::get('/marketing', function () {
-        return view('admin.voucher');
-    });
-    Route::get('/crm', function () {
-        return view('admin.user');
-    });
-    Route::get('/settings', function () {
-        return view('admin.nhansu');
-    });
+    })->name('fnb');
+    
+    Route::get('/voucher', [AdminController::class, 'voucher'])->name('voucher');
+    Route::post('/voucher', [AdminController::class, 'storeVoucher'])->name('voucher.store');
+    Route::put('/voucher/{id}', [AdminController::class, 'storeVoucher']);
+    Route::delete('/voucher/{id}', [AdminController::class, 'destroyVoucher']);
+    
+    Route::get('/taikhoan', [AdminController::class, 'taikhoan'])->name('taikhoan');
+    Route::post('/taikhoan', [AdminController::class, 'storeTaikhoan'])->name('taikhoan.store');
+    Route::put('/taikhoan/{id}', [AdminController::class, 'storeTaikhoan']);
+    Route::delete('/taikhoan/{id}', [AdminController::class, 'destroyTaikhoan']);
+
+    Route::get('/workspace', [AdminController::class, 'workspace'])->name('workspace');
+    Route::post('/workspace', [AdminController::class, 'storeWorkspace'])->name('workspace.store');
+    Route::put('/workspace/{id}', [AdminController::class, 'storeWorkspace']);
+    Route::delete('/workspace/{id}', [AdminController::class, 'destroyWorkspace']);
+
+
 });
 
 
