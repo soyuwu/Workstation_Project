@@ -18,5 +18,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoomTypeSeeder::class,
         ]);
+
+        $this->call([
+            ServiceSeeder::class,
+            ReviewSeeder::class,
+        ]);
     }
 }

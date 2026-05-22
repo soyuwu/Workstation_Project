@@ -1,0 +1,17 @@
+db:
+    image: mysql:8.0
+    container_name: workstation-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: laravel_prod
+      # XÓA DÒNG MYSQL_USER: root Ở ĐÂY
+      MYSQL_ROOT_PASSWORD: supersecret
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - workstation-network
+
+# Đảm bảo phần này ở cuối file có nội dung như sau:
+volumes:
+  dbdata:
+    driver: local

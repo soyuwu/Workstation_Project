@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Đặt ' . $serviceInfo['name'])
+@section('title', 'Đặt ' . $serviceInfo->name)
 @section('nav-mode', 'solid')
 
 @section('content')
     <x-common.sub-page-hero
-        icon="{{ $serviceInfo['icon'] }}"
+        icon="{{ $serviceInfo->icon }}"
         subtitle="Thuê theo tháng"
-        :title="$serviceInfo['name']"
-        :description="$serviceInfo['desc']"
+        :title="$serviceInfo->name"
+        :description="$serviceInfo->booking_desc"
     />
 
     <section class="bg-slate-50 py-16">

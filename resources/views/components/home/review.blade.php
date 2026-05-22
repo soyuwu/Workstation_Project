@@ -21,132 +21,56 @@
         <div class="reveal">
             <div class="testimonial-swiper swiper pb-14">
                 <div class="swiper-wrapper">
+                    @php
+                        $avatarColors = [
+                            'from-primary to-blue-400',
+                            'from-emerald-500 to-teal-400',
+                            'from-purple-500 to-pink-400',
+                            'from-amber-500 to-orange-400',
+                            'from-cyan-500 to-blue-400',
+                        ];
+                    @endphp
 
-                    {{-- Testimonial 1 --}}
-                    <div class="swiper-slide">
-                        <div class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
-                            <div class="flex items-center gap-1 mb-4 star-rating">
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                            </div>
-                            <p class="text-slate-600 leading-relaxed mb-6 italic">
-                                "Mình là freelancer, trước giờ hay làm việc ở quán cà phê nhưng luôn bị phân tán. Từ khi đến WorkStation, mình tập trung hơn hẳn. Wifi nhanh, không gian yên tĩnh và cộng đồng rất thân thiện!"
-                            </p>
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-white font-bold text-lg">
-                                    T
+                    @forelse($reviews ?? [] as $index => $review)
+                        @php
+                            $colorClass = $avatarColors[$index % count($avatarColors)];
+                            // Lấy chữ cái đầu tiên của tên, giả sử tên là "Trần Minh Tuấn" -> "T"
+                            $nameParts = explode(' ', $review->author_name);
+                            $lastName = end($nameParts);
+                            $firstLetter = mb_substr($lastName, 0, 1);
+                        @endphp
+                        <div class="swiper-slide">
+                            <div class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
+                                <div class="flex items-center gap-1 mb-4 star-rating">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        @if($i <= $review->rating)
+                                            <i class="fa-solid fa-star"></i>
+                                        @elseif($i - 0.5 == $review->rating)
+                                            <i class="fa-solid fa-star-half-stroke"></i>
+                                        @else
+                                            <i class="fa-regular fa-star text-slate-300"></i>
+                                        @endif
+                                    @endfor
                                 </div>
-                                <div>
-                                    <h4 class="font-headline font-semibold text-on-surface">Trần Minh Tuấn</h4>
-                                    <p class="text-slate-400 text-sm">Freelance Designer</p>
+                                <p class="text-slate-600 leading-relaxed mb-6 italic">
+                                    "{{ $review->content }}"
+                                </p>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br {{ $colorClass }} flex items-center justify-center text-white font-bold text-lg">
+                                        {{ mb_strtoupper($firstLetter) }}
+                                    </div>
+                                    <div>
+                                        <h4 class="font-headline font-semibold text-on-surface">{{ $review->author_name }}</h4>
+                                        <p class="text-slate-400 text-sm">{{ $review->author_role }}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    {{-- Testimonial 2 --}}
-                    <div class="swiper-slide">
-                        <div class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
-                            <div class="flex items-center gap-1 mb-4 star-rating">
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                            </div>
-                            <p class="text-slate-600 leading-relaxed mb-6 italic">
-                                "Team mình thuê văn phòng riêng ở WorkStation được 6 tháng rồi. Giá hợp lý hơn nhiều so với thuê văn phòng truyền thống, mà mọi thứ đều đã bao gồm. Rất tiện lợi cho startup!"
-                            </p>
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-400 flex items-center justify-center text-white font-bold text-lg">
-                                    L
-                                </div>
-                                <div>
-                                    <h4 class="font-headline font-semibold text-on-surface">Lê Hoàng Nam</h4>
-                                    <p class="text-slate-400 text-sm">CEO, TechVi Startup</p>
-                                </div>
-                            </div>
+                    @empty
+                        <div class="w-full text-center text-slate-500 py-8">
+                            Chưa có đánh giá nào.
                         </div>
-                    </div>
-
-                    {{-- Testimonial 3 --}}
-                    <div class="swiper-slide">
-                        <div class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
-                            <div class="flex items-center gap-1 mb-4 star-rating">
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star-half-stroke"></i>
-                            </div>
-                            <p class="text-slate-600 leading-relaxed mb-6 italic">
-                                "Phòng hội thảo của WorkStation rất chuyên nghiệp. Mình đã tổ chức 3 workshop ở đây, khách tham dự đều ấn tượng với không gian và trang thiết bị. Sẽ quay lại nhiều lần nữa!"
-                            </p>
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-400 flex items-center justify-center text-white font-bold text-lg">
-                                    P
-                                </div>
-                                <div>
-                                    <h4 class="font-headline font-semibold text-on-surface">Phạm Ngọc Hà</h4>
-                                    <p class="text-slate-400 text-sm">Marketing Manager</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Testimonial 4 --}}
-                    <div class="swiper-slide">
-                        <div class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
-                            <div class="flex items-center gap-1 mb-4 star-rating">
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                            </div>
-                            <p class="text-slate-600 leading-relaxed mb-6 italic">
-                                "Là sinh viên IT, mình cần chỗ yên tĩnh để code. WorkStation có chỗ ngồi giá sinh viên rất hợp lý, wifi siêu nhanh và ổ cắm ở khắp nơi. Mình giới thiệu cho cả nhóm bạn rồi!"
-                            </p>
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-400 flex items-center justify-center text-white font-bold text-lg">
-                                    N
-                                </div>
-                                <div>
-                                    <h4 class="font-headline font-semibold text-on-surface">Nguyễn Thị Mai</h4>
-                                    <p class="text-slate-400 text-sm">Sinh viên UIT</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Testimonial 5 --}}
-                    <div class="swiper-slide">
-                        <div class="testimonial-card bg-background rounded-2xl p-8 mx-2 shadow-[var(--shadow-ambient)]">
-                            <div class="flex items-center gap-1 mb-4 star-rating">
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                            </div>
-                            <p class="text-slate-600 leading-relaxed mb-6 italic">
-                                "Đặt chỗ online trên website rất thuận tiện, chỉ vài click là xong. Đội ngũ nhân viên thân thiện, hỗ trợ nhanh. WorkStation đúng nghĩa là ngôi nhà thứ hai cho dân văn phòng!"
-                            </p>
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-400 flex items-center justify-center text-white font-bold text-lg">
-                                    D
-                                </div>
-                                <div>
-                                    <h4 class="font-headline font-semibold text-on-surface">Đỗ Văn Khoa</h4>
-                                    <p class="text-slate-400 text-sm">Product Manager, FPT</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+                    @endforelse
                 </div>
                 {{-- Swiper Pagination --}}
                 <div class="swiper-pagination !bottom-0"></div>
