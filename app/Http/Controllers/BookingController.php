@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\RoomType;
 use App\Models\Service;
+use App\Models\User;
 use App\Models\Workspace;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -31,7 +32,7 @@ class BookingController extends Controller
         if ($roomType) {
             $workspaces = Workspace::query()
                 ->with([
-                    'images' => fn ($query) => $query
+                    'images' => fn($query) => $query
                         ->orderByDesc('is_primary')
                         ->orderBy('display_order')
                         ->orderBy('id'),
@@ -43,7 +44,7 @@ class BookingController extends Controller
         }
 
         $rooms = $workspaces
-            ->filter(fn (Workspace $workspace) => !is_null($workspace->price_per_month) && $workspace->price_per_month > 0)
+            ->filter(fn(Workspace $workspace) => !is_null($workspace->price_per_month) && $workspace->price_per_month > 0)
             ->map(function (Workspace $workspace) use ($service) {
                 $primaryImage = $workspace->images->first();
                 $imageUrl = $primaryImage
@@ -85,7 +86,7 @@ class BookingController extends Controller
 
         $workspace = Workspace::query()
             ->with([
-                'images' => fn ($query) => $query
+                'images' => fn($query) => $query
                     ->orderByDesc('is_primary')
                     ->orderBy('display_order')
                     ->orderBy('id'),
@@ -162,7 +163,7 @@ class BookingController extends Controller
         $totalAmount   = $afterDiscount + $tax;
 
         $startDate   = $validated['start_date'];
-        $endDate     = \Carbon\Carbon::parse($startDate)->addMonths($durationMonths)->toDateString();
+        $endDate     = Carbon::parse($startDate)->addMonths($durationMonths)->toDateString();
         $bookingCode = 'BK' . time() . rand(100, 999);
         $userId = auth()->id();
 
@@ -208,7 +209,7 @@ class BookingController extends Controller
         if ($roomType) {
             $workspaces = Workspace::query()
                 ->with([
-                    'images' => fn ($query) => $query
+                    'images' => fn($query) => $query
                         ->orderByDesc('is_primary')
                         ->orderBy('display_order')
                         ->orderBy('id'),
@@ -245,7 +246,7 @@ class BookingController extends Controller
                 ->where('status', '!=', 'cancelled')
                 ->whereDate('booking_date', '>=', Carbon::today()->toDateString())
                 ->get(['workspace_id', 'booking_date', 'start_time', 'end_time', 'status'])
-                ->map(fn (Booking $booking) => [
+                ->map(fn(Booking $booking) => [
                     'room_id' => (string) $booking->workspace_id,
                     'date' => $booking->booking_date,
                     'start_time' => $booking->start_time,
@@ -276,7 +277,7 @@ class BookingController extends Controller
 
         $workspace = Workspace::query()
             ->with([
-                'images' => fn ($query) => $query
+                'images' => fn($query) => $query
                     ->orderByDesc('is_primary')
                     ->orderBy('display_order')
                     ->orderBy('id'),

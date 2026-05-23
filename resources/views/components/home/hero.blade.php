@@ -63,7 +63,6 @@
 
     {{-- Scroll indicator --}}
     <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-        <span class="text-slate-400 text-xs font-headline tracking-widest uppercase">Cuộn xuống</span>
         <div class="w-[1px] h-10 bg-gradient-to-b from-slate-300 to-transparent animate-bounce"></div>
     </div>
 </section>

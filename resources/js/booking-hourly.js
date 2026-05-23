@@ -18,6 +18,12 @@ function toYmd(date) {
     return `${y}-${m}-${d}`;
 }
 
+function formatDateVi(dateStr) {
+    const [y, m, d] = String(dateStr || "").split("-");
+    if (!y || !m || !d) return String(dateStr || "");
+    return `${d}/${m}/${y}`;
+}
+
 function timeStringToMinutes(timeStr) {
     const parts = String(timeStr || "").split(":");
     const hours = Number(parts[0] || 0);
@@ -131,6 +137,9 @@ function initHourlyBooking() {
     const dateInput = document.getElementById("booking_date");
     if (!dateInput) return;
 
+    const confirmBtn = document.getElementById("hourly-confirm-btn");
+    const confirmSubtitle = document.getElementById("hourly-confirm-subtitle");
+
     const confirmedBookings =
         parseJsonScriptTag("booking-hourly-confirmed-bookings") || [];
 
@@ -144,15 +153,44 @@ function initHourlyBooking() {
         .map((roomTrackEl) => ({
             el: roomTrackEl,
             roomId: roomTrackEl.dataset.roomId,
+            roomName: roomTrackEl.dataset.roomName,
             slots: getSlotsForRoomTrack(roomTrackEl),
         }))
         .filter((t) => t.roomId && t.slots.length > 0);
 
     const selectionByRoomId = new Map();
+    let checkoutSelection = null;
+
+    const updateConfirmButton = (selection) => {
+        if (!confirmBtn || !confirmSubtitle) return;
+
+        if (!selection) {
+            confirmBtn.disabled = true;
+            confirmSubtitle.textContent = "Chưa chọn khung giờ";
+            return;
+        }
+
+        const roomName = selection.roomName || "";
+        const dateText = selection.dateStr ? formatDateVi(selection.dateStr) : "";
+        const timeText =
+            selection.startTime && selection.endTime
+                ? `${selection.startTime} - ${selection.endTime}`
+                : selection.startTime
+                  ? `Bắt đầu: ${selection.startTime} (chọn giờ kết thúc)`
+                  : "";
+
+        const subtitle = [roomName, dateText, timeText].filter(Boolean).join(" • ");
+        confirmSubtitle.textContent = subtitle || "Chưa chọn khung giờ";
+        confirmBtn.disabled = !(selection.startTime && selection.endTime);
+    };
+
+    updateConfirmButton(null);
 
     const clearAllSelections = () => {
         selectionByRoomId.clear();
         roomTracks.forEach(({ slots }) => clearSelectedForRoom(slots));
+        checkoutSelection = null;
+        updateConfirmButton(null);
     };
 
     const render = () => {
@@ -161,6 +199,27 @@ function initHourlyBooking() {
     };
 
     dateInput.addEventListener("change", render);
+
+    confirmBtn?.addEventListener("click", () => {
+        if (
+            !checkoutSelection ||
+            !checkoutSelection.roomId ||
+            !checkoutSelection.dateStr ||
+            !checkoutSelection.startTime ||
+            !checkoutSelection.endTime
+        ) {
+            return;
+        }
+
+        const params = new URLSearchParams({
+            room_id: String(checkoutSelection.roomId),
+            date: String(checkoutSelection.dateStr),
+            start_time: String(checkoutSelection.startTime),
+            end_time: String(checkoutSelection.endTime),
+        });
+
+        window.location.href = `${checkoutUrl}?${params.toString()}`;
+    });
 
     document.addEventListener("click", (event) => {
         const target = event.target;
@@ -192,6 +251,15 @@ function initHourlyBooking() {
             clearAllSelections();
             selectionByRoomId.set(roomId, { start: slotIndex, end: null });
             slotEl.classList.add("selected", "first", "last");
+
+            checkoutSelection = {
+                roomId,
+                roomName: track.roomName || "",
+                dateStr,
+                startTime: slotIndexToTimeString(slotIndex),
+                endTime: null,
+            };
+            updateConfirmButton(checkoutSelection);
             return;
         }
 
@@ -203,6 +271,8 @@ function initHourlyBooking() {
             if (!ok) {
                 selectionByRoomId.delete(roomId);
                 clearSelectedForRoom(track.slots);
+                checkoutSelection = null;
+                updateConfirmButton(null);
                 return;
             }
 
@@ -212,19 +282,21 @@ function initHourlyBooking() {
             const startTime = slotIndexToTimeString(startSlot);
             const endTime = slotIndexToTimeString(endSlot + 1);
 
-            const params = new URLSearchParams({
-                room_id: String(roomId),
-                date: String(dateStr),
-                start_time: startTime,
-                end_time: endTime,
-            });
-
-            window.location.href = `${checkoutUrl}?${params.toString()}`;
+            checkoutSelection = {
+                roomId,
+                roomName: track.roomName || "",
+                dateStr,
+                startTime,
+                endTime,
+            };
+            updateConfirmButton(checkoutSelection);
             return;
         }
 
         selectionByRoomId.delete(roomId);
         clearSelectedForRoom(track.slots);
+        checkoutSelection = null;
+        updateConfirmButton(null);
     });
 
     render();

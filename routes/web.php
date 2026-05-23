@@ -3,8 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Middleware\RequireAuth;
+use App\Http\Middleware\RequireAdmin;
+use App\Http\Middleware\RequireAdminOnly;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -26,6 +30,11 @@ Route::get('/logIn', [AuthController::class, 'showAuthForm'])->name('logIn');
 Route::post('/logOut', [AuthController::class, 'logOut'])->name('logOut');
 
 Route::get('activate', [AuthController::class, 'activate'])->name('activate');
+
+Route::middleware(RequireAuth::class)->group(function () {
+    Route::get('/ho-so', [AccountController::class, 'profile'])->name('account.profile');
+    Route::get('/lich-su-dat-cho', [AccountController::class, 'bookings'])->name('account.bookings');
+});
 // Trang Dịch vụ
 Route::get('/khong-gian', function () {
     return view('services.khong-gian');
@@ -41,7 +50,7 @@ Route::get('/dich-vu/{slug}', [ServiceController::class, 'detail'])->name('dichv
 // Forgot Password
 Route::get('/forgot-password', [AuthController::class, 'showForgetPasswordForm'])->name('forgot.password');
 Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail']);
-Route::get('/reset-password', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
 Route::post('/reset-password/{token}', [AuthController::class, 'resetPassword'])->name('password.update');
 
 // Booking System
@@ -49,15 +58,18 @@ Route::prefix('booking')->group(function () {
     Route::get('/', [BookingController::class, 'index'])->name('booking.index');
     Route::get('/monthly/{type}', [BookingController::class, 'monthly'])->name('booking.monthly');
     Route::get('/hourly/{type}', [BookingController::class, 'hourly'])->name('booking.hourly');
-    Route::get('/checkout', [BookingController::class, 'checkout'])->name('booking.checkout');
-    Route::post('/process', [BookingController::class, 'processBooking'])->name('booking.process');
-    // Luồng đặt tháng
-    Route::get('/monthly-checkout', [BookingController::class, 'monthlyCheckout'])->name('booking.monthly.checkout');
-    Route::post('/monthly-process', [BookingController::class, 'processMonthlyBooking'])->name('booking.monthly.process');
+    Route::middleware(RequireAuth::class)->group(function () {
+        Route::get('/checkout', [BookingController::class, 'checkout'])->name('booking.checkout');
+        Route::post('/process', [BookingController::class, 'processBooking'])->name('booking.process');
+        // Luồng đặt tháng
+        Route::get('/monthly-checkout', [BookingController::class, 'monthlyCheckout'])->name('booking.monthly.checkout');
+        Route::post('/monthly-process', [BookingController::class, 'processMonthlyBooking'])->name('booking.monthly.process');
+    });
 });
 
 // Payment System
 use App\Http\Controllers\PaymentController;
+
 Route::prefix('payment')->group(function () {
     // Thanh toán MoMo
     Route::get('/momo-return', [PaymentController::class, 'momoReturn'])->name('payment.momo_return');
@@ -76,8 +88,8 @@ Route::prefix('payment')->group(function () {
 
 use App\Http\Controllers\AdminController;
 
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/tongquan', [AdminController::class, 'tongquan'])->name('tongquan');
+Route::middleware(RequireAdmin::class)->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/tongquan', [AdminController::class, 'tongquan'])->middleware(RequireAdminOnly::class)->name('tongquan');
     Route::get('/booking', [AdminController::class, 'booking'])->name('booking');
     Route::post('/booking/{id}/approve', [AdminController::class, 'approveBooking'])->name('booking.approve');
     Route::post('/booking/{id}/cancel', [AdminController::class, 'cancelBooking'])->name('booking.cancel');
@@ -87,23 +99,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/fnb', function () {
         return view('admin.fnb');
     })->name('fnb');
-    
+
     Route::get('/voucher', [AdminController::class, 'voucher'])->name('voucher');
     Route::post('/voucher', [AdminController::class, 'storeVoucher'])->name('voucher.store');
     Route::put('/voucher/{id}', [AdminController::class, 'storeVoucher']);
     Route::delete('/voucher/{id}', [AdminController::class, 'destroyVoucher']);
-    
-    Route::get('/taikhoan', [AdminController::class, 'taikhoan'])->name('taikhoan');
-    Route::post('/taikhoan', [AdminController::class, 'storeTaikhoan'])->name('taikhoan.store');
-    Route::put('/taikhoan/{id}', [AdminController::class, 'storeTaikhoan']);
-    Route::delete('/taikhoan/{id}', [AdminController::class, 'destroyTaikhoan']);
+
+    Route::middleware(RequireAdminOnly::class)->group(function () {
+        Route::get('/taikhoan', [AdminController::class, 'taikhoan'])->name('taikhoan');
+        Route::post('/taikhoan', [AdminController::class, 'storeTaikhoan'])->name('taikhoan.store');
+        Route::put('/taikhoan/{id}', [AdminController::class, 'storeTaikhoan']);
+        Route::delete('/taikhoan/{id}', [AdminController::class, 'destroyTaikhoan']);
+    });
 
     Route::get('/workspace', [AdminController::class, 'workspace'])->name('workspace');
     Route::post('/workspace', [AdminController::class, 'storeWorkspace'])->name('workspace.store');
     Route::put('/workspace/{id}', [AdminController::class, 'storeWorkspace']);
     Route::delete('/workspace/{id}', [AdminController::class, 'destroyWorkspace']);
-
-
 });
 
 

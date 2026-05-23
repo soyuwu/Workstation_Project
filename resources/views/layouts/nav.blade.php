@@ -207,16 +207,16 @@
                             <p class="text-[11px] text-primary mt-1 uppercase tracking-wider font-bold">{{ Session::get('user_role', 'Member') }}</p>
                         </div>
                         <div class="relative p-2 z-10 bg-white">
-                            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary-light rounded-xl transition-all duration-200">
+                            <a href="{{ route('account.profile') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary-light rounded-xl transition-all duration-200">
                                 <span class="material-symbols-outlined text-[20px]">person</span>
                                 Hồ sơ cá nhân
                             </a>
-                            <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary-light rounded-xl transition-all duration-200">
+                            <a href="{{ route('account.bookings') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary-light rounded-xl transition-all duration-200">
                                 <span class="material-symbols-outlined text-[20px]">history</span>
                                 Lịch sử đặt chỗ
                             </a>
-                            @if(Session::get('user_role') === 'admin')
-                                <a href="/admin/dashboard" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary-light rounded-xl transition-all duration-200">
+                            @if(Session::get('user_role') === 'admin' || Session::get('user_role') === 'staff')
+                                <a href="/admin/booking" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary-light rounded-xl transition-all duration-200">
                                     <span class="material-symbols-outlined text-[20px]">dashboard</span>
                                     Quản trị hệ thống
                                 </a>
@@ -302,16 +302,16 @@
                             <p class="font-headline font-bold text-on-surface text-sm">{{ Session::get('user_name') }}</p>
                             <p class="text-[11px] text-primary mt-1 uppercase font-bold">{{ Session::get('user_role', 'Member') }}</p>
                         </div>
-                        <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">
+                        <a href="{{ route('account.profile') }}" class="flex items-center gap-3 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">
                             <span class="material-symbols-outlined text-[20px]">person</span>
                             Hồ sơ cá nhân
                         </a>
-                        <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">
+                        <a href="{{ route('account.bookings') }}" class="flex items-center gap-3 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">
                             <span class="material-symbols-outlined text-[20px]">history</span>
                             Lịch sử đặt chỗ
                         </a>
-                        @if(Session::get('user_role') === 'admin')
-                            <a href="/admin/dashboard" class="flex items-center gap-3 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">
+                        @if(Session::get('user_role') === 'admin' || Session::get('user_role') === 'staff')
+                            <a href="/admin/booking" class="flex items-center gap-3 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">
                                 <span class="material-symbols-outlined text-[20px]">dashboard</span>
                                 Quản trị hệ thống
                             </a>

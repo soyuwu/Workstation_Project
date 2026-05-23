@@ -27,6 +27,21 @@
 	        <div class="mx-auto max-w-[1400px] px-6">
             
             <!-- Controls -->
+            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3">
+                <button
+                    type="button"
+                    id="hourly-confirm-btn"
+                    disabled
+                    class="w-full sm:w-auto sm:min-w-[340px] inline-flex items-center justify-center sm:justify-start gap-3 rounded-xl bg-primary px-5 py-4 text-white shadow-sm transition hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                    <span class="material-symbols-outlined text-xl">task_alt</span>
+                    <span class="text-left leading-tight">
+                        <span class="block text-sm font-bold">Xác nhận khung giờ</span>
+                        <span id="hourly-confirm-subtitle" class="block text-xs font-medium text-white/90">Chưa chọn khung giờ</span>
+                    </span>
+                </button>
+            </div>
+
             <div class="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
                 <div class="flex items-center gap-4 w-full sm:w-auto">
 	                    <div class="flex flex-col">

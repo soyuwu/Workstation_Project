@@ -28,19 +28,15 @@
                   </div>
 
                   <nav class="sidebar__nav">
-                        <a class="sidebar__link {{ Request::is('admin/tongquan') ? 'sidebar__link--active' : '' }}"
-                              href="{{ route('admin.tongquan') }}">
-                              <span>Tổng Quan</span>
-	                        </a>
-	                        @php
-	                              $pendingBookingsCount = \App\Models\Booking::where('status', 'pending')
-	                                    ->whereHas('payment', function ($query) {
-	                                          $query->where('payment_status', 'pending')
-	                                                ->where('payment_method', 'bank_transfer')
-	                                                ->whereNotNull('reported_at');
-	                                    })
-	                                    ->count();
-	                        @endphp
+                  @php
+	                  $currentUserRole = auth()->user()?->role;
+	                  $pendingBookingsCount = \App\Models\Booking::where('status', 'pending')
+                        ->whereHas('payment', function ($query) { $query
+                        ->where('payment_status', 'pending')
+                        ->where('payment_method', 'bank_transfer')
+                        ->whereNotNull('reported_at');})
+	                  ->count();
+	            @endphp      
                         <a class="sidebar__link {{ Request::is('admin/booking') ? 'sidebar__link--active' : '' }}"
                               href="{{ route('admin.booking') }}" style="display: flex; align-items: center;">
                               <span>Thông Tin Booking</span>
@@ -48,24 +44,28 @@
                                     <span class="badge badge--red" style="margin-left: auto; border-radius: 50%; padding: 2px 6px; font-size: 11px;">{{ $pendingBookingsCount }}</span>
                               @endif
                         </a>
-
                         <a class="sidebar__link {{ Request::is('admin/voucher') ? 'sidebar__link--active' : '' }}"
                               href="{{ route('admin.voucher') }}">
                               <span>Vouchers Khuyến Mãi</span>
                         </a>
+                        @if($currentUserRole === 'admin')
                         <a class="sidebar__link {{ Request::is('admin/taikhoan') ? 'sidebar__link--active' : '' }}"
                               href="{{ route('admin.taikhoan') }}">
                               <span>Quản Lý Tài Khoản</span>
                         </a>
+                        @endif
 
                         <a class="sidebar__link {{ Request::is('admin/workspace') ? 'sidebar__link--active' : '' }}"
                               href="{{ route('admin.workspace') }}">
                               <span>Quản Lý Không Gian</span>
                         </a>
-
-
+                        @if($currentUserRole === 'admin')
+                        <a class="sidebar__link {{ Request::is('admin/tongquan') ? 'sidebar__link--active' : '' }}"
+                              href="{{ route('admin.tongquan') }}">
+                              <span>Tổng Quan</span>
+	                  </a>
+                        @endif
                   </nav>
-
                   <div class="sidebar__user">
                         <div class="sidebar__user-info">
                               <div class="sidebar__user-name">Quản Trị Viên</div>

@@ -128,12 +128,16 @@
 
 @section('extra-js')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      @php
+            $chartData = [
+                  'revenueDates' => $revenueDates ?? [],
+                  'revenueValues' => $revenueValues ?? [],
+                  'roomTypeLabels' => $roomTypeLabels ?? [],
+                  'roomTypeCounts' => $roomTypeCounts ?? [],
+            ];
+      @endphp
 <script type="application/json" id="admin-dashboard-chart-data">
-    @json([
-        'revenueDates' => $revenueDates ?? [],
-        'revenueValues' => $revenueValues ?? [],
-        'roomTypeLabels' => $roomTypeLabels ?? [],
-        'roomTypeCounts' => $roomTypeCounts ?? [],
-    ])
+      @json($chartData)
 </script>
+
 @endsection

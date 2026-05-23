@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -71,7 +72,7 @@ class AuthController extends Controller
             Session::put('user_id', $user->id);
             Session::put('user_name', $user->name);
             Session::put('user_role', $user->role);
-            return redirect('/');
+            return redirect()->intended('/');
         }
         return back()->withErrors(
             [
@@ -95,12 +96,32 @@ class AuthController extends Controller
 
         try {
             $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = env('MAIL_USERNAME');
-            $mail->Password = env('MAIL_PASSWORD');
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-            $mail->Port = 465;
+            $mailHost = (string) env('MAIL_HOST', 'smtp.gmail.com');
+            $mailPort = (int) env('MAIL_PORT', 465);
+            $mailUser = (string) env('MAIL_USERNAME', '');
+            $mailPass = (string) env('MAIL_PASSWORD', '');
+            $mailEncryption = strtolower((string) env('MAIL_ENCRYPTION', 'ssl'));
+
+            $mail->Host = $mailHost;
+            $mail->Port = $mailPort;
+
+            if ($mailUser !== '' && $mailPass !== '') {
+                $mail->SMTPAuth = true;
+                $mail->Username = $mailUser;
+                $mail->Password = $mailPass;
+            } else {
+                $mail->SMTPAuth = false;
+            }
+
+            if (in_array($mailEncryption, ['ssl', 'smtps'], true)) {
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            } elseif (in_array($mailEncryption, ['tls', 'starttls'], true)) {
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            } else {
+                // For local SMTP (e.g. Mailpit) without TLS.
+                $mail->SMTPSecure = false;
+                $mail->SMTPAutoTLS = false;
+            }
             $mail->CharSet = 'UTF-8';
 
             $mail->setFrom(env('MAIL_FROM_ADDRESS'), 'WORKSTAION TEAM');
@@ -114,6 +135,11 @@ class AuthController extends Controller
             ";
             return $mail->send();
         } catch (Exception $e) {
+            Log::error('sendActivationEmail failed', [
+                'to' => $email,
+                'error' => $mail->ErrorInfo ?? null,
+                'exception' => $e->getMessage(),
+            ]);
             return false;
         }
     }
@@ -211,12 +237,32 @@ class AuthController extends Controller
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = env('MAIL_USERNAME');
-            $mail->Password = env('MAIL_PASSWORD');
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-            $mail->Port = 465;
+            $mailHost = (string) env('MAIL_HOST', 'smtp.gmail.com');
+            $mailPort = (int) env('MAIL_PORT', 465);
+            $mailUser = (string) env('MAIL_USERNAME', '');
+            $mailPass = (string) env('MAIL_PASSWORD', '');
+            $mailEncryption = strtolower((string) env('MAIL_ENCRYPTION', 'ssl'));
+
+            $mail->Host = $mailHost;
+            $mail->Port = $mailPort;
+
+            if ($mailUser !== '' && $mailPass !== '') {
+                $mail->SMTPAuth = true;
+                $mail->Username = $mailUser;
+                $mail->Password = $mailPass;
+            } else {
+                $mail->SMTPAuth = false;
+            }
+
+            if (in_array($mailEncryption, ['ssl', 'smtps'], true)) {
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            } elseif (in_array($mailEncryption, ['tls', 'starttls'], true)) {
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            } else {
+                // For local SMTP (e.g. Mailpit) without TLS.
+                $mail->SMTPSecure = false;
+                $mail->SMTPAutoTLS = false;
+            }
             $mail->CharSet = 'UTF-8';
             $mail->setFrom(env('MAIL_FROM_ADDRESS'), 'WORKSTATION TEAM');
             $mail->addAddress($email);
@@ -225,6 +271,11 @@ class AuthController extends Controller
             $mail->Body = "<h2>Yêu cầu đặt lại mật khẩu</h2><p>Vui lòng bấm vào liên kết bên dưới để đổi mật khẩu mới:</p><p><a href='$link'>Đặt lại mật khẩu ngay</a></p>";
             return $mail->send();
         } catch (Exception $e) {
+            Log::error('sendEmailForgetPassword failed', [
+                'to' => $email,
+                'error' => $mail->ErrorInfo ?? null,
+                'exception' => $e->getMessage(),
+            ]);
             return false;
         }
     }
