@@ -27,18 +27,26 @@ class CleanupPendingBookings extends Command
     {
         $cutoffTime = \Carbon\Carbon::now()->subMinutes(10);
 
-        // Tìm các booking ở trạng thái pending, chưa báo thanh toán (is_paid = false) và tạo trước cutoffTime
-        $expiredBookings = \App\Models\Booking::where('status', 'pending')
-            ->where('is_paid', false)
+        // Tìm các booking ở trạng thái pending, chưa thanh toán (payment_status != completed) và tạo trước cutoffTime
+        $expiredBookings = \App\Models\Booking::query()
+            ->where('status', 'pending')
             ->where('created_at', '<', $cutoffTime)
+            ->where(function ($query) {
+                $query->whereDoesntHave('payment')
+                    ->orWhereHas('payment', function ($paymentQuery) {
+                        $paymentQuery->where('payment_status', '!=', 'completed')
+                            ->where(function ($paymentQuery) {
+                                $paymentQuery->where('payment_method', '!=', 'bank_transfer')
+                                    ->orWhereNull('reported_at');
+                            });
+                    });
+            })
             ->get();
 
         $count = $expiredBookings->count();
 
         if ($count > 0) {
             foreach ($expiredBookings as $booking) {
-                // Xóa payment liên quan trước (nếu có)
-                \App\Models\Payment::where('booking_id', $booking->id)->delete();
                 // Xóa booking (forceDelete để xóa vĩnh viễn khỏi DB)
                 $booking->forceDelete();
             }
@@ -55,9 +63,12 @@ class CleanupPendingBookings extends Command
         $today = \Carbon\Carbon::now()->toDateString();
         $currentTime = \Carbon\Carbon::now()->toTimeString();
 
-        // Tìm các đơn hàng đang ở trạng thái 'confirmed' (đã duyệt) hoặc 'pending' (đã thanh toán nhưng chưa duyệt)
+        // Tìm các đơn hàng đang ở trạng thái 'confirmed' (đã duyệt)
         // mà ngày đặt phòng đã qua (< today) HOẶC (ngày đặt = hôm nay VÀ giờ kết thúc đã qua < currentTime)
-        $passedBookings = \App\Models\Booking::whereIn('status', ['pending', 'confirmed'])
+        $passedBookings = \App\Models\Booking::where('status', 'confirmed')
+            ->whereHas('payment', function ($paymentQuery) {
+                $paymentQuery->where('payment_status', 'completed');
+            })
             ->where(function ($query) use ($today, $currentTime) {
                 $query->where('booking_date', '<', $today)
                       ->orWhere(function ($q) use ($today, $currentTime) {

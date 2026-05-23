@@ -133,7 +133,6 @@
                     <form action="{{ route('booking.process') }}" method="POST">
                         @csrf
                         <input type="hidden" name="room_id" value="{{ $roomId }}">
-                        <input type="hidden" name="room_price" value="{{ $room['price'] }}">
                         <input type="hidden" name="date" value="{{ $date }}">
                         <input type="hidden" name="start_time" value="{{ $startTime }}">
                         <input type="hidden" name="end_time" value="{{ $endTime }}">

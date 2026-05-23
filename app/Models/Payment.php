@@ -18,7 +18,14 @@ class Payment extends Model
         'transaction_code',
         'transaction_reference',
         'paid_at',
+        'reported_at',
         'payment_gateway',
         'gateway_response',
+    ];
+
+    protected $casts = [
+        'paid_at' => 'datetime',
+        'reported_at' => 'datetime',
+        'gateway_response' => 'array',
     ];
 }

@@ -23,7 +23,7 @@ Route::post('/logIn', [AuthController::class, 'logIn']);
 Route::get('/logIn', [AuthController::class, 'showAuthForm'])->name('logIn');
 
 // LogOut
-Route::get('/logOut', [AuthController::class, 'logOut'])->name('logOut');
+Route::post('/logOut', [AuthController::class, 'logOut'])->name('logOut');
 
 Route::get('activate', [AuthController::class, 'activate'])->name('activate');
 // Trang Dịch vụ

@@ -52,6 +52,17 @@
     border-bottom-right-radius: 4px;
 }
 
+.timeline-legend-unavailable {
+    background-color: #cbd5e1;
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(0, 0, 0, 0.03),
+        rgba(0, 0, 0, 0.03) 5px,
+        rgba(0, 0, 0, 0.08) 5px,
+        rgba(0, 0, 0, 0.08) 10px
+    );
+}
+
 /* Modal checkout */
 .checkout-modal {
     display: none;

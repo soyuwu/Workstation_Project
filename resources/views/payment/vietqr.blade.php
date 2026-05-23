@@ -3,11 +3,18 @@
 @section('title', 'Thanh toán chuyển khoản VietQR')
 @section('nav-mode', 'solid')
 
+@push('scripts')
+    @vite('resources/js/payment-vietqr.js')
+@endpush
+
 @section('content')
-<div class="bg-slate-50 min-h-screen py-12">
-    <div class="mx-auto max-w-[800px] px-6">
-        
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+<div class="bg-slate-50 min-h-screen py-12"
+     data-check-status-url="{{ route('payment.check_status', $booking->booking_code) }}"
+     data-success-url="{{ route('payment.success', $booking->booking_code) }}"
+     data-poll-ms="3000">
+	    <div class="mx-auto max-w-[800px] px-6">
+	        
+	        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             <div class="bg-primary/5 p-6 text-center border-b border-slate-100">
                 <h1 class="text-2xl font-bold text-slate-800">Thanh toán Đặt phòng</h1>
                 <p class="text-slate-500 mt-2">Mã đơn hàng: <span class="font-bold text-primary">{{ $booking->booking_code }}</span></p>
@@ -29,11 +36,11 @@
                         <p class="text-3xl font-bold text-primary">{{ number_format($booking->total_amount) }} VNĐ</p>
                     </div>
 
-                    <div class="space-y-4 pt-6 border-t border-slate-100">
-                        <div>
-                            <p class="text-sm text-slate-500 mb-1">Ngân hàng thụ hưởng</p>
-                            <p class="font-bold text-slate-800">ACB (Ngân hàng Á Châu)</p>
-                        </div>
+	                    <div class="space-y-4 pt-6 border-t border-slate-100">
+	                        <div>
+	                            <p class="text-sm text-slate-500 mb-1">Ngân hàng thụ hưởng</p>
+	                            <p class="font-bold text-slate-800">{{ $bankName ?: config('vietqr.bank_id') }}</p>
+	                        </div>
                         <div>
                             <p class="text-sm text-slate-500 mb-1">Tên tài khoản</p>
                             <p class="font-bold text-slate-800">{{ $accountName }}</p>
@@ -69,26 +76,6 @@
             </div>
         </div>
 
-    </div>
+	    </div>
 </div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Cứ mỗi 3 giây gọi API checkStatus kiểm tra biến động số dư đã cập nhật chưa
-        const checkStatusInterval = setInterval(function() {
-            fetch("{{ route('payment.check_status', $booking->booking_code) }}")
-                .then(response => response.json())
-                .then(data => {
-                    // Nếu status là 'confirmed' (thành công)
-                    if (data.status === 'confirmed') {
-                        clearInterval(checkStatusInterval);
-                        
-                        // Tự động điều hướng sang trang Success
-                        window.location.href = "{{ route('payment.success', $booking->booking_code) }}";
-                    }
-                })
-                .catch(error => console.error("Lỗi đồng bộ hóa thanh toán:", error));
-        }, 3000);
-    });
-</script>
 @endsection

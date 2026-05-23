@@ -101,7 +101,7 @@
             <div class="modal-container">
                   <div class="modal-header">
                         <h3 class="modal-title" id="voucherModalTitle">Thêm Voucher Mới</h3>
-                        <button type="button" class="btn btn-icon btn-sm" onclick="closeVoucherModal()">
+                        <button type="button" class="btn btn-icon btn-sm" data-action="close-voucher-modal">
                               <i class="ph-bold ph-x"></i>
                         </button>
                   </div>
@@ -135,177 +135,10 @@
                         </form>
                   </div>
                   <div class="modal-footer">
-                        <button type="button" class="btn btn-outline" onclick="closeVoucherModal()">Hủy</button>
-                        <button type="button" class="btn btn-primary" onclick="saveVoucher()">Lưu Voucher</button>
+                        <button type="button" class="btn btn-outline" data-action="close-voucher-modal">Hủy</button>
+                        <button type="button" class="btn btn-primary" data-action="save-voucher">Lưu Voucher</button>
                   </div>
             </div>
       </div>
 
-@endsection
-
-@section('extra-js')
-      <script>
-            // ==============================================
-            // VOUCHER MANAGEMENT JS FUNCTIONS
-            // ==============================================
-
-            const voucherModal = document.getElementById('voucherModal');
-            const voucherForm = document.getElementById('voucherForm');
-            const voucherModalTitle = document.getElementById('voucherModalTitle');
-            const vouchersTableBody = document.querySelector('#vouchersTable tbody');
-
-            let editingRow = null; // Biến lưu trữ dòng đang chỉnh sửa
-
-            // Mở modal Thêm Voucher Mới
-            document.getElementById('btnCreateVoucher').addEventListener('click', function () {
-                  voucherModalTitle.textContent = 'Thêm Voucher Mới';
-                  if (voucherForm) voucherForm.reset();
-                  document.getElementById('voucherId').value = '';
-                  editingRow = null;
-                  if (voucherModal) voucherModal.style.display = 'flex';
-            });
-
-            // Đóng Modal
-            function closeVoucherModal() {
-                  if (voucherModal) voucherModal.style.display = 'none';
-                  if (voucherForm) voucherForm.reset();
-                  editingRow = null;
-            }
-
-            // Hàm Thêm mới / Cập nhật Voucher
-            async function saveVoucher() {
-                  const id = document.getElementById('voucherId').value;
-                  const code = document.getElementById('voucherCode').value;
-                  const discount = document.getElementById('voucherDiscount').value;
-                  const maxDiscount = document.getElementById('voucherMaxDiscount').value || null;
-                  const time = document.getElementById('voucherTime').value || null;
-                  const limit = document.getElementById('voucherLimit').value || null;
-
-                  if (!code || !discount) {
-                        alert('Vui lòng điền mã voucher và phần trăm giảm giá.');
-                        return;
-                  }
-
-                  const payload = {
-                      code: code,
-                      discount_value: discount,
-                      max_discount: maxDiscount ? maxDiscount.replace(/\D/g, '') : null,
-                      valid_until: time,
-                      usage_limit: limit,
-                      _token: '{{ csrf_token() }}'
-                  };
-
-                  let url = '{{ route('admin.voucher.store') }}';
-                  let method = 'POST';
-
-                  if (id) {
-                      url = `{{ url('admin/voucher') }}/${id}`;
-                      payload._method = 'PUT';
-                  }
-
-                  try {
-                      const response = await fetch(url, {
-                          method: 'POST',
-                          headers: {
-                              'Content-Type': 'application/json',
-                              'Accept': 'application/json'
-                          },
-                          body: JSON.stringify(payload)
-                      });
-
-                      const data = await response.json();
-                      if (data.success) {
-                          alert(id ? 'Cập nhật thành công!' : 'Thêm thành công!');
-                          location.reload();
-                      } else {
-                          alert('Có lỗi xảy ra, vui lòng thử lại.');
-                          console.log(data);
-                      }
-                  } catch (error) {
-                      console.error('Error:', error);
-                      alert('Lỗi kết nối server!');
-                  }
-            }
-
-            // Mở UI Sửa từ Row
-            function openEditVoucher(row) {
-                  editingRow = row;
-                  voucherModalTitle.textContent = 'Chỉnh sửa Voucher';
-
-                  const id = row.getAttribute('data-id');
-                  const code = row.querySelector('.voucher-code').textContent.trim();
-                  const discountText = row.cells[1].textContent.trim();
-                  const discount = parseInt(discountText.replace('%', '').replace('đ', ''));
-                  const maxDiscountText = row.cells[2].textContent.trim();
-                  const maxDiscount = maxDiscountText === '-' ? '' : maxDiscountText.replace(/\D/g, '');
-
-                  const timeRaw = row.cells[3].querySelector('span').textContent.trim();
-                  const time = timeRaw === 'Không giới hạn' ? '' : timeRaw;
-
-                  const limitText = row.cells[4].querySelector('.text-sm').textContent.trim();
-                  let limitMatch = limitText.match(/\/ (\d+) lượt/);
-                  const limit = limitMatch ? limitMatch[1] : '';
-
-                  document.getElementById('voucherId').value = id;
-                  document.getElementById('voucherCode').value = code;
-                  document.getElementById('voucherDiscount').value = discount;
-                  document.getElementById('voucherMaxDiscount').value = maxDiscount;
-                  document.getElementById('voucherTime').value = time;
-                  document.getElementById('voucherLimit').value = limit;
-
-                  if (voucherModal) voucherModal.style.display = 'flex';
-            }
-
-            // Xóa Row
-            async function deleteVoucher(row) {
-                  if (confirm('Bạn có chắc chắn muốn xóa voucher này không? Dữ liệu không thể khôi phục.')) {
-                        const id = row.getAttribute('data-id');
-                        try {
-                              const response = await fetch(`{{ url('admin/voucher') }}/${id}`, {
-                                    method: 'POST',
-                                    headers: {
-                                          'Content-Type': 'application/json',
-                                    },
-                                    body: JSON.stringify({
-                                          _method: 'DELETE',
-                                          _token: '{{ csrf_token() }}'
-                                    })
-                              });
-                              const data = await response.json();
-                              if (data.success) {
-                                    row.remove();
-                                    alert('Đã xóa voucher thành công!');
-                              }
-                        } catch (error) {
-                              console.error('Error:', error);
-                        }
-                  }
-            }
-
-            // Gắn sự kiện cho các nút ban đầu trên giao diện
-            document.addEventListener('DOMContentLoaded', function () {
-                  // Nút sửa ban đầu
-                  const editButtons = document.querySelectorAll('#vouchersTable tbody .action-group .edit-btn');
-                  editButtons.forEach(btn => {
-                        btn.addEventListener('click', function () {
-                              openEditVoucher(btn.closest('tr'));
-                        });
-                  });
-
-                  // Nút xóa ban đầu 
-                  const deleteButtons = document.querySelectorAll('#vouchersTable tbody .action-group .delete-btn');
-                  deleteButtons.forEach(btn => {
-                        btn.addEventListener('click', function () {
-                              deleteVoucher(btn.closest('tr'));
-                        });
-                  });
-
-                  // Đóng modal khi click ra ngoài (overlay)
-                  window.addEventListener('click', function (event) {
-                        if (event.target === voucherModal) {
-                              closeVoucherModal();
-                        }
-                  });
-            });
-      </script>
 @endsection

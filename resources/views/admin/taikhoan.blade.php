@@ -9,7 +9,7 @@
                 <h1 class="page-title">Quản Lý Tài Khoản</h1>
             </div>
             <div class="section-actions">
-                <button class="btn btn-primary" id="btnAddAccount" onclick="openAccountModal('add')">
+                <button class="btn btn-primary" id="btnAddAccount">
                     <i class="ph-bold ph-plus"></i> Thêm Tài Khoản Mới
                 </button>
             </div>
@@ -99,7 +99,7 @@
         style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
         <div class="modal-content"
             style="background: #ffffff; color: #111827; width: 500px; max-width: 90%; border-radius: 16px; padding: 30px; position: relative;">
-            <i class="ph-bold ph-x close-modal" onclick="closeAccountModal()"
+            <i class="ph-bold ph-x close-modal" data-action="close-account-modal"
                 style="position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #6b7280;"></i>
             <h2 id="accountModalTitle"
                 style="font-size: 22px; font-weight: bold; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">Thêm Tài Khoản</h2>
@@ -130,144 +130,9 @@
                         <option value="admin">Quản trị viên (Admin)</option>
                     </select>
                 </div>
-                <button type="button" onclick="saveAccount()" class="btn btn-primary"
+                <button type="button" data-action="save-account" class="btn btn-primary"
                     style="width: 100%; padding: 12px; border: none; border-radius: 8px; background: #3b82f6; color: white; font-weight: bold; cursor: pointer;">Lưu Thông tin</button>
             </form>
         </div>
     </div>
-
-    <script>
-        let currentRowEdit = null;
-
-        function openAccountModal(mode, btn = null) {
-            document.getElementById('accountModal').style.display = 'flex';
-            const form = document.getElementById('accountForm');
-            form.reset();
-            document.getElementById('accountId').value = '';
-
-            if (mode === 'add') {
-                document.getElementById('accountModalTitle').innerText = 'Thêm Tài Khoản Mới';
-                currentRowEdit = null;
-            } else if (mode === 'edit' && btn) {
-                document.getElementById('accountModalTitle').innerText = 'Cập nhật Tài Khoản';
-                currentRowEdit = btn.closest('tr');
-
-                const id = currentRowEdit.getAttribute('data-id');
-                const nameEl = currentRowEdit.querySelector('.user-cell b');
-                const phoneEl = currentRowEdit.querySelectorAll('td')[1].querySelectorAll('div.text-sm')[0];
-                const emailEl = currentRowEdit.querySelectorAll('td')[1].querySelectorAll('div.text-sm')[1];
-                const roleSpan = currentRowEdit.querySelectorAll('td')[2].querySelector('.badge');
-
-                document.getElementById('accountId').value = id;
-                document.getElementById('accountName').value = nameEl ? nameEl.innerText : '';
-                document.getElementById('accountPhone').value = phoneEl ? phoneEl.innerText.replace('--', '').trim() : '';
-                document.getElementById('accountEmail').value = emailEl ? emailEl.innerText.trim() : '';
-
-                if (roleSpan) {
-                    const roleVal = roleSpan.getAttribute('data-role');
-                    document.getElementById('accountRole').value = roleVal || 'customer';
-                }
-            }
-        }
-
-        function closeAccountModal() {
-            document.getElementById('accountModal').style.display = 'none';
-            currentRowEdit = null;
-        }
-
-        async function saveAccount() {
-            const id = document.getElementById('accountId').value;
-            const name = document.getElementById('accountName').value;
-            const email = document.getElementById('accountEmail').value;
-            const phone = document.getElementById('accountPhone').value;
-            const role = document.getElementById('accountRole').value;
-
-            if (!name || !email) {
-                alert('Vui lòng nhập tên và email!');
-                return;
-            }
-
-            const payload = {
-                name: name,
-                email: email,
-                phone: phone,
-                role: role,
-                _token: '{{ csrf_token() }}'
-            };
-
-            let url = '{{ route('admin.taikhoan.store') }}';
-            if (id) {
-                url = `{{ url('admin/taikhoan') }}/${id}`;
-                payload._method = 'PUT';
-            }
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    alert(id ? 'Cập nhật tài khoản thành công!' : 'Thêm tài khoản thành công!');
-                    location.reload();
-                } else {
-                    alert('Lỗi: ' + (data.message || 'Không thể lưu thông tin.'));
-                }
-            } catch (error) {
-                console.error(error);
-                alert('Lỗi kết nối server!');
-            }
-        }
-
-        async function deleteAccount(row) {
-            const id = row.getAttribute('data-id');
-            if (confirm('Bạn có chắc chắn muốn xóa tài khoản này? Tất cả dữ liệu liên quan sẽ bị ảnh hưởng.')) {
-                try {
-                    const response = await fetch(`{{ url('admin/taikhoan') }}/${id}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            _method: 'DELETE',
-                            _token: '{{ csrf_token() }}'
-                        })
-                    });
-
-                    const data = await response.json();
-                    if (data.success) {
-                        row.remove();
-                        alert('Đã xóa tài khoản.');
-                    } else {
-                        alert(data.message || 'Lỗi khi xóa.');
-                    }
-                } catch (error) {
-                    console.error(error);
-                    alert('Lỗi kết nối!');
-                }
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const table = document.getElementById('accountsTable');
-            if (table) {
-                table.addEventListener('click', function (e) {
-                    const btnEdit = e.target.closest('.edit-btn');
-                    const btnDelete = e.target.closest('.delete-btn');
-
-                    if (btnEdit) {
-                        openAccountModal('edit', btnEdit);
-                    } else if (btnDelete) {
-                        deleteAccount(btnDelete.closest('tr'));
-                    }
-                });
-            }
-        });
-    </script>
 @endsection

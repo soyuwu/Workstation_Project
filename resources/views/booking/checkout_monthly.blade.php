@@ -115,10 +115,6 @@
                     <form action="{{ route('booking.monthly.process') }}" method="POST">
                         @csrf
                         <input type="hidden" name="room_id" value="{{ $room['id'] }}">
-                        <input type="hidden" name="room_price" value="{{ $room['price_raw'] }}">
-                        <input type="hidden" name="room_name" value="{{ $room['name'] }}">
-                        <input type="hidden" name="room_image" value="{{ $room['image'] }}">
-                        <input type="hidden" name="room_capacity" value="{{ $room['capacity'] }}">
                         <input type="hidden" name="start_date" value="{{ $startDate }}">
                         <input type="hidden" name="duration_months" value="{{ $durationMonths }}">
                         <input type="hidden" name="payment_method" value="bank_transfer">

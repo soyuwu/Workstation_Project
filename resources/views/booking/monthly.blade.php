@@ -3,11 +3,15 @@
 @section('title', 'Đặt ' . $serviceInfo->name)
 @section('nav-mode', 'solid')
 
+@push('scripts')
+    @vite('resources/js/booking-monthly.js')
+@endpush
+
 @section('content')
-    <x-common.sub-page-hero
-        icon="{{ $serviceInfo->icon }}"
-        subtitle="Thuê theo tháng"
-        :title="$serviceInfo->name"
+	    <x-common.sub-page-hero
+	        icon="{{ $serviceInfo->icon }}"
+	        subtitle="Thuê theo tháng"
+	        :title="$serviceInfo->name"
         :description="$serviceInfo->booking_desc"
     />
 
@@ -19,15 +23,19 @@
                 <div class="lg:col-span-2 space-y-6">
                     <h2 class="font-headline text-2xl font-bold text-on-surface mb-6">Chọn không gian phù hợp</h2>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        @foreach($rooms as $room)
-                            <article
-                                class="group relative overflow-hidden rounded-2xl bg-white shadow-sm border-2 border-slate-100 transition-all duration-300 hover:shadow-[var(--shadow-card-hover)] hover:border-primary/30 cursor-pointer"
-                                onclick="selectRoom(event, '{{ $room['id'] }}', '{{ $room['name'] }}', {{ $room['price_raw'] }}, '{{ $room['image'] }}', '{{ $room['capacity'] }}')"
-                            >
-                                <div class="aspect-[4/3] w-full overflow-hidden">
-                                    <img src="{{ $room['image'] }}" alt="{{ $room['name'] }}" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110">
-                                </div>
+	                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+	                        @forelse($rooms as $room)
+	                            <article
+	                                class="group relative overflow-hidden rounded-2xl bg-white shadow-sm border-2 border-slate-100 transition-all duration-300 hover:shadow-[var(--shadow-card-hover)] hover:border-primary/30 cursor-pointer"
+	                                data-room-id="{{ $room['id'] }}"
+	                                data-room-name="{{ $room['name'] }}"
+	                                data-room-price="{{ $room['price_raw'] }}"
+	                                data-room-image="{{ $room['image'] }}"
+	                                data-room-capacity="{{ $room['capacity'] }}"
+	                            >
+	                                <div class="aspect-[4/3] w-full overflow-hidden">
+	                                    <img src="{{ $room['image'] }}" alt="{{ $room['name'] }}" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110">
+	                                </div>
                                 <div class="p-6">
                                     <h3 class="font-headline text-lg font-bold text-on-surface mb-2">{{ $room['name'] }}</h3>
                                     <ul class="space-y-2 mb-4">
@@ -45,7 +53,12 @@
                                     </button>
                                 </div>
                             </article>
-                        @endforeach
+                        @empty
+                            <div class="col-span-full rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center">
+                                <p class="text-slate-600 font-medium">Hiện chưa có không gian nào khả dụng cho gói thuê theo tháng.</p>
+                                <p class="mt-2 text-sm text-slate-400">Vui lòng thử lại sau hoặc liên hệ quản trị để cập nhật danh sách workspace.</p>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
 
@@ -54,18 +67,14 @@
                     <div class="sticky top-24 rounded-3xl bg-white p-8 shadow-[var(--shadow-card)] border border-slate-100">
                         <h3 class="font-headline text-xl font-bold text-on-surface mb-6">Thông tin đặt chỗ</h3>
 
-                        <form id="monthly-form" action="{{ route('booking.monthly.checkout') }}" method="GET" class="space-y-5">
+	                        <form id="monthly-form" action="{{ route('booking.monthly.checkout') }}" method="GET" class="space-y-5">
 
-                            <!-- Hidden inputs được JS điền vào khi chọn phòng -->
-                            <input type="hidden" name="room_id" id="form_room_id">
-                            <input type="hidden" name="room_price" id="form_room_price">
-                            <input type="hidden" name="room_name" id="form_room_name">
-                            <input type="hidden" name="room_image" id="form_room_image">
-                            <input type="hidden" name="room_capacity" id="form_room_capacity">
+	                            <!-- Hidden inputs được JS điền vào khi chọn phòng -->
+	                            <input type="hidden" name="room_id" id="form_room_id">
 
-                            <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">Không gian đã chọn</label>
-                                <input type="text" id="selected_room" readonly placeholder="Vui lòng chọn không gian bên trái"
+	                            <div>
+	                                <label class="mb-1 block text-sm font-medium text-slate-700">Không gian đã chọn</label>
+	                                <input type="text" id="selected_room" readonly placeholder="Vui lòng chọn không gian bên trái"
                                     class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 focus:border-primary focus:outline-none">
                             </div>
 
@@ -112,43 +121,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <script>
-        let selectedPrice = 0;
-        const discountMap = { 1: 0, 3: 0.05, 6: 0.10, 12: 0.15 };
-
-        function selectRoom(event, id, name, price, image, capacity) {
-            selectedPrice = price;
-            document.getElementById('form_room_id').value = id;
-            document.getElementById('form_room_name').value = name;
-            document.getElementById('form_room_price').value = price;
-            document.getElementById('form_room_image').value = image;
-            document.getElementById('form_room_capacity').value = capacity;
-            document.getElementById('selected_room').value = name;
-
-            document.querySelectorAll('article').forEach(el => el.classList.remove('ring-2', 'ring-primary', 'border-primary'));
-            event.currentTarget.classList.add('ring-2', 'ring-primary', 'border-primary');
-
-            updatePreview();
-            document.getElementById('submit-btn').disabled = false;
-        }
-
-        function updatePreview() {
-            if (!selectedPrice) return;
-            const months = parseInt(document.getElementById('form_duration').value);
-            const discount = discountMap[months] || 0;
-            const base = selectedPrice * months;
-            const discountAmt = base * discount;
-            const total = base - discountAmt;
-
-            document.getElementById('price-preview').classList.remove('hidden');
-            document.getElementById('preview-base').textContent = base.toLocaleString('vi-VN') + ' VNĐ';
-            document.getElementById('preview-discount').textContent = '- ' + discountAmt.toLocaleString('vi-VN') + ' VNĐ';
-            document.getElementById('preview-total').textContent = total.toLocaleString('vi-VN') + ' VNĐ';
-        }
-
-        document.getElementById('form_duration').addEventListener('change', updatePreview);
-    </script>
+	        </div>
+	    </section>
 @endsection

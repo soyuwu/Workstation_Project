@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
             $table->string('booking_code', 50)->unique();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('workspace_id')->constrained('workspaces')->onDelete('cascade');
             $table->date('booking_date');
             $table->time('start_time');
             $table->time('end_time');
-            $table->integer('duration_hours');
+            $table->decimal('duration_hours', 8, 2);
             $table->timestamp('actual_check_in')->nullable();
             $table->timestamp('actual_check_out')->nullable();
             $table->decimal('base_price', 15, 2);

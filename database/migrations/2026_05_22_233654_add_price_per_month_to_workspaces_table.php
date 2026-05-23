@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('bookings', function (Blueprint $table) {
-            $table->boolean('is_paid')->default(false)->after('status');
+        Schema::table('workspaces', function (Blueprint $table) {
+            $table->decimal('price_per_month', 15, 2)->nullable()->after('price_per_hour');
         });
     }
 
@@ -21,8 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('bookings', function (Blueprint $table) {
-            $table->dropColumn('is_paid');
+        Schema::table('workspaces', function (Blueprint $table) {
+            $table->dropColumn('price_per_month');
         });
     }
 };
+

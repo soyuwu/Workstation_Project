@@ -59,14 +59,14 @@ class PaymentController extends Controller
             // Thanh toán thành công
             if ($booking->status !== 'confirmed') {
                 $booking->status = 'confirmed';
-                $booking->save();
+            }
+            $booking->save();
 
-                if ($payment) {
-                    $payment->payment_status = 'completed';
-                    $payment->transaction_code = $data['transId'];
-                    $payment->paid_at = now();
-                    $payment->save();
-                }
+            if ($payment) {
+                $payment->payment_status = 'completed';
+                $payment->transaction_code = $data['transId'] ?? null;
+                $payment->paid_at = now();
+                $payment->save();
             }
         } else {
             // Thanh toán thất bại
@@ -90,19 +90,22 @@ class PaymentController extends Controller
     {
         $booking = \App\Models\Booking::where('booking_code', $booking_code)->firstOrFail();
 
-        // Lấy thông tin tài khoản từ cấu hình (Khách hàng cần tự điền số tài khoản thật của họ vào file .env)
-        $bankId = env('VIETQR_BANK_ID', '970416'); // BIN của Vietcombank
-        $accountNo = env('VIETQR_ACCOUNT_NO', '27800607'); // <--- BẠN CẦN THAY THÀNH SỐ TÀI KHOẢN CỦA BẠN
-        $accountName = env('VIETQR_ACCOUNT_NAME', 'LUONG LAM KHANH');
+        $bankId = (string) config('vietqr.bank_id', '970416');
+        $bankName = (string) config('vietqr.bank_name');
+        $accountNo = (string) config('vietqr.account_no', '27800607');
+        $accountName = (string) config('vietqr.account_name', 'LUONG LAM KHANH');
+        $template = (string) config('vietqr.template', 'compact');
 
-        $template = 'compact';
+        if ($bankId === '' || $accountNo === '' || $accountName === '') {
+            abort(500, 'VietQR is not configured. Please set VIETQR_* in your environment.');
+        }
         // Ép kiểu ép số tiền về số nguyên (bỏ số thập phân .00) để API VietQR đọc được
         $amount = (int) $booking->total_amount;
         $addInfo = urlencode($booking_code);
 
         $qrUrl = "https://img.vietqr.io/image/{$bankId}-{$accountNo}-{$template}.png?amount={$amount}&addInfo={$addInfo}&accountName=" . urlencode($accountName);
 
-        return view('payment.vietqr', compact('booking', 'qrUrl', 'accountNo', 'accountName'));
+        return view('payment.vietqr', compact('booking', 'qrUrl', 'accountNo', 'accountName', 'bankName'));
     }
 
     /**
@@ -113,16 +116,16 @@ class PaymentController extends Controller
         $booking = \App\Models\Booking::where('booking_code', $booking_code)->firstOrFail();
         $payment = \App\Models\Payment::where('booking_id', $booking->id)->first();
 
-        // Đổi trạng thái thanh toán
         if ($payment) {
             $payment->payment_status = 'pending';
+            $payment->payment_gateway = $payment->payment_gateway ?: 'manual';
+            $payment->reported_at = $payment->reported_at ?: now();
             $payment->save();
         }
 
         if (!str_contains((string)$booking->notes, 'Khách đã báo chuyển khoản')) {
             $booking->notes = ($booking->notes ? $booking->notes . ' | ' : '') . 'Khách đã báo chuyển khoản, chờ Admin check biến động số dư.';
         }
-        $booking->is_paid = true;
         $booking->save();
 
         // Redirect sang trang success (GET) để tránh bị reload form
@@ -134,12 +137,12 @@ class PaymentController extends Controller
      */
     public function checkStatus($booking_code)
     {
-        $booking = \App\Models\Booking::where('booking_code', $booking_code)->first();
+        $booking = \App\Models\Booking::with('payment')->where('booking_code', $booking_code)->first();
 
         if ($booking) {
             return response()->json([
                 'status' => $booking->status,
-                'is_paid' => (bool)$booking->is_paid
+                'payment_status' => $booking->payment?->payment_status
             ]);
         }
 
@@ -151,9 +154,9 @@ class PaymentController extends Controller
      */
     public function successPage($booking_code)
     {
-        $booking = \App\Models\Booking::where('booking_code', $booking_code)->firstOrFail();
+        $booking = \App\Models\Booking::with('payment')->where('booking_code', $booking_code)->firstOrFail();
 
-        if ($booking->status === 'confirmed') {
+        if ($booking->payment && $booking->payment->payment_status === 'completed') {
             $message = 'Cảm ơn bạn! Giao dịch của bạn đã được hệ thống xác nhận thanh toán tự động thành công.';
         } else {
             $message = 'Cảm ơn bạn! Hệ thống đang chờ kiểm tra biến động số dư và sẽ xác nhận đặt phòng trong ít phút.';
@@ -207,7 +210,6 @@ class PaymentController extends Controller
                 if ((int) $booking->total_amount <= (int) $transferAmount) {
                     // Cập nhật trạng thái Booking
                     $booking->status = 'confirmed';
-                    $booking->is_paid = true;
                     $booking->notes = ($booking->notes ? $booking->notes . ' | ' : '') . 'Thanh toán tự động qua SePay Webhook.';
                     $booking->save();
 
@@ -218,7 +220,7 @@ class PaymentController extends Controller
                         $payment->transaction_code = $payload['referenceCode'] ?? ($payload['id'] ?? null);
                         $payment->paid_at = now();
                         $payment->payment_gateway = $payload['gateway'] ?? 'SePay';
-                        $payment->gateway_response = json_encode($payload);
+                        $payment->gateway_response = $payload;
                         $payment->save();
                     }
 

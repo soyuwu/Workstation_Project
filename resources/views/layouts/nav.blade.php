@@ -223,7 +223,7 @@
                             @endif
                         </div>
                         <div class="relative p-2 border-t border-slate-100 bg-white rounded-b-2xl z-10">
-                            <form action="{{ route('logOut') }}" method="GET" class="w-full m-0">
+                            <form action="{{ route('logOut') }}" method="POST" class="w-full m-0">
                                 @csrf
                                 <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 text-left">
                                     <span class="material-symbols-outlined text-[20px]">logout</span>
@@ -316,7 +316,7 @@
                                 Quản trị hệ thống
                             </a>
                         @endif
-                        <form action="{{ route('logOut') }}" method="GET" class="w-full m-0">
+                        <form action="{{ route('logOut') }}" method="POST" class="w-full m-0">
                             @csrf
                             <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-red-600 font-medium hover:bg-red-50 rounded-lg transition-colors text-left">
                                 <span class="material-symbols-outlined text-[20px]">logout</span>
@@ -339,5 +339,3 @@
         </div>
     </div>
 </nav>
-
-

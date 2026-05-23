@@ -4,6 +4,7 @@
 <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="csrf-token" content="{{ csrf_token() }}">
       <title>@yield('page-title', 'Admin Dashboard') - Workstation Portal</title>
       <meta name="description" content="Bảng điều khiển quản trị hệ thống Workstation Booking">
       <!-- Modern Font: Inter -->
@@ -30,10 +31,16 @@
                         <a class="sidebar__link {{ Request::is('admin/tongquan') ? 'sidebar__link--active' : '' }}"
                               href="{{ route('admin.tongquan') }}">
                               <span>Tổng Quan</span>
-                        </a>
-                        @php
-                              $pendingBookingsCount = \App\Models\Booking::where('status', 'pending')->where('is_paid', true)->count();
-                        @endphp
+	                        </a>
+	                        @php
+	                              $pendingBookingsCount = \App\Models\Booking::where('status', 'pending')
+	                                    ->whereHas('payment', function ($query) {
+	                                          $query->where('payment_status', 'pending')
+	                                                ->where('payment_method', 'bank_transfer')
+	                                                ->whereNotNull('reported_at');
+	                                    })
+	                                    ->count();
+	                        @endphp
                         <a class="sidebar__link {{ Request::is('admin/booking') ? 'sidebar__link--active' : '' }}"
                               href="{{ route('admin.booking') }}" style="display: flex; align-items: center;">
                               <span>Thông Tin Booking</span>
@@ -76,9 +83,12 @@
                   <header class="top-header" id="topHeader" style="justify-content: flex-end;">
 
                         <div class="header-actions">
-                              <button class="btn btn-outline btn-sm" id="btnLogout">
-                                    Đăng xuất
-                              </button>
+                              <form action="{{ route('logOut') }}" method="POST" class="m-0">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline btn-sm">
+                                          Đăng xuất
+                                    </button>
+                              </form>
                         </div>
                   </header>
 
@@ -93,61 +103,7 @@
       <!-- =============================== -->
       <!-- JAVASCRIPT                       -->
       <!-- =============================== -->
-      <script>
-            document.addEventListener('DOMContentLoaded', () => {
-
-                  // =============================================
-                  // 1. FILTER TABS (Generic handler for all filter tabs)
-                  // =============================================
-                  document.querySelectorAll('.filter-tabs').forEach(tabGroup => {
-                        const tabs = tabGroup.querySelectorAll('.filter-tab');
-                        tabs.forEach(tab => {
-                              tab.addEventListener('click', function () {
-                                    // Toggle active tab
-                                    tabs.forEach(t => t.classList.remove('filter-tab--active'));
-                                    this.classList.add('filter-tab--active');
-
-                                    // Handle data-tab switching (sub-sections)
-                                    const tabTarget = this.getAttribute('data-tab');
-                                    if (tabTarget) {
-                                          const parentSection = this.closest('.page-container') || document;
-                                          if (parentSection) {
-                                                parentSection.querySelectorAll('.sub-section').forEach(sub => {
-                                                      sub.classList.add('sub-section--hidden');
-                                                });
-                                                const targetSub = parentSection.querySelector('#' + tabTarget);
-                                                if (targetSub) {
-                                                      targetSub.classList.remove('sub-section--hidden');
-                                                }
-                                          }
-                                    }
-
-                                    // Handle data-filter (table row filtering)
-                                    const filterValue = this.getAttribute('data-filter');
-                                    if (filterValue && !tabTarget) {
-                                          const parentCard = this.closest('.page-container') || document;
-                                          if (parentCard) {
-                                                const rows = parentCard.querySelectorAll('tbody tr[data-status], tbody tr[data-type], tbody tr[data-category]');
-                                                rows.forEach(row => {
-                                                      if (filterValue === 'all') {
-                                                            row.style.display = '';
-                                                      } else {
-                                                            const rowFilter = row.getAttribute('data-status') ||
-                                                                  row.getAttribute('data-type') ||
-                                                                  row.getAttribute('data-category');
-                                                            row.style.display = (rowFilter === filterValue) ? '' : 'none';
-                                                      }
-                                                });
-                                          }
-                                    }
-                              });
-                        });
-                  });
-
-
-
-            });
-      </script>
+      @vite('resources/js/admin.js')
 
       @yield('extra-js')
 </body>

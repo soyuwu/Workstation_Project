@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('email_verifications', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token')->unique();
-            $table->timestamps();
+        Schema::table('payments', function (Blueprint $table) {
+            $table->timestamp('reported_at')->nullable()->after('paid_at');
+            $table->index('reported_at');
         });
     }
 
@@ -23,6 +22,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('email_verifications');
+        Schema::table('payments', function (Blueprint $table) {
+            $table->dropIndex(['reported_at']);
+            $table->dropColumn('reported_at');
+        });
     }
 };
+

@@ -46,7 +46,7 @@
                                         $statusText = 'Không rõ';
                                         
                                         if ($booking->status == 'pending') {
-                                            if ($booking->is_paid) {
+                                            if ($booking->payment && $booking->payment->payment_method == 'bank_transfer' && $booking->payment->payment_status == 'pending' && $booking->payment->reported_at) {
                                                 $statusClass = 'badge--yellow';
                                                 $statusText = 'Chờ duyệt CK';
                                             } else {
@@ -82,7 +82,7 @@
                                                 <span class="badge {{ $statusClass }}">{{ $statusText }}</span>
                                                 
                                                 <div class="action-group mt-2" style="justify-content: center;">
-                                                    @if($booking->status == 'pending' && $booking->is_paid)
+                                                    @if($booking->status == 'pending' && $booking->payment && $booking->payment->payment_method == 'bank_transfer' && $booking->payment->payment_status == 'pending' && $booking->payment->reported_at)
                                                         <button class="btn btn-outline btn-sm btn-icon btn-approve" title="Xác nhận" data-id="{{ $booking->id }}">
                                                             <i class="ph-bold ph-check text-success" style="color: #10b981;"></i>
                                                         </button>
@@ -123,8 +123,7 @@
             style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
             <div class="modal-content"
                   style="background: #ffffff; color: #111827; width: 600px; max-width: 95%; border-radius: 16px; padding: 30px; position: relative; max-height: 90vh; overflow-y: auto;">
-                  <i class="ph-bold ph-x close-modal"
-                        onclick="document.getElementById('bookingDetailsModal').style.display='none'"
+                  <i class="ph-bold ph-x close-modal" data-action="close-booking-modal"
                         style="position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #6b7280;"></i>
 
                   <h2
@@ -197,110 +196,8 @@
                   </div>
 
                   <div style="margin-top: 25px; text-align: right;">
-                        <button class="btn btn-primary"
-                              onclick="document.getElementById('bookingDetailsModal').style.display='none'">Đóng</button>
+                        <button class="btn btn-primary" type="button" data-action="close-booking-modal">Đóng</button>
                   </div>
             </div>
       </div>
-
-      <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                  const table = document.getElementById('bookingsTable');
-                  if (table) {
-                        table.addEventListener('click', async function (e) {
-                              const btnView = e.target.closest('.btn-view-details');
-                              const btnApprove = e.target.closest('.btn-approve');
-                              const btnCancel = e.target.closest('.btn-cancel');
-
-                              if (btnView) {
-                                    const id = btnView.getAttribute('data-id');
-                                    document.getElementById('modalBookingId').innerText = id;
-                                    document.getElementById('modalCustomerName').innerText = btnView.getAttribute('data-name') || '';
-                                    document.getElementById('modalCustomerPhone').innerText = btnView.getAttribute('data-phone') || '';
-                                    document.getElementById('modalRoom').innerText = btnView.getAttribute('data-room') || '';
-                                    document.getElementById('modalTime').innerText = btnView.getAttribute('data-time') || '';
-                                    document.getElementById('modalTotalAmount').innerText = btnView.getAttribute('data-total') || '';
-
-                                    document.getElementById('modalPaymentMethod').innerText = btnView.getAttribute('data-method') || '';
-
-                                    const statusEl = document.getElementById('modalPaymentStatus');
-                                    const pStatus = btnView.getAttribute('data-status') || '';
-                                    statusEl.innerText = pStatus;
-                                    statusEl.className = 'badge';
-                                    if (pStatus === 'Đã xác nhận') statusEl.classList.add('badge--green');
-                                    else if (pStatus === 'Đã hủy') statusEl.classList.add('badge--red');
-                                    else statusEl.classList.add('badge--yellow');
-
-                                    // Render services
-                                    const tbody = document.getElementById('modalServicesList');
-                                    const basePrice = btnView.getAttribute('data-base') || '0 ₫';
-                                    const tax = btnView.getAttribute('data-tax') || '0 ₫';
-                                    
-                                    tbody.innerHTML = `
-                                        <tr>
-                                            <td style="padding: 10px; border-bottom: 1px solid #f3f4f6;">Phí thuê không gian</td>
-                                            <td style="padding: 10px; text-align: center; border-bottom: 1px solid #f3f4f6;">1</td>
-                                            <td style="padding: 10px; text-align: right; border-bottom: 1px solid #f3f4f6;">${basePrice}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 10px; border-bottom: 1px solid #f3f4f6;">Thuế (VAT 8%)</td>
-                                            <td style="padding: 10px; text-align: center; border-bottom: 1px solid #f3f4f6;">1</td>
-                                            <td style="padding: 10px; text-align: right; border-bottom: 1px solid #f3f4f6;">${tax}</td>
-                                        </tr>
-                                    `;
-
-                                    document.getElementById('bookingDetailsModal').style.display = 'flex';
-                              } else if (btnApprove) {
-                                    if (confirm('Xác nhận thanh toán và phê duyệt đặt phòng này?')) {
-                                          const id = btnApprove.getAttribute('data-id');
-                                          try {
-                                                const response = await fetch(`{{ url('admin/booking') }}/${id}/approve`, {
-                                                      method: 'POST',
-                                                      headers: {
-                                                            'Content-Type': 'application/json',
-                                                            'Accept': 'application/json'
-                                                      },
-                                                      body: JSON.stringify({
-                                                            _token: '{{ csrf_token() }}'
-                                                      })
-                                                });
-                                                const data = await response.json();
-                                                if (data.success) {
-                                                      alert('Đã phê duyệt thành công!');
-                                                      location.reload();
-                                                }
-                                          } catch (err) {
-                                                console.error(err);
-                                                alert('Lỗi kết nối!');
-                                          }
-                                    }
-                              } else if (btnCancel) {
-                                    if (confirm('Từ chối đơn đặt phòng này?')) {
-                                          const id = btnCancel.getAttribute('data-id');
-                                          try {
-                                                const response = await fetch(`{{ url('admin/booking') }}/${id}/cancel`, {
-                                                      method: 'POST',
-                                                      headers: {
-                                                            'Content-Type': 'application/json',
-                                                            'Accept': 'application/json'
-                                                      },
-                                                      body: JSON.stringify({
-                                                            _token: '{{ csrf_token() }}'
-                                                      })
-                                                });
-                                                const data = await response.json();
-                                                if (data.success) {
-                                                      alert('Đã từ chối đơn!');
-                                                      location.reload();
-                                                }
-                                          } catch (err) {
-                                                console.error(err);
-                                                alert('Lỗi kết nối!');
-                                          }
-                                    }
-                              }
-                        });
-                  }
-            });
-      </script>
 @endsection

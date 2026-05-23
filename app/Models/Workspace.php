@@ -10,7 +10,19 @@ class Workspace extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['area_id', 'room_type_id', 'code', 'name', 'capacity', 'description', 'amenities', 'price_per_hour', 'min_booking_hours', 'status'];
+    protected $fillable = [
+        'area_id',
+        'room_type_id',
+        'code',
+        'name',
+        'capacity',
+        'description',
+        'amenities',
+        'price_per_hour',
+        'price_per_month',
+        'min_booking_hours',
+        'status',
+    ];
     protected $casts = ['amenities' => 'array']; // Ép kiểu JSON
 
     public function area()

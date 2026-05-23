@@ -83,6 +83,7 @@ class AdminController extends Controller
         $payment = \App\Models\Payment::where('booking_id', $booking->id)->first();
         if ($payment) {
             $payment->payment_status = 'completed';
+            $payment->paid_at = $payment->paid_at ?: now();
             $payment->save();
         }
         
@@ -192,6 +193,7 @@ class AdminController extends Controller
             'name' => 'required|string|max:100',
             'capacity' => 'required|integer|min:1',
             'price_per_hour' => 'required|numeric|min:0',
+            'price_per_month' => 'nullable|numeric|min:0',
             'min_booking_hours' => 'required|integer|min:1',
             'status' => 'required|in:active,maintenance,inactive',
             'description' => 'nullable|string',

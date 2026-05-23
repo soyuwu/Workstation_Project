@@ -2,44 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Booking;
+use App\Models\RoomType;
 use App\Models\Service;
+use App\Models\Workspace;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
 {
-    private $services = [
-        'cho-ngoi-linh-hoat' => [
-            'name' => 'Chỗ ngồi linh hoạt',
-            'type' => 'hourly',
-            'icon' => 'event_seat',
-            'desc' => 'Tự do chọn chỗ, thanh toán theo giờ hoặc ngày. Không cần đặt cọc.',
-        ],
-        'cho-ngoi-co-dinh' => [
-            'name' => 'Chỗ ngồi cố định',
-            'type' => 'monthly',
-            'icon' => 'chair',
-            'desc' => 'Bàn làm việc riêng, vị trí cố định – không gian quen thuộc mỗi ngày.',
-        ],
-        'phong-lam-viec-rieng' => [
-            'name' => 'Phòng làm việc riêng',
-            'type' => 'monthly',
-            'icon' => 'corporate_fare',
-            'desc' => 'Văn phòng khép kín, riêng tư tuyệt đối cho team 2-10 người.',
-        ],
-        'phong-hop-tieu-chuan' => [
-            'name' => 'Phòng họp tiêu chuẩn',
-            'type' => 'hourly',
-            'icon' => 'meeting_room',
-            'desc' => 'Phòng họp chuyên nghiệp, sức chứa 4-12 người, đầy đủ tiện nghi.',
-        ],
-        'khong-gian-su-kien' => [
-            'name' => 'Không gian sự kiện',
-            'type' => 'hourly',
-            'icon' => 'celebration',
-            'desc' => 'Không gian linh hoạt, sức chứa 20-100 người, phù hợp mọi sự kiện.',
-        ],
-    ];
-
     public function index()
     {
         $services = Service::active()->ordered()->get();
@@ -54,38 +25,48 @@ class BookingController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        // Mock data cho 3 không gian mẫu (price_raw dùng để tính toán, price dùng để hiển thị)
-        $mockRooms = [
-            [
-                'id' => 'M1',
-                'name' => 'Không gian ' . $this->services[$type]['name'] . ' A',
-                'capacity' => '1 người',
-                'price_raw' => 2500000,
-                'price' => '2.500.000đ/tháng',
-                'image' => 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=600&auto=format&fit=crop'
-            ],
-            [
-                'id' => 'M2',
-                'name' => 'Không gian ' . $this->services[$type]['name'] . ' B',
-                'capacity' => '2 người',
-                'price_raw' => 4800000,
-                'price' => '4.800.000đ/tháng',
-                'image' => 'https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?q=80&w=600&auto=format&fit=crop'
-            ],
-            [
-                'id' => 'M3',
-                'name' => 'Không gian ' . $this->services[$type]['name'] . ' C',
-                'capacity' => '4 người',
-                'price_raw' => 8500000,
-                'price' => '8.500.000đ/tháng',
-                'image' => 'https://images.unsplash.com/photo-1497215842964-222b430dc094?q=80&w=600&auto=format&fit=crop'
-            ],
-        ];
+        $roomType = RoomType::where('name', $service->name)->first();
+
+        $workspaces = collect();
+        if ($roomType) {
+            $workspaces = Workspace::query()
+                ->with([
+                    'images' => fn ($query) => $query
+                        ->orderByDesc('is_primary')
+                        ->orderBy('display_order')
+                        ->orderBy('id'),
+                ])
+                ->where('room_type_id', $roomType->id)
+                ->where('status', 'active')
+                ->orderBy('name')
+                ->get();
+        }
+
+        $rooms = $workspaces
+            ->filter(fn (Workspace $workspace) => !is_null($workspace->price_per_month) && $workspace->price_per_month > 0)
+            ->map(function (Workspace $workspace) use ($service) {
+                $primaryImage = $workspace->images->first();
+                $imageUrl = $primaryImage
+                    ? asset($primaryImage->image_url)
+                    : ($service->hero_image ?? 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=600&auto=format&fit=crop');
+                $pricePerMonth = (float) $workspace->price_per_month;
+
+                return [
+                    'id' => (string) $workspace->id,
+                    'name' => $workspace->name,
+                    'capacity' => $workspace->capacity . ' người',
+                    'price_raw' => $pricePerMonth,
+                    'price' => number_format($pricePerMonth, 0, ',', '.') . 'đ/tháng',
+                    'image' => $imageUrl,
+                ];
+            })
+            ->values()
+            ->toArray();
 
         return view('booking.monthly', [
             'serviceType' => $type,
             'serviceInfo' => $service,
-            'rooms' => $mockRooms
+            'rooms' => $rooms,
         ]);
     }
 
@@ -94,16 +75,28 @@ class BookingController extends Controller
      */
     public function monthlyCheckout(Request $request)
     {
-        $roomId      = $request->query('room_id');
-        $roomPrice   = (float) $request->query('room_price', 0);
-        $roomName    = $request->query('room_name', 'Không gian không xác định');
-        $roomImage   = $request->query('room_image', null);
-        $roomCap     = $request->query('room_capacity', 'N/A');
+        $roomId = $request->query('room_id');
         $startDate   = $request->query('start_date');
         $durationMonths = (int) $request->query('duration_months', 1);
 
         if (!$roomId || !$startDate) {
             return redirect()->back()->with('error', 'Thiếu thông tin đặt chỗ.');
+        }
+
+        $workspace = Workspace::query()
+            ->with([
+                'images' => fn ($query) => $query
+                    ->orderByDesc('is_primary')
+                    ->orderBy('display_order')
+                    ->orderBy('id'),
+            ])
+            ->where('id', $roomId)
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        $roomPrice = (float) ($workspace->price_per_month ?? 0);
+        if ($roomPrice <= 0) {
+            return redirect()->back()->with('error', 'Không thể đặt gói tháng vì workspace chưa cấu hình giá theo tháng.');
         }
 
         // Bảng chiết khấu theo số tháng
@@ -119,10 +112,10 @@ class BookingController extends Controller
 
         $room = [
             'id'        => $roomId,
-            'name'      => $roomName,
+            'name'      => $workspace->name,
             'price_raw' => $roomPrice,
-            'image'     => $roomImage,
-            'capacity'  => $roomCap,
+            'image'     => ($workspace->images->first() ? asset($workspace->images->first()->image_url) : null),
+            'capacity'  => $workspace->capacity . ' người',
         ];
 
         return view('booking.checkout_monthly', compact(
@@ -143,15 +136,22 @@ class BookingController extends Controller
     public function processMonthlyBooking(Request $request)
     {
         $validated = $request->validate([
-            'room_id'         => 'required',
-            'room_price'      => 'required|numeric',
+            'room_id'         => 'required|integer|exists:workspaces,id',
             'start_date'      => 'required|date',
             'duration_months' => 'required|integer|min:1',
             'payment_method'  => 'required|in:bank_transfer',
         ]);
 
         $durationMonths  = (int) $validated['duration_months'];
-        $roomPrice       = (float) $validated['room_price'];
+        $workspace = Workspace::query()
+            ->where('id', $validated['room_id'])
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        $roomPrice = (float) ($workspace->price_per_month ?? 0);
+        if ($roomPrice <= 0) {
+            return redirect()->back()->with('error', 'Workspace chưa cấu hình giá theo tháng.');
+        }
         $discountRates   = [1 => 0, 3 => 0.05, 6 => 0.10, 12 => 0.15];
         $discountRate    = $discountRates[$durationMonths] ?? 0;
 
@@ -169,7 +169,7 @@ class BookingController extends Controller
         $booking = \App\Models\Booking::create([
             'booking_code'   => $bookingCode,
             'user_id'        => $userId,
-            'workspace_id'   => null,
+            'workspace_id'   => $workspace->id,
             'booking_date'   => $startDate,
             'start_time'     => '08:00:00',
             'end_time'       => '18:00:00',
@@ -178,7 +178,7 @@ class BookingController extends Controller
             'tax'            => $tax,
             'total_amount'   => $totalAmount,
             'status'         => 'pending',
-            'notes'          => 'Đặt tháng | Room ID: ' . $validated['room_id'] . ' | Tháng: ' . $durationMonths . ' | Kết thúc: ' . $endDate,
+            'notes'          => 'Đặt tháng | Workspace: ' . ($workspace->code ?? $workspace->id) . ' | Tháng: ' . $durationMonths . ' | Kết thúc: ' . $endDate,
         ]);
 
         \App\Models\Payment::create([
@@ -202,70 +202,64 @@ class BookingController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        // Mock data cho 5 phòng/không gian mẫu
-        $mockRooms = [
-            [
-                'id' => 'R1',
-                'name' => $service->name . ' 101',
-                'capacity' => '2-4 người',
-                'price' => 150000,
-                'image' => 'https://images.unsplash.com/photo-1431540015161-0bf868a2d407?q=80&w=300&auto=format&fit=crop'
-            ],
-            [
-                'id' => 'R2',
-                'name' => $service->name . ' 102',
-                'capacity' => '4-8 người',
-                'price' => 250000,
-                'image' => 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=300&auto=format&fit=crop'
-            ],
-            [
-                'id' => 'R3',
-                'name' => $service->name . ' 201',
-                'capacity' => '8-12 người',
-                'price' => 350000,
-                'image' => 'https://images.unsplash.com/photo-1497215842964-222b430dc094?q=80&w=300&auto=format&fit=crop'
-            ],
-            [
-                'id' => 'R4',
-                'name' => $service->name . ' 202',
-                'capacity' => '10-20 người',
-                'price' => 500000,
-                'image' => 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=300&auto=format&fit=crop'
-            ],
-            [
-                'id' => 'R5',
-                'name' => $service->name . ' 301 (VIP)',
-                'capacity' => '20+ người',
-                'price' => 800000,
-                'image' => 'https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?q=80&w=300&auto=format&fit=crop'
-            ],
-        ];
+        $roomType = RoomType::where('name', $service->name)->first();
 
-        // Lấy danh sách các booking thực tế trong ngày (đã xác nhận hoặc đã báo thanh toán)
-        $confirmedBookings = \App\Models\Booking::where('status', '!=', 'cancelled')
-            ->get(['booking_date', 'start_time', 'end_time', 'notes', 'status'])
-            ->map(function ($b) {
-                // Parse room_id từ cột notes (ví dụ: "Room ID đặt: R1")
-                $roomId = '';
-                if (preg_match('/Room ID đặt:\s*([A-Za-z0-9]+)/', $b->notes, $matches)) {
-                    $roomId = $matches[1];
-                }
+        $workspaces = collect();
+        if ($roomType) {
+            $workspaces = Workspace::query()
+                ->with([
+                    'images' => fn ($query) => $query
+                        ->orderByDesc('is_primary')
+                        ->orderBy('display_order')
+                        ->orderBy('id'),
+                ])
+                ->where('room_type_id', $roomType->id)
+                ->where('status', 'active')
+                ->orderBy('name')
+                ->get();
+        }
+
+        $rooms = $workspaces
+            ->map(function (Workspace $workspace) use ($service) {
+                $primaryImage = $workspace->images->first();
+                $imageUrl = $primaryImage
+                    ? asset($primaryImage->image_url)
+                    : ($service->hero_image ?? 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=600&auto=format&fit=crop');
+
                 return [
-                    'room_id' => $roomId,
-                    'date' => $b->booking_date,
-                    'start_time' => $b->start_time,
-                    'end_time' => $b->end_time,
-                    'status' => $b->status,
+                    'id' => (string) $workspace->id,
+                    'name' => $workspace->name,
+                    'capacity' => $workspace->capacity . ' người',
+                    'price' => (int) $workspace->price_per_hour,
+                    'image' => $imageUrl,
                 ];
             })
-            ->filter(fn($b) => !empty($b['room_id']))
             ->values()
             ->toArray();
 
+        $workspaceIds = $workspaces->pluck('id');
+        $confirmedBookings = [];
+        if ($workspaceIds->isNotEmpty()) {
+            $confirmedBookings = Booking::query()
+                ->whereIn('workspace_id', $workspaceIds)
+                ->where('status', '!=', 'cancelled')
+                ->whereDate('booking_date', '>=', Carbon::today()->toDateString())
+                ->get(['workspace_id', 'booking_date', 'start_time', 'end_time', 'status'])
+                ->map(fn (Booking $booking) => [
+                    'room_id' => (string) $booking->workspace_id,
+                    'date' => $booking->booking_date,
+                    'start_time' => $booking->start_time,
+                    'end_time' => $booking->end_time,
+                    'status' => $booking->status,
+                ])
+                ->values()
+                ->toArray();
+        }
+
         return view('booking.hourly', [
             'serviceType' => $type,
-            'serviceInfo' => $this->services[$type],
-            'rooms' => $mockRooms,
+            'serviceInfo' => $service,
+            'rooms' => $rooms,
             'confirmedBookings' => $confirmedBookings
         ]);
     }
@@ -275,18 +269,30 @@ class BookingController extends Controller
         $date = $request->query('date');
         $startTime = $request->query('start_time');
         $endTime = $request->query('end_time');
-        $roomPrice = $request->query('room_price', 0);
-        $roomName = $request->query('room_name', 'Phòng không xác định');
-        $roomImage = $request->query('room_image', null);
-        $roomCapacity = $request->query('room_capacity', 'N/A');
 
         if (!$roomId || !$date || !$startTime || !$endTime) {
             return redirect()->back()->with('error', 'Thiếu thông tin đặt phòng.');
         }
 
+        $workspace = Workspace::query()
+            ->with([
+                'images' => fn ($query) => $query
+                    ->orderByDesc('is_primary')
+                    ->orderBy('display_order')
+                    ->orderBy('id'),
+            ])
+            ->where('id', $roomId)
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        $bookingDate = Carbon::parse($date)->toDateString();
+        if (Carbon::parse($bookingDate)->lessThan(Carbon::today())) {
+            return redirect()->back()->with('error', 'Ngày đặt không hợp lệ.');
+        }
+
         // Tính thời lượng
-        $start = \Carbon\Carbon::parse($startTime);
-        $end = \Carbon\Carbon::parse($endTime);
+        $start = Carbon::parse($bookingDate . ' ' . $startTime);
+        $end = Carbon::parse($bookingDate . ' ' . $endTime);
 
         if ($end->lessThanOrEqualTo($start)) {
             return redirect()->back()->with('error', 'Thời gian không hợp lệ.');
@@ -294,16 +300,38 @@ class BookingController extends Controller
 
         $duration = $start->diffInMinutes($end) / 60;
 
+        if ($duration < (int) $workspace->min_booking_hours) {
+            return redirect()->back()->with('error', 'Thời lượng đặt tối thiểu là ' . $workspace->min_booking_hours . ' giờ.');
+        }
+
+        $hasOverlap = Booking::query()
+            ->where('workspace_id', $workspace->id)
+            ->where('status', '!=', 'cancelled')
+            ->whereDate('booking_date', $bookingDate)
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->where('start_time', '<', $endTime)
+                    ->where('end_time', '>', $startTime);
+            })
+            ->exists();
+
+        if ($hasOverlap) {
+            return redirect()->back()->with('error', 'Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.');
+        }
+
+        $roomPrice = (float) $workspace->price_per_hour;
         $subtotal = $duration * $roomPrice;
         $tax = $subtotal * 0.08; // Thuế 8%
         $total = $subtotal + $tax;
 
+        $primaryImage = $workspace->images->first();
+        $roomImage = $primaryImage ? asset($primaryImage->image_url) : null;
+
         $room = [
             'id' => $roomId,
-            'name' => $roomName,
+            'name' => $workspace->name,
             'price' => $roomPrice,
             'image' => $roomImage,
-            'capacity' => $roomCapacity
+            'capacity' => $workspace->capacity . ' người',
         ];
 
         return view('booking.checkout_hourly', compact(
@@ -325,19 +353,50 @@ class BookingController extends Controller
     public function processBooking(Request $request)
     {
         $validated = $request->validate([
-            'room_id'        => 'required',
-            'room_price'     => 'required|numeric',
+            'room_id'        => 'required|integer|exists:workspaces,id',
             'date'           => 'required|date',
             'start_time'     => 'required',
             'end_time'       => 'required',
             'payment_method' => 'required|in:bank_transfer',
         ]);
 
-        $start    = \Carbon\Carbon::parse($validated['start_time']);
-        $end      = \Carbon\Carbon::parse($validated['end_time']);
+        $workspace = Workspace::query()
+            ->where('id', $validated['room_id'])
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        $bookingDate = Carbon::parse($validated['date'])->toDateString();
+        if (Carbon::parse($bookingDate)->lessThan(Carbon::today())) {
+            return redirect()->back()->with('error', 'Ngày đặt không hợp lệ.');
+        }
+
+        $start    = Carbon::parse($bookingDate . ' ' . $validated['start_time']);
+        $end      = Carbon::parse($bookingDate . ' ' . $validated['end_time']);
         $duration = $start->diffInMinutes($end) / 60;
 
-        $basePrice   = $validated['room_price'] * $duration;
+        if ($end->lessThanOrEqualTo($start)) {
+            return redirect()->back()->with('error', 'Thời gian không hợp lệ.');
+        }
+
+        if ($duration < (int) $workspace->min_booking_hours) {
+            return redirect()->back()->with('error', 'Thời lượng đặt tối thiểu là ' . $workspace->min_booking_hours . ' giờ.');
+        }
+
+        $hasOverlap = Booking::query()
+            ->where('workspace_id', $workspace->id)
+            ->where('status', '!=', 'cancelled')
+            ->whereDate('booking_date', $bookingDate)
+            ->where(function ($query) use ($validated) {
+                $query->where('start_time', '<', $validated['end_time'])
+                    ->where('end_time', '>', $validated['start_time']);
+            })
+            ->exists();
+
+        if ($hasOverlap) {
+            return redirect()->back()->with('error', 'Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.');
+        }
+
+        $basePrice   = ((float) $workspace->price_per_hour) * $duration;
         $tax         = $basePrice * 0.08;
         $totalAmount = $basePrice + $tax;
 
@@ -347,8 +406,8 @@ class BookingController extends Controller
         $booking = \App\Models\Booking::create([
             'booking_code'  => $bookingCode,
             'user_id'       => $userId,
-            'workspace_id'  => null,
-            'booking_date'  => $validated['date'],
+            'workspace_id'  => $workspace->id,
+            'booking_date'  => $bookingDate,
             'start_time'    => $validated['start_time'],
             'end_time'      => $validated['end_time'],
             'duration_hours' => $duration,
@@ -356,7 +415,7 @@ class BookingController extends Controller
             'tax'           => $tax,
             'total_amount'  => $totalAmount,
             'status'        => 'pending',
-            'notes'         => 'Room ID đặt: ' . $validated['room_id'],
+            'notes'         => 'Workspace: ' . ($workspace->code ?? $workspace->id),
         ]);
 
         \App\Models\Payment::create([
