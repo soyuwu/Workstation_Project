@@ -31,6 +31,70 @@ document.addEventListener('DOMContentLoaded', function() {
         panel.addEventListener('mouseleave', closeMenu);
     }
 
+    // Profile Dropdown (hover + click/tap + keyboard)
+    const profileWrapper = document.querySelector('[data-profile-dropdown]');
+    const profileTrigger = profileWrapper?.querySelector('[data-profile-dropdown-trigger]');
+    const profileMenu = profileWrapper?.querySelector('[data-profile-dropdown-menu]');
+    let profileCloseTimeout;
+
+    function setProfileOpen(isOpen) {
+        if (!profileWrapper || !profileTrigger) return;
+        profileWrapper.classList.toggle('is-open', isOpen);
+        profileTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+
+    function openProfile() {
+        clearTimeout(profileCloseTimeout);
+        setProfileOpen(true);
+    }
+
+    function closeProfile(immediate = false) {
+        clearTimeout(profileCloseTimeout);
+        if (immediate) {
+            setProfileOpen(false);
+            return;
+        }
+        profileCloseTimeout = setTimeout(() => setProfileOpen(false), 150);
+    }
+
+    function toggleProfile() {
+        if (!profileWrapper) return;
+        setProfileOpen(!profileWrapper.classList.contains('is-open'));
+    }
+
+    if (profileWrapper && profileTrigger && profileMenu) {
+        profileTrigger.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleProfile();
+        });
+
+        const canHover =
+            typeof window.matchMedia === 'function' &&
+            window.matchMedia('(any-hover: hover)').matches;
+
+        if (canHover) {
+            profileWrapper.addEventListener('mouseenter', openProfile);
+            profileWrapper.addEventListener('mouseleave', () => closeProfile(false));
+        }
+
+        document.addEventListener('click', (event) => {
+            if (profileWrapper.contains(event.target)) return;
+            setProfileOpen(false);
+        });
+
+        document.addEventListener('focusin', (event) => {
+            if (profileWrapper.contains(event.target)) return;
+            setProfileOpen(false);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') return;
+            if (!profileWrapper.classList.contains('is-open')) return;
+            setProfileOpen(false);
+            profileTrigger.focus();
+        });
+    }
+
     // Dynamic Scroll logic
     const nav = document.querySelector('.ws-nav');
     const navMode = document.body.getAttribute('data-nav-mode') || 'solid';

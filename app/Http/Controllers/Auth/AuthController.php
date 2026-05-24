@@ -28,14 +28,14 @@ class AuthController extends Controller
         $this->emailVerification = $emailVerification;
     }
 
-    //Regsister
-    // 1. Show form cho người dùng.
+    //Register
+    // 1. Show form cho người dùng.
     public function showAuthForm()
     {
         return view('auth.auth');
     }
 
-    // 2. Khách bấm nút đăng ký.
+    // 2. Khách bấm nút đăng ký.
     public function register(registerRequest $request)
     {
         // Create new user.
@@ -51,7 +51,7 @@ class AuthController extends Controller
             'token' => $token,
         ]);
 
-        //Tạo link
+        //Tạo link
         $linkActive = url("/activate?token=$token");
 
         if ($this->sendActivationEmail($request->email, $request->name, $linkActive)) {
@@ -76,7 +76,7 @@ class AuthController extends Controller
         }
         return back()->withErrors(
             [
-                'email' => 'Email hoặc mật khẩu bạn cung cấp chưa đúng',
+                'email' => 'Email hoặc mật khẩu bạn cung cấp chưa đúng',
             ]
         )->withInput($request->only('email'));
     }
@@ -86,7 +86,7 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/')->with('success', 'Đăng xuất thành công');
+        return redirect('/')->with('success', 'Đăng xuất thành công');
     }
 
     //Activate Email
@@ -122,6 +122,16 @@ class AuthController extends Controller
                 $mail->SMTPSecure = false;
                 $mail->SMTPAutoTLS = false;
             }
+
+            // --- FIX LỖI OPENSSL TRÊN VPS PRODUCTION ---
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
+
             $mail->CharSet = 'UTF-8';
 
             $mail->setFrom(env('MAIL_FROM_ADDRESS'), 'WORKSTAION TEAM');
@@ -144,6 +154,7 @@ class AuthController extends Controller
         }
     }
 
+    //Activate
     public function activate(Request $request)
     {
         $token = $request->query('token');
@@ -200,7 +211,6 @@ class AuthController extends Controller
     }
 
     //ĐẶT LẠI MẬT KHẨU (RESET PASSWORD)
-
     public function showResetPasswordForm(Request $request, $token)
     {
         return view('auth.reset-password', ['token' => $token, 'email' => $request->email]);
@@ -263,6 +273,16 @@ class AuthController extends Controller
                 $mail->SMTPSecure = false;
                 $mail->SMTPAutoTLS = false;
             }
+
+            // --- FIX LỖI OPENSSL TRÊN VPS PRODUCTION ---
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
+
             $mail->CharSet = 'UTF-8';
             $mail->setFrom(env('MAIL_FROM_ADDRESS'), 'WORKSTATION TEAM');
             $mail->addAddress($email);

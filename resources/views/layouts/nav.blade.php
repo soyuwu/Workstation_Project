@@ -186,19 +186,31 @@
         </div>
         <div class="flex items-center gap-6">
             @if (Session::has('user_id'))
-                <div class="relative group" id="profile-dropdown-wrapper">
-                    <button class="flex items-center gap-2 focus:outline-none ws-nav-link transition-colors {{ $isDynamic ? 'text-white hover:text-blue-200' : 'text-slate-600 hover:text-primary' }}">
+                <div class="relative group" id="profile-dropdown-wrapper" data-profile-dropdown>
+                    <button
+                        id="profile-dropdown-trigger"
+                        type="button"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-controls="profile-dropdown-menu"
+                        data-profile-dropdown-trigger
+                        class="flex items-center gap-2 focus:outline-none cursor-pointer ws-nav-link transition-colors {{ $isDynamic ? 'text-white hover:text-blue-200' : 'text-slate-600 hover:text-primary' }}">
                         <div class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white/20">
                             {{ mb_strtoupper(mb_substr(Session::get('user_name', 'U'), 0, 1)) }}
                         </div>
                         <span class="font-headline font-medium text-sm hidden lg:block">
                             {{ Session::get('user_name') }}
                         </span>
-                        <span class="material-symbols-outlined text-[20px] transition-transform duration-300 group-hover:rotate-180">expand_more</span>
+                        <span class="material-symbols-outlined text-[20px] transition-transform duration-300 group-hover:rotate-180 group-[.is-open]:rotate-180">expand_more</span>
                     </button>
                     
                     {{-- Dropdown Panel --}}
-                    <div class="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] border border-slate-100 rounded-2xl opacity-0 invisible translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0" style="top: 100%; z-index: 100;">
+                    <div
+                        id="profile-dropdown-menu"
+                        aria-labelledby="profile-dropdown-trigger"
+                        data-profile-dropdown-menu
+                        class="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] border border-slate-100 rounded-2xl opacity-0 invisible translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-[.is-open]:opacity-100 group-[.is-open]:visible group-[.is-open]:translate-y-0"
+                        style="top: 100%; z-index: 100;">
                         {{-- Dropdown Arrow Triangle --}}
                         <div class="absolute -top-2 right-6 w-4 h-4 bg-white border-l border-t border-slate-100 rotate-45"></div>
                         
