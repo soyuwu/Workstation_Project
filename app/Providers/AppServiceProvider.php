@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Service\ThongBao;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL; // <-- THÊM DÒNG NÀY ĐỂ FIX LỖI
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
     {
         //
         if (config('app.env') === 'production') {
-            \URL::forsScheme('https');
+            URL::forceScheme('https');
         }
     }
 }
