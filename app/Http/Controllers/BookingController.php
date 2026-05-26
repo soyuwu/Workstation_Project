@@ -97,6 +97,21 @@ class BookingController extends Controller
             return redirect($fallbackUrl)->with('error', 'Thiếu thông tin đặt chỗ.');
         }
 
+        // Kiểm tra xem đã có booking pending nào trùng lặp chưa
+        $existingBooking = \App\Models\Booking::where('user_id', auth()->id())
+            ->where('workspace_id', $roomId)
+            ->where('booking_date', Carbon::parse($startDate)->toDateString())
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existingBooking) {
+            // Trả về trang thông báo giao dịch chưa hoàn tất đẹp mắt
+            return view('booking.pending_warning', [
+                'booking' => $existingBooking,
+                'fallbackUrl' => $fallbackUrl
+            ]);
+        }
+
         $workspace = Workspace::query()
             ->with([
                 'images' => fn($query) => $query
@@ -376,7 +391,11 @@ class BookingController extends Controller
 
         if ($existingBooking) {
             if ($existingBooking->user_id === auth()->id() && $existingBooking->status === 'pending') {
-                return redirect()->route('account.bookings')->with('pending_booking_code', $existingBooking->booking_code);
+                // Trả về trang thông báo giao dịch chưa hoàn tất đẹp mắt
+                return view('booking.pending_warning', [
+                    'booking' => $existingBooking,
+                    'fallbackUrl' => $fallbackUrl
+                ]);
             }
             return redirect($fallbackUrl)->with('error', 'Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.');
         }
@@ -446,7 +465,7 @@ class BookingController extends Controller
             return redirect()->back()->with('error', 'Thời lượng đặt tối thiểu là ' . $workspace->min_booking_hours . ' giờ.');
         }
 
-        $hasOverlap = Booking::query()
+        $existingBooking = Booking::query()
             ->where('workspace_id', $workspace->id)
             ->where('status', '!=', 'cancelled')
             ->whereDate('booking_date', $bookingDate)
@@ -454,9 +473,17 @@ class BookingController extends Controller
                 $query->where('start_time', '<', $validated['end_time'])
                     ->where('end_time', '>', $validated['start_time']);
             })
-            ->exists();
+            ->first(); // Thay đổi từ exists() sang first() để lấy data kiểm tra
 
-        if ($hasOverlap) {
+        if ($existingBooking) {
+            // Cứu cánh cho tình huống Double-Click: 
+            // Nếu chính user này vừa tạo ra booking trùng giờ đó và nó đang pending, 
+            // thì coi như họ bấm nhầm 2 lần, đưa thẳng sang trang thanh toán luôn.
+            if ($existingBooking->user_id === auth()->id() && $existingBooking->status === 'pending') {
+                return redirect()->route('payment.vietqr', ['booking_code' => $existingBooking->booking_code]);
+            }
+
+            // Nếu thực sự là người khác đặt
             return redirect()->back()->with('error', 'Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.');
         }
 
