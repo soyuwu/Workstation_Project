@@ -7,6 +7,7 @@ use App\Models\RoomType;
 use App\Models\Service;
 use App\Models\User;
 use App\Models\Workspace;
+use App\Models\DiscountCode;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -141,6 +142,7 @@ class BookingController extends Controller
             'start_date'      => 'required|date',
             'duration_months' => 'required|integer|min:1',
             'payment_method'  => 'required|in:bank_transfer',
+            'discount_code'   => 'nullable|string|exists:discount_codes,code',
         ]);
 
         $durationMonths  = (int) $validated['duration_months'];
@@ -156,9 +158,44 @@ class BookingController extends Controller
         $discountRates   = [1 => 0, 3 => 0.05, 6 => 0.10, 12 => 0.15];
         $discountRate    = $discountRates[$durationMonths] ?? 0;
 
-        $subtotal      = $roomPrice * $durationMonths;
-        $discount      = $subtotal * $discountRate;
-        $afterDiscount = $subtotal - $discount;
+        $subtotal        = $roomPrice * $durationMonths;
+        $durationDiscount = $subtotal * $discountRate;
+        $baseForManualDiscount = $subtotal - $durationDiscount;
+
+        // Xử lý mã giảm giá thủ công
+        $manualDiscountAmount = 0;
+        $discountId = null;
+
+        if (!empty($validated['discount_code'])) {
+            $discount = DiscountCode::where('code', $validated['discount_code'])->first();
+            if ($discount && $discount->status === 'active') {
+                $now = now();
+                $validDates = (!$discount->valid_from || $now->gte($discount->valid_from)) &&
+                             (!$discount->valid_until || $now->lte($discount->valid_until));
+                $validUsage = $discount->usage_limit === null || $discount->usage_count < $discount->usage_limit;
+                $validMinAmount = $subtotal >= $discount->min_booking_amount;
+                $validWorkspace = empty($discount->applicable_workspaces) || in_array($workspace->id, $discount->applicable_workspaces);
+
+                if ($validDates && $validUsage && $validMinAmount && $validWorkspace) {
+                    $discountId = $discount->id;
+                    if ($discount->discount_type === 'percentage') {
+                        $manualDiscountAmount = $baseForManualDiscount * ($discount->discount_value / 100);
+                        if ($discount->max_discount !== null && $discount->max_discount > 0) {
+                            $manualDiscountAmount = min($manualDiscountAmount, $discount->max_discount);
+                        }
+                    } else {
+                        $manualDiscountAmount = min($discount->discount_value, $baseForManualDiscount);
+                    }
+                    $manualDiscountAmount = round($manualDiscountAmount);
+                    
+                    // Tăng số lần sử dụng
+                    $discount->increment('usage_count');
+                }
+            }
+        }
+
+        $totalDiscount = $durationDiscount + $manualDiscountAmount;
+        $afterDiscount = $subtotal - $totalDiscount;
         $tax           = $afterDiscount * 0.08;
         $totalAmount   = $afterDiscount + $tax;
 
@@ -177,6 +214,7 @@ class BookingController extends Controller
             'duration_hours' => $durationMonths * 30 * 8,
             'base_price'     => $subtotal,
             'tax'            => $tax,
+            'id_discount'    => $discountId,
             'total_amount'   => $totalAmount,
             'status'         => 'pending',
             'notes'          => 'Đặt tháng | Workspace: ' . ($workspace->code ?? $workspace->id) . ' | Tháng: ' . $durationMonths . ' | Kết thúc: ' . $endDate,
@@ -186,7 +224,7 @@ class BookingController extends Controller
             'booking_id'     => $booking->id,
             'user_id'        => $userId,
             'amount'         => $subtotal,
-            'discount'       => $discount,
+            'discount'       => $totalDiscount,
             'tax'            => $tax,
             'final_amount'   => $totalAmount,
             'payment_method' => 'bank_transfer',
@@ -359,6 +397,7 @@ class BookingController extends Controller
             'start_time'     => 'required',
             'end_time'       => 'required',
             'payment_method' => 'required|in:bank_transfer',
+            'discount_code'  => 'nullable|string|exists:discount_codes,code',
         ]);
 
         $workspace = Workspace::query()
@@ -398,8 +437,42 @@ class BookingController extends Controller
         }
 
         $basePrice   = ((float) $workspace->price_per_hour) * $duration;
-        $tax         = $basePrice * 0.08;
-        $totalAmount = $basePrice + $tax;
+
+        // Xử lý mã giảm giá
+        $discountAmount = 0;
+        $discountId = null;
+
+        if (!empty($validated['discount_code'])) {
+            $discount = DiscountCode::where('code', $validated['discount_code'])->first();
+            if ($discount && $discount->status === 'active') {
+                $now = now();
+                $validDates = (!$discount->valid_from || $now->gte($discount->valid_from)) &&
+                             (!$discount->valid_until || $now->lte($discount->valid_until));
+                $validUsage = $discount->usage_limit === null || $discount->usage_count < $discount->usage_limit;
+                $validMinAmount = $basePrice >= $discount->min_booking_amount;
+                $validWorkspace = empty($discount->applicable_workspaces) || in_array($workspace->id, $discount->applicable_workspaces);
+
+                if ($validDates && $validUsage && $validMinAmount && $validWorkspace) {
+                    $discountId = $discount->id;
+                    if ($discount->discount_type === 'percentage') {
+                        $discountAmount = $basePrice * ($discount->discount_value / 100);
+                        if ($discount->max_discount !== null && $discount->max_discount > 0) {
+                            $discountAmount = min($discountAmount, $discount->max_discount);
+                        }
+                    } else {
+                        $discountAmount = min($discount->discount_value, $basePrice);
+                    }
+                    $discountAmount = round($discountAmount);
+                    
+                    // Tăng số lần sử dụng
+                    $discount->increment('usage_count');
+                }
+            }
+        }
+
+        $afterDiscount = $basePrice - $discountAmount;
+        $tax           = $afterDiscount * 0.08;
+        $totalAmount   = $afterDiscount + $tax;
 
         $bookingCode = 'BK' . time() . rand(100, 999);
         $userId = auth()->id();
@@ -414,6 +487,7 @@ class BookingController extends Controller
             'duration_hours' => $duration,
             'base_price'    => $basePrice,
             'tax'           => $tax,
+            'id_discount'   => $discountId,
             'total_amount'  => $totalAmount,
             'status'        => 'pending',
             'notes'         => 'Workspace: ' . ($workspace->code ?? $workspace->id),
@@ -423,6 +497,7 @@ class BookingController extends Controller
             'booking_id'    => $booking->id,
             'user_id'       => $userId,
             'amount'        => $basePrice,
+            'discount'      => $discountAmount,
             'tax'           => $tax,
             'final_amount'  => $totalAmount,
             'payment_method' => 'bank_transfer',
@@ -430,5 +505,102 @@ class BookingController extends Controller
         ]);
 
         return redirect()->route('payment.vietqr', ['booking_code' => $bookingCode]);
+    }
+
+    /**
+     * Áp dụng mã giảm giá qua AJAX.
+     */
+    public function applyDiscount(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'code' => 'required|string',
+                'workspace_id' => 'required|integer|exists:workspaces,id',
+                'subtotal' => 'required|numeric|min:0',
+            ]);
+
+            $code = $validated['code'];
+            $workspaceId = $validated['workspace_id'];
+            $subtotal = (float) $validated['subtotal'];
+
+            $discount = DiscountCode::where('code', $code)->first();
+
+            if (!$discount) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mã giảm giá không tồn tại.'
+                ]);
+            }
+
+            if ($discount->status !== 'active') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mã giảm giá không còn hoạt động.'
+                ]);
+            }
+
+            $now = now();
+            if ($discount->valid_from && $now->lt($discount->valid_from)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mã giảm giá chưa đến thời gian áp dụng.'
+                ]);
+            }
+
+            if ($discount->valid_until && $now->gt($discount->valid_until)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mã giảm giá đã hết hạn sử dụng.'
+                ]);
+            }
+
+            if ($discount->usage_limit !== null && $discount->usage_count >= $discount->usage_limit) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mã giảm giá đã hết lượt sử dụng.'
+                ]);
+            }
+
+            if ($subtotal < $discount->min_booking_amount) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Đơn hàng chưa đạt giá trị tối thiểu ' . number_format($discount->min_booking_amount) . 'đ để sử dụng mã này.'
+                ]);
+            }
+
+            if (!empty($discount->applicable_workspaces)) {
+                if (!in_array($workspaceId, $discount->applicable_workspaces)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Mã giảm giá không áp dụng cho không gian này.'
+                    ]);
+                }
+            }
+
+            // Tính số tiền giảm
+            $discountAmount = 0;
+            if ($discount->discount_type === 'percentage') {
+                $discountAmount = $subtotal * ($discount->discount_value / 100);
+                if ($discount->max_discount !== null && $discount->max_discount > 0) {
+                    $discountAmount = min($discountAmount, $discount->max_discount);
+                }
+            } else {
+                $discountAmount = min($discount->discount_value, $subtotal);
+            }
+
+            $discountAmount = round($discountAmount);
+
+            return response()->json([
+                'success' => true,
+                'code' => $discount->code,
+                'discount_amount' => $discountAmount,
+                'message' => 'Áp dụng mã giảm giá thành công!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi kiểm tra mã giảm giá: ' . $e->getMessage()
+            ]);
+        }
     }
 }
