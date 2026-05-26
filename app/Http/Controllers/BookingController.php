@@ -81,8 +81,20 @@ class BookingController extends Controller
         $startDate   = $request->query('start_date');
         $durationMonths = (int) $request->query('duration_months', 1);
 
+        // Xác định trang danh sách trước để redirect khi có lỗi, tránh loop redirect()->back()
+        $fallbackUrl = route('booking.index');
+        if ($roomId) {
+            $ws = Workspace::with('roomType')->find($roomId);
+            if ($ws && $ws->roomType) {
+                $srv = Service::where('name', $ws->roomType->name)->first();
+                if ($srv) {
+                    $fallbackUrl = route('booking.monthly', $srv->slug);
+                }
+            }
+        }
+
         if (!$roomId || !$startDate) {
-            return redirect()->back()->with('error', 'Thiếu thông tin đặt chỗ.');
+            return redirect($fallbackUrl)->with('error', 'Thiếu thông tin đặt chỗ.');
         }
 
         $workspace = Workspace::query()
@@ -98,7 +110,7 @@ class BookingController extends Controller
 
         $roomPrice = (float) ($workspace->price_per_month ?? 0);
         if ($roomPrice <= 0) {
-            return redirect()->back()->with('error', 'Không thể đặt gói tháng vì workspace chưa cấu hình giá theo tháng.');
+            return redirect($fallbackUrl)->with('error', 'Không thể đặt gói tháng vì workspace chưa cấu hình giá theo tháng.');
         }
 
         // Bảng chiết khấu theo số tháng
@@ -306,8 +318,20 @@ class BookingController extends Controller
         $startTime = $request->query('start_time');
         $endTime = $request->query('end_time');
 
+        // Xác định trang danh sách trước để redirect khi có lỗi, tránh loop redirect()->back()
+        $fallbackUrl = route('booking.index');
+        if ($roomId) {
+            $ws = Workspace::with('roomType')->find($roomId);
+            if ($ws && $ws->roomType) {
+                $srv = Service::where('name', $ws->roomType->name)->first();
+                if ($srv) {
+                    $fallbackUrl = route('booking.hourly', $srv->slug);
+                }
+            }
+        }
+
         if (!$roomId || !$date || !$startTime || !$endTime) {
-            return redirect()->back()->with('error', 'Thiếu thông tin đặt phòng.');
+            return redirect($fallbackUrl)->with('error', 'Thiếu thông tin đặt phòng.');
         }
 
         $workspace = Workspace::query()
@@ -323,7 +347,7 @@ class BookingController extends Controller
 
         $bookingDate = Carbon::parse($date)->toDateString();
         if (Carbon::parse($bookingDate)->lessThan(Carbon::today())) {
-            return redirect()->back()->with('error', 'Ngày đặt không hợp lệ.');
+            return redirect($fallbackUrl)->with('error', 'Ngày đặt không hợp lệ.');
         }
 
         // Tính thời lượng
@@ -331,13 +355,13 @@ class BookingController extends Controller
         $end = Carbon::parse($bookingDate . ' ' . $endTime);
 
         if ($end->lessThanOrEqualTo($start)) {
-            return redirect()->back()->with('error', 'Thời gian không hợp lệ.');
+            return redirect($fallbackUrl)->with('error', 'Thời gian không hợp lệ.');
         }
 
         $duration = $start->diffInMinutes($end) / 60;
 
         if ($duration < (int) $workspace->min_booking_hours) {
-            return redirect()->back()->with('error', 'Thời lượng đặt tối thiểu là ' . $workspace->min_booking_hours . ' giờ.');
+            return redirect($fallbackUrl)->with('error', 'Thời lượng đặt tối thiểu là ' . $workspace->min_booking_hours . ' giờ.');
         }
 
         $hasOverlap = Booking::query()
@@ -351,7 +375,7 @@ class BookingController extends Controller
             ->exists();
 
         if ($hasOverlap) {
-            return redirect()->back()->with('error', 'Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.');
+            return redirect($fallbackUrl)->with('error', 'Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.');
         }
 
         $roomPrice = (float) $workspace->price_per_hour;
