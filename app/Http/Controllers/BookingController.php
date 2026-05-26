@@ -364,7 +364,7 @@ class BookingController extends Controller
             return redirect($fallbackUrl)->with('error', 'Thời lượng đặt tối thiểu là ' . $workspace->min_booking_hours . ' giờ.');
         }
 
-        $hasOverlap = Booking::query()
+        $existingBooking = Booking::query()
             ->where('workspace_id', $workspace->id)
             ->where('status', '!=', 'cancelled')
             ->whereDate('booking_date', $bookingDate)
@@ -372,9 +372,12 @@ class BookingController extends Controller
                 $query->where('start_time', '<', $endTime)
                     ->where('end_time', '>', $startTime);
             })
-            ->exists();
+            ->first();
 
-        if ($hasOverlap) {
+        if ($existingBooking) {
+            if ($existingBooking->user_id === auth()->id() && $existingBooking->status === 'pending') {
+                return redirect()->route('account.bookings')->with('error', 'Bạn đã có một yêu cầu đặt chỗ đang chờ thanh toán cho khung giờ này. Vui lòng tiến hành thanh toán tại đây.');
+            }
             return redirect($fallbackUrl)->with('error', 'Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.');
         }
 
