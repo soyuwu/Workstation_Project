@@ -82,14 +82,11 @@
                   <!-- TOP HEADER BAR -->
                   <header class="top-header" id="topHeader" style="justify-content: flex-end;">
 
-                        <div class="header-actions" style="display: flex; align-items: center; gap: 10px;">
-                              <a href="/" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
-                                    <i class="ph-bold ph-house"></i> Trang chủ
-                              </a>
-                              <form action="{{ route('logOut') }}" method="POST" class="m-0" style="margin: 0;">
+                        <div class="header-actions">
+                              <form action="{{ route('logOut') }}" method="POST" class="m-0">
                                     @csrf
-                                    <button type="submit" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
-                                          <i class="ph-bold ph-sign-out"></i> Đăng xuất
+                                    <button type="submit" class="btn btn-outline btn-sm">
+                                          Đăng xuất
                                     </button>
                               </form>
                         </div>
