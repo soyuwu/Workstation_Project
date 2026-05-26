@@ -29,6 +29,16 @@ class Booking extends Model
         'qr_code',
         'notes',
         'cancellation_reason',
+        'cancelled_at',
+        'cancel_fee_amount',
+        'refund_amount',
+    ];
+
+    protected $casts = [
+        'booking_date' => 'date',
+        'actual_check_in' => 'datetime',
+        'actual_check_out' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
 
     public function user()
