@@ -20,6 +20,7 @@
             <div class="filter-tabs" id="voucherFilterTabs">
                   <button class="filter-tab filter-tab--active" data-filter="all">Tất cả</button>
                   <button class="filter-tab" data-filter="active">Đang chạy</button>
+                  <button class="filter-tab" data-filter="pending">Đang chờ</button>
                   <button class="filter-tab" data-filter="expired">Hết hạn / Hết lượt</button>
             </div>
 
@@ -40,29 +41,62 @@
                         <tbody>
                               @foreach($vouchers as $voucher)
                               @php 
+                                    $now = \Carbon\Carbon::now()->startOfDay();
+                                    $validFrom = $voucher->valid_from ? \Carbon\Carbon::parse($voucher->valid_from)->startOfDay() : null;
+                                    $validUntil = $voucher->valid_until ? \Carbon\Carbon::parse($voucher->valid_until)->endOfDay() : null;
+                                    
                                     $percent = $voucher->usage_limit > 0 ? min(100, ($voucher->usage_count / $voucher->usage_limit) * 100) : 0;
-                                    $daysLeft = null;
-                                    if ($voucher->valid_until) {
-                                        $daysLeft = \Carbon\Carbon::now()->diffInDays(\Carbon\Carbon::parse($voucher->valid_until), false);
+                                    
+                                    $statusText = 'Đang chạy';
+                                    $statusBadgeClass = 'badge--green';
+                                    $rowStatus = 'active';
+                                    $isActive = true;
+
+                                    if ($voucher->status == 'disabled') {
+                                        $statusText = 'Tạm dừng';
+                                        $statusBadgeClass = 'badge--red';
+                                        $rowStatus = 'expired';
+                                        $isActive = false;
+                                    } elseif ($percent >= 100) {
+                                        $statusText = 'Hết lượt';
+                                        $statusBadgeClass = 'badge--red';
+                                        $rowStatus = 'expired';
+                                        $isActive = false;
+                                    } elseif ($validUntil && \Carbon\Carbon::now()->greaterThan($validUntil)) {
+                                        $statusText = 'Hết hạn';
+                                        $statusBadgeClass = 'badge--red';
+                                        $rowStatus = 'expired';
+                                        $isActive = false;
+                                    } elseif ($validFrom && \Carbon\Carbon::now()->lessThan($validFrom)) {
+                                        $statusText = 'Đang chờ';
+                                        $statusBadgeClass = 'badge--yellow';
+                                        $rowStatus = 'pending';
+                                        $isActive = false;
                                     }
-                                    $isActive = $voucher->status == 'active' && $percent < 100 && ($daysLeft === null || $daysLeft >= 0);
                               @endphp
-                              <tr data-status="{{ $isActive ? 'active' : 'expired' }}" data-id="{{ $voucher->id }}">
+                              <tr data-status="{{ $rowStatus }}" 
+                                  data-id="{{ $voucher->id }}"
+                                  data-code="{{ $voucher->code }}"
+                                  data-discount="{{ $voucher->discount_value }}"
+                                  data-max-discount="{{ $voucher->max_discount }}"
+                                  data-valid-from="{{ $voucher->valid_from ? \Carbon\Carbon::parse($voucher->valid_from)->format('Y-m-d') : '' }}"
+                                  data-valid-until="{{ $voucher->valid_until ? \Carbon\Carbon::parse($voucher->valid_until)->format('Y-m-d') : '' }}"
+                                  data-limit="{{ $voucher->usage_limit }}">
                                     <td>
                                           <b class="voucher-code {{ !$isActive ? 'voucher-code--expired' : '' }}">{{ $voucher->code }}</b>
                                     </td>
                                     <td class="{{ !$isActive ? 'text-muted' : '' }}"><b>{{ $voucher->discount_value }}{{ $voucher->discount_type == 'percentage' ? '%' : 'đ' }}</b></td>
                                     <td class="{{ !$isActive ? 'text-muted' : '' }}">{{ $voucher->max_discount ? number_format($voucher->max_discount, 0, ',', '.') . ' ₫' : '-' }}</td>
                                     <td>
-                                          <span class="{{ !$isActive ? 'text-muted' : '' }}">{{ $voucher->valid_until ? \Carbon\Carbon::parse($voucher->valid_until)->format('Y-m-d') : 'Không giới hạn' }}</span><br>
-                                          @if($voucher->valid_until)
-                                                @if($daysLeft >= 0)
-                                                      <span class="text-muted text-sm">Còn {{ (int)$daysLeft }} ngày</span>
-                                                @else
-                                                      <span class="text-muted text-sm">Đã kết thúc</span>
+                                          @if($voucher->valid_from || $voucher->valid_until)
+                                                @if($voucher->valid_from)
+                                                      <span class="{{ !$isActive ? 'text-muted' : '' }} text-sm">Bắt đầu: {{ \Carbon\Carbon::parse($voucher->valid_from)->format('Y-m-d') }}</span><br>
+                                                @endif
+                                                @if($voucher->valid_until)
+                                                      <span class="{{ !$isActive ? 'text-muted' : '' }} text-sm">Kết thúc: {{ \Carbon\Carbon::parse($voucher->valid_until)->format('Y-m-d') }}</span>
                                                 @endif
                                           @else
-                                                <span class="text-muted text-sm">Voucher cố định</span>
+                                                <span class="text-muted text-sm">Không giới hạn</span>
                                           @endif
                                     </td>
                                     <td>
@@ -72,11 +106,7 @@
                                           <span class="text-sm {{ $percent >= 100 ? 'text-muted' : '' }}">{{ $voucher->usage_count }} / {{ $voucher->usage_limit ?: '∞' }} lượt {{ $percent >= 100 ? '(Hết)' : '' }}</span>
                                     </td>
                                     <td>
-                                          @if($isActive)
-                                                <span class="badge badge--green">Đang chạy</span>
-                                          @else
-                                                <span class="badge badge--red">Hết hạn / Hết lượt</span>
-                                          @endif
+                                          <span class="badge {{ $statusBadgeClass }}">{{ $statusText }}</span>
                                     </td>
                                     <td class="text-center">
                                           <div class="action-group">
@@ -124,8 +154,12 @@
                                           style="width: 100%;">
                               </div>
                               <div class="form-group">
-                                    <label for="voucherTime" class="form-label">Hạn áp dụng (YYYY-MM-DD)</label>
-                                    <input type="date" id="voucherTime" class="input-field" style="width: 100%;">
+                                    <label for="voucherValidFrom" class="form-label">Ngày bắt đầu</label>
+                                    <input type="date" id="voucherValidFrom" class="input-field" style="width: 100%;">
+                              </div>
+                              <div class="form-group">
+                                    <label for="voucherValidUntil" class="form-label">Ngày kết thúc</label>
+                                    <input type="date" id="voucherValidUntil" class="input-field" style="width: 100%;">
                               </div>
                               <div class="form-group">
                                     <label for="voucherLimit" class="form-label">Giới hạn lượt</label>
