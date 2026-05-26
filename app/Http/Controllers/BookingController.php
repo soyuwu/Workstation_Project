@@ -376,7 +376,7 @@ class BookingController extends Controller
 
         if ($existingBooking) {
             if ($existingBooking->user_id === auth()->id() && $existingBooking->status === 'pending') {
-                return redirect()->route('account.bookings')->with('error', 'Bạn đã có một yêu cầu đặt chỗ đang chờ thanh toán cho khung giờ này. Vui lòng tiến hành thanh toán tại đây.');
+                return redirect()->route('account.bookings')->with('pending_booking_code', $existingBooking->booking_code);
             }
             return redirect($fallbackUrl)->with('error', 'Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.');
         }

@@ -125,4 +125,10 @@
             </div>
         </div>
     </section>
+
+    @if(session('pending_booking_code'))
+        <script>
+            alert("Bạn đã có một yêu cầu đặt chỗ đang chờ thanh toán cho khung giờ này.\nVui lòng tiến hành thanh toán cho mã đơn: {{ session('pending_booking_code') }}.");
+        </script>
+    @endif
 @endsection
