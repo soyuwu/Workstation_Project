@@ -64,6 +64,7 @@ Route::prefix('booking')->group(function () {
         // Luồng đặt tháng
         Route::get('/monthly-checkout', [BookingController::class, 'monthlyCheckout'])->name('booking.monthly.checkout');
         Route::post('/monthly-process', [BookingController::class, 'processMonthlyBooking'])->name('booking.monthly.process');
+        Route::post('/apply-discount', [BookingController::class, 'applyDiscount'])->name('booking.apply-discount');
     });
 });
 
