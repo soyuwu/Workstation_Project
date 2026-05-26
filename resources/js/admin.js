@@ -209,24 +209,19 @@ function initVoucherManagement() {
         title.textContent = 'Chỉnh sửa Voucher';
 
         const id = row.getAttribute('data-id');
-        const code = row.querySelector('.voucher-code')?.textContent?.trim() ?? '';
-        const discountText = row.cells?.[1]?.textContent?.trim() ?? '';
-        const discount = parseInt(discountText.replace('%', '').replace('đ', ''), 10) || '';
-        const maxDiscountText = row.cells?.[2]?.textContent?.trim() ?? '';
-        const maxDiscount = maxDiscountText === '-' ? '' : maxDiscountText.replace(/\D/g, '');
-
-        const timeRaw = row.cells?.[3]?.querySelector('span')?.textContent?.trim() ?? '';
-        const time = timeRaw === 'Không giới hạn' ? '' : timeRaw;
-
-        const limitText = row.cells?.[4]?.querySelector('.text-sm')?.textContent?.trim() ?? '';
-        const limitMatch = limitText.match(/\/ (\d+) lượt/);
-        const limit = limitMatch ? limitMatch[1] : '';
+        const code = row.getAttribute('data-code') ?? '';
+        const discount = row.getAttribute('data-discount') ?? '';
+        const maxDiscount = row.getAttribute('data-max-discount') ?? '';
+        const validFrom = row.getAttribute('data-valid-from') ?? '';
+        const validUntil = row.getAttribute('data-valid-until') ?? '';
+        const limit = row.getAttribute('data-limit') ?? '';
 
         document.getElementById('voucherId').value = id ?? '';
         document.getElementById('voucherCode').value = code;
         document.getElementById('voucherDiscount').value = discount;
         document.getElementById('voucherMaxDiscount').value = maxDiscount;
-        document.getElementById('voucherTime').value = time;
+        document.getElementById('voucherValidFrom').value = validFrom;
+        document.getElementById('voucherValidUntil').value = validUntil;
         document.getElementById('voucherLimit').value = limit;
 
         modal.style.display = 'flex';
@@ -237,7 +232,8 @@ function initVoucherManagement() {
         const code = document.getElementById('voucherCode').value;
         const discount = document.getElementById('voucherDiscount').value;
         const maxDiscount = document.getElementById('voucherMaxDiscount').value || null;
-        const time = document.getElementById('voucherTime').value || null;
+        const validFrom = document.getElementById('voucherValidFrom').value || null;
+        const validUntil = document.getElementById('voucherValidUntil').value || null;
         const limit = document.getElementById('voucherLimit').value || null;
 
         if (!code || !discount) {
@@ -248,8 +244,9 @@ function initVoucherManagement() {
         const payload = {
             code,
             discount_value: discount,
-            max_discount: maxDiscount ? maxDiscount.replace(/\D/g, '') : null,
-            valid_until: time,
+            max_discount: maxDiscount ? String(maxDiscount).replace(/\D/g, '') : null,
+            valid_from: validFrom,
+            valid_until: validUntil,
             usage_limit: limit,
         };
 
