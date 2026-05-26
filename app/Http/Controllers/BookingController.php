@@ -187,9 +187,6 @@ class BookingController extends Controller
                         $manualDiscountAmount = min($discount->discount_value, $baseForManualDiscount);
                     }
                     $manualDiscountAmount = round($manualDiscountAmount);
-                    
-                    // Tăng số lần sử dụng
-                    $discount->increment('usage_count');
                 }
             }
         }
@@ -463,9 +460,6 @@ class BookingController extends Controller
                         $discountAmount = min($discount->discount_value, $basePrice);
                     }
                     $discountAmount = round($discountAmount);
-                    
-                    // Tăng số lần sử dụng
-                    $discount->increment('usage_count');
                 }
             }
         }
