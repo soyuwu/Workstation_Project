@@ -104,28 +104,29 @@
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-slate-700 mb-2">Mã giảm giá (Tùy chọn)</label>
                         <div class="flex gap-2">
-                            <input type="text" placeholder="Nhập mã giảm giá..." class="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
-                            <button class="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition">Áp dụng</button>
+                            <input type="text" id="discount-code-input" placeholder="Nhập mã giảm giá..." class="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" value="{{ old('discount_code') }}">
+                            <button type="button" id="apply-discount-btn" class="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition">Áp dụng</button>
                         </div>
+                        <div id="discount-message" class="text-xs mt-2 font-medium hidden"></div>
                     </div>
 
                     <!-- Tính tiền -->
                     <div class="space-y-3 mb-6">
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-500">Tạm tính ({{ $duration }} giờ)</span>
-                            <span class="font-medium text-slate-800">{{ number_format($subtotal) }} VNĐ</span>
+                            <span class="font-medium text-slate-800" id="summary-subtotal" data-value="{{ $subtotal }}">{{ number_format($subtotal) }} VNĐ</span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-500">Thuế VAT (8%)</span>
-                            <span class="font-medium text-slate-800">{{ number_format($tax) }} VNĐ</span>
+                            <span class="font-medium text-slate-800" id="summary-tax" data-value="{{ $tax }}">{{ number_format($tax) }} VNĐ</span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-500">Giảm giá</span>
-                            <span class="font-medium text-green-600">- 0 VNĐ</span>
+                            <span class="font-medium text-green-600" id="summary-discount" data-value="0">- 0 VNĐ</span>
                         </div>
                         <div class="border-t border-slate-200 pt-4 flex justify-between items-center">
                             <span class="text-base font-bold text-slate-800">Tổng thanh toán</span>
-                            <span class="text-2xl font-bold text-primary">{{ number_format($total) }} VNĐ</span>
+                            <span class="text-2xl font-bold text-primary" id="summary-total" data-value="{{ $total }}">{{ number_format($total) }} VNĐ</span>
                         </div>
                     </div>
 
@@ -137,6 +138,7 @@
                         <input type="hidden" name="start_time" value="{{ $startTime }}">
                         <input type="hidden" name="end_time" value="{{ $endTime }}">
                         <input type="hidden" name="payment_method" value="bank_transfer">
+                        <input type="hidden" name="discount_code" id="hidden-discount-code" value="{{ old('discount_code') }}">
 
                         <!-- Thông báo phương thức thanh toán -->
                         <div class="mb-6 flex items-center gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4">
@@ -160,3 +162,124 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const discountInput = document.getElementById('discount-code-input');
+        const applyBtn = document.getElementById('apply-discount-btn');
+        const messageDiv = document.getElementById('discount-message');
+        const hiddenDiscountInput = document.getElementById('hidden-discount-code');
+
+        const summarySubtotal = document.getElementById('summary-subtotal');
+        const summaryTax = document.getElementById('summary-tax');
+        const summaryDiscount = document.getElementById('summary-discount');
+        const summaryTotal = document.getElementById('summary-total');
+
+        const subtotalVal = parseFloat(summarySubtotal.getAttribute('data-value'));
+        const workspaceId = "{{ $roomId }}";
+
+        let appliedDiscountCode = '';
+
+        // Xử lý khi nhấn Enter trong ô nhập mã giảm giá
+        discountInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                applyBtn.click();
+            }
+        });
+
+        applyBtn.addEventListener('click', function () {
+            const code = discountInput.value.trim();
+            if (!code) {
+                showFeedback('Vui lòng nhập mã giảm giá.', 'text-red-500');
+                resetDiscount();
+                return;
+            }
+
+            // Nếu đã áp dụng mã này và nhấn lại -> Gỡ bỏ mã
+            if (appliedDiscountCode && code === appliedDiscountCode) {
+                resetDiscount();
+                discountInput.value = '';
+                showFeedback('Đã gỡ mã giảm giá.', 'text-slate-500');
+                applyBtn.textContent = 'Áp dụng';
+                applyBtn.className = 'rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition';
+                discountInput.removeAttribute('readonly');
+                return;
+            }
+
+            applyBtn.disabled = true;
+            applyBtn.textContent = 'Đang kiểm tra...';
+
+            fetch("{{ route('booking.apply-discount') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    code: code,
+                    workspace_id: workspaceId,
+                    subtotal: subtotalVal
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                applyBtn.disabled = false;
+                if (data.success) {
+                    appliedDiscountCode = data.code;
+                    hiddenDiscountInput.value = data.code;
+                    discountInput.setAttribute('readonly', 'true');
+                    
+                    // Đổi nút thành Hủy bỏ
+                    applyBtn.textContent = 'Hủy bỏ';
+                    applyBtn.className = 'rounded-xl bg-red-100 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-200 transition';
+
+                    showFeedback(data.message, 'text-green-600');
+
+                    // Tính toán số tiền mới
+                    const discountAmount = data.discount_amount;
+                    const afterDiscount = subtotalVal - discountAmount;
+                    const taxAmount = Math.round(afterDiscount * 0.08);
+                    const totalAmount = afterDiscount + taxAmount;
+
+                    // Cập nhật giao diện
+                    summaryDiscount.textContent = `- ${new Intl.NumberFormat('vi-VN').format(discountAmount)} VNĐ`;
+                    summaryTax.textContent = `${new Intl.NumberFormat('vi-VN').format(taxAmount)} VNĐ`;
+                    summaryTotal.textContent = `${new Intl.NumberFormat('vi-VN').format(totalAmount)} VNĐ`;
+                } else {
+                    showFeedback(data.message, 'text-red-500');
+                    resetDiscount();
+                    applyBtn.textContent = 'Áp dụng';
+                }
+            })
+            .catch(error => {
+                applyBtn.disabled = false;
+                applyBtn.textContent = 'Áp dụng';
+                showFeedback('Đã xảy ra lỗi hệ thống. Vui lòng thử lại.', 'text-red-500');
+                resetDiscount();
+            });
+        });
+
+        function showFeedback(msg, className) {
+            messageDiv.textContent = msg;
+            messageDiv.className = `text-xs mt-2 font-medium ${className}`;
+            messageDiv.classList.remove('hidden');
+        }
+
+        function resetDiscount() {
+            appliedDiscountCode = '';
+            hiddenDiscountInput.value = '';
+            
+            // Tính lại giá gốc
+            const originalTax = Math.round(subtotalVal * 0.08);
+            const originalTotal = subtotalVal + originalTax;
+
+            // Reset UI
+            summaryDiscount.textContent = `- 0 VNĐ`;
+            summaryTax.textContent = `${new Intl.NumberFormat('vi-VN').format(originalTax)} VNĐ`;
+            summaryTotal.textContent = `${new Intl.NumberFormat('vi-VN').format(originalTotal)} VNĐ`;
+        }
+    });
+</script>
+@endpush
