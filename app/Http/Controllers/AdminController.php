@@ -117,6 +117,7 @@ class AdminController extends Controller
             'code' => 'required|string|max:50',
             'discount_value' => 'required|numeric',
             'max_discount' => 'nullable|numeric',
+            'valid_from' => 'nullable|date',
             'valid_until' => 'nullable|date',
             'usage_limit' => 'nullable|integer',
         ]);
