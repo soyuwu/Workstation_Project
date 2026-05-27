@@ -28,4 +28,14 @@ class Payment extends Model
         'reported_at' => 'datetime',
         'gateway_response' => 'array',
     ];
+
+    public function booking()
+    {
+        return $this->belongsTo(Booking::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

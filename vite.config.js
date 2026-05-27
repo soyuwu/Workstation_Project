@@ -10,6 +10,7 @@ export default defineConfig({
                 'resources/css/booking-hourly.css',
                 'resources/js/app.js',
                 'resources/js/admin.js',
+                'resources/js/account-bookings.js',
                 'resources/js/booking-hourly.js',
                 'resources/js/booking-monthly.js',
                 'resources/js/payment-success.js',
