@@ -66,7 +66,13 @@ class BookingLifecycleTest extends TestCase
             'paid_at' => now(),
         ]);
 
-        $result = app(BookingLifecycleService::class)->cancelByUser($booking, $user);
+        $result = app(BookingLifecycleService::class)->cancelByUser($booking, $user, [
+            'refund_receiver_name' => 'Nguyen Van A',
+            'refund_bank_name' => 'Vietcombank (VCB)',
+            'refund_bank_account_number' => '123456789',
+            'cancellation_reason_code' => 'wrong_booking',
+            'cancellation_reason_label' => 'Đặt nhầm ngày/nhầm giờ/nhầm cơ sở.',
+        ]);
 
         $booking->refresh();
         $this->assertTrue($result['success']);
@@ -74,6 +80,76 @@ class BookingLifecycleTest extends TestCase
         $this->assertSame('refunded', $booking->payment->payment_status);
         $this->assertEquals(200000, (float) $booking->cancel_fee_amount);
         $this->assertEquals(800000, (float) $booking->refund_amount);
+        $this->assertSame('Nguyen Van A', $booking->refund_receiver_name);
+        $this->assertSame('Vietcombank (VCB)', $booking->refund_bank_name);
+        $this->assertSame('123456789', $booking->refund_bank_account_number);
+        $this->assertSame('wrong_booking', $booking->cancellation_reason_code);
+    }
+
+    public function test_unpaid_booking_can_be_cancelled_without_refund_or_survey_details(): void
+    {
+        $user = User::factory()->create();
+        $workspace = $this->workspace();
+        $booking = $this->booking($user, $workspace, [
+            'status' => 'pending',
+        ]);
+
+        Payment::create([
+            'booking_id' => $booking->id,
+            'user_id' => $user->id,
+            'amount' => 100000,
+            'tax' => 8000,
+            'final_amount' => 108000,
+            'payment_method' => 'bank_transfer',
+            'payment_status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->post(route('account.bookings.cancel', $booking));
+
+        $response->assertRedirect(route('account.bookings'));
+
+        $booking->refresh();
+        $this->assertSame('cancelled', $booking->status);
+        $this->assertSame('failed', $booking->payment->payment_status);
+        $this->assertNull($booking->refund_receiver_name);
+        $this->assertNull($booking->cancellation_reason_code);
+    }
+
+    public function test_paid_booking_can_store_multiple_cancellation_reasons(): void
+    {
+        $user = User::factory()->create();
+        $workspace = $this->workspace();
+        $booking = $this->booking($user, $workspace, [
+            'booking_date' => now()->addDay()->toDateString(),
+            'status' => 'confirmed',
+            'total_amount' => 1000000,
+        ]);
+
+        Payment::create([
+            'booking_id' => $booking->id,
+            'user_id' => $user->id,
+            'amount' => 925926,
+            'tax' => 74074,
+            'final_amount' => 1000000,
+            'payment_method' => 'bank_transfer',
+            'payment_status' => 'completed',
+            'paid_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user)->post(route('account.bookings.cancel', $booking), [
+            'refund_receiver_name' => 'Nguyen Van A',
+            'refund_bank_name' => 'vietcombank',
+            'refund_bank_account_number' => '123456789',
+            'cancellation_reason_codes' => ['wrong_booking', 'bad_weather'],
+        ]);
+
+        $response->assertRedirect(route('account.bookings'));
+
+        $booking->refresh();
+        $this->assertSame('cancelled', $booking->status);
+        $this->assertSame('wrong_booking,bad_weather', $booking->cancellation_reason_code);
+        $this->assertStringContainsString('Thời tiết xấu', $booking->cancellation_reason);
     }
 
     public function test_paid_booking_cannot_be_cancelled_after_checkin(): void

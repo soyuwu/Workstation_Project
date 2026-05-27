@@ -63,7 +63,7 @@ function initBookingDetailModal() {
     const details = readJsonScript("account-bookings-data");
     const modal = document.getElementById("booking-detail-modal");
     const panel = document.getElementById("booking-detail-panel");
-    const cancelForm = document.getElementById("booking-cancel-form");
+    const cancelLink = document.getElementById("booking-cancel-link");
     const reviewForm = document.getElementById("booking-review-form");
     const payLink = document.getElementById("booking-modal-pay-link");
     const cancelButtonWrap = document.getElementById("booking-cancel-action");
@@ -105,8 +105,8 @@ function initBookingDetailModal() {
             if (data.pay_url) payLink.setAttribute("href", data.pay_url);
         }
 
-        if (cancelForm) {
-            cancelForm.action = data.cancel_url || "#";
+        if (cancelLink) {
+            cancelLink.href = data.cancel_url || "#";
         }
         toggle(cancelButtonWrap, Boolean(data.can_cancel && data.cancel_url));
         toggle(noCancelReason, !data.can_cancel);
@@ -169,12 +169,6 @@ function initBookingDetailModal() {
         }
     });
 
-    cancelForm?.addEventListener("submit", (event) => {
-        const fee = document.getElementById("modal-booking-cancel-fee")?.textContent || "0 VND";
-        const refund = document.getElementById("modal-booking-refund")?.textContent || "0 VND";
-        const ok = confirm(`Xác nhận hủy đơn?\nPhí phạt: ${fee}\nDự kiến hoàn: ${refund}`);
-        if (!ok) event.preventDefault();
-    });
 }
 
 document.addEventListener("DOMContentLoaded", () => {

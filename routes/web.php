@@ -34,6 +34,7 @@ Route::get('activate', [AuthController::class, 'activate'])->name('activate');
 Route::middleware(RequireAuth::class)->group(function () {
     Route::get('/ho-so', [AccountController::class, 'profile'])->name('account.profile');
     Route::get('/lich-su-dat-cho', [AccountController::class, 'bookings'])->name('account.bookings');
+    Route::get('/lich-su-dat-cho/{booking}/cancel', [AccountController::class, 'showCancelBookingForm'])->name('account.bookings.cancel.form');
     Route::post('/lich-su-dat-cho/{booking}/cancel', [AccountController::class, 'cancelBooking'])->name('account.bookings.cancel');
     Route::post('/lich-su-dat-cho/{booking}/review', [AccountController::class, 'storeReview'])->name('account.bookings.review');
 });
