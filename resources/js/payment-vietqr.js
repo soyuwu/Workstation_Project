@@ -17,9 +17,10 @@ function initPaymentVietqr() {
             if (!response.ok) return;
 
             const data = await response.json();
+            const bookingStatus = String(data?.status || "");
             const paymentStatus = String(data?.payment_status || "");
 
-            if (paymentStatus === "completed") {
+            if (paymentStatus === "completed" || bookingStatus === "cancelled") {
                 clearInterval(timer);
                 window.location.href = successUrl;
             }

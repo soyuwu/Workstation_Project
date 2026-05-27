@@ -248,7 +248,7 @@ class BookingController extends Controller
                 ->get(['workspace_id', 'booking_date', 'start_time', 'end_time', 'status'])
                 ->map(fn(Booking $booking) => [
                     'room_id' => (string) $booking->workspace_id,
-                    'date' => $booking->booking_date,
+                    'date' => Carbon::parse($booking->booking_date)->toDateString(),
                     'start_time' => $booking->start_time,
                     'end_time' => $booking->end_time,
                     'status' => $booking->status,

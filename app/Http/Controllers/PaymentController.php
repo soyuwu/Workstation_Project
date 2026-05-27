@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\BookingLifecycleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -89,6 +90,11 @@ class PaymentController extends Controller
     public function vietqr($booking_code)
     {
         $booking = \App\Models\Booking::where('booking_code', $booking_code)->firstOrFail();
+        $booking = app(BookingLifecycleService::class)->syncBooking($booking);
+
+        if ($booking->status === 'cancelled') {
+            return redirect()->route('payment.success', ['booking_code' => $booking_code]);
+        }
 
         $bankId = (string) config('vietqr.bank_id', '970416');
         $bankName = (string) config('vietqr.bank_name');
@@ -114,6 +120,13 @@ class PaymentController extends Controller
     public function confirmVietqr(Request $request, $booking_code)
     {
         $booking = \App\Models\Booking::where('booking_code', $booking_code)->firstOrFail();
+        $booking = app(BookingLifecycleService::class)->syncBooking($booking);
+
+        if ($booking->status === 'cancelled') {
+            return redirect()->route('payment.success', ['booking_code' => $booking_code])
+                ->with('error', 'Đơn hàng đã quá thời gian thanh toán và bị hủy.');
+        }
+
         $payment = \App\Models\Payment::where('booking_id', $booking->id)->first();
 
         if ($payment) {
@@ -140,6 +153,8 @@ class PaymentController extends Controller
         $booking = \App\Models\Booking::with('payment')->where('booking_code', $booking_code)->first();
 
         if ($booking) {
+            $booking = app(BookingLifecycleService::class)->syncBooking($booking)->load('payment');
+
             return response()->json([
                 'status' => $booking->status,
                 'payment_status' => $booking->payment?->payment_status
@@ -155,8 +170,11 @@ class PaymentController extends Controller
     public function successPage($booking_code)
     {
         $booking = \App\Models\Booking::with('payment')->where('booking_code', $booking_code)->firstOrFail();
+        $booking = app(BookingLifecycleService::class)->syncBooking($booking)->load('payment');
 
-        if ($booking->payment && $booking->payment->payment_status === 'completed') {
+        if ($booking->status === 'cancelled') {
+            $message = $booking->cancellation_reason ?: 'Đơn hàng đã bị hủy.';
+        } elseif ($booking->payment && $booking->payment->payment_status === 'completed') {
             $message = 'Cảm ơn bạn! Giao dịch của bạn đã được hệ thống xác nhận thanh toán tự động thành công.';
         } else {
             $message = 'Cảm ơn bạn! Hệ thống đang chờ kiểm tra biến động số dư và sẽ xác nhận đặt phòng trong ít phút.';
@@ -198,6 +216,8 @@ class PaymentController extends Controller
             $booking = \App\Models\Booking::where('booking_code', $bookingCode)->first();
 
             if ($booking) {
+                $booking = app(BookingLifecycleService::class)->syncBooking($booking);
+
                 // Nếu đơn hàng đã được xác nhận từ trước
                 if ($booking->status === 'confirmed') {
                     return response()->json([
@@ -207,6 +227,13 @@ class PaymentController extends Controller
                 }
 
                 // Kiểm tra số tiền chuyển khoản có khớp hoặc lớn hơn số tiền của Booking không
+                if ($booking->status === 'cancelled') {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Booking da bi huy, can doi soat thu cong neu tien da vao tai khoan.'
+                    ], 409);
+                }
+
                 if ((int) $booking->total_amount <= (int) $transferAmount) {
                     // Cập nhật trạng thái Booking
                     $booking->status = 'confirmed';
