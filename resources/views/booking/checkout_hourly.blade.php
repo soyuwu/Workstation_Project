@@ -131,7 +131,7 @@
                     </div>
 
                     <!-- Phương thức thanh toán -->
-                    <form action="{{ route('booking.process') }}" method="POST">
+                    <form id="checkout-form" action="{{ route('booking.process') }}" method="POST">
                         @csrf
                         <input type="hidden" name="room_id" value="{{ $roomId }}">
                         <input type="hidden" name="date" value="{{ $date }}">
@@ -173,6 +173,18 @@
             workspaceId: "{{ $roomId }}",
             voucherDiscountSelector: '#summary-discount'
         });
+
+        // Chống nhấp đúp khi tiến hành thanh toán
+        const checkoutForm = document.getElementById('checkout-form');
+        if (checkoutForm) {
+            checkoutForm.addEventListener('submit', function () {
+                const submitBtn = checkoutForm.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="material-symbols-outlined text-lg animate-spin">hourglass_empty</span> Đang xử lý...';
+                }
+            });
+        }
     });
 </script>
 @endpush

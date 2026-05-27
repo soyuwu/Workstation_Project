@@ -129,7 +129,7 @@
                     </div>
 
                     <!-- Form chọn phương thức thanh toán -->
-                    <form action="{{ route('booking.monthly.process') }}" method="POST">
+                    <form id="checkout-form" action="{{ route('booking.monthly.process') }}" method="POST">
                         @csrf
                         <input type="hidden" name="room_id" value="{{ $room['id'] }}">
                         <input type="hidden" name="start_date" value="{{ $startDate }}">
@@ -160,17 +160,142 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/checkout-discount.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        initCheckoutDiscount({
-            applyDiscountUrl: "{{ route('booking.apply-discount') }}",
-            csrfToken: "{{ csrf_token() }}",
-            workspaceId: "{{ $room['id'] }}",
-            durationDiscountSelector: '#summary-duration-discount',
-            voucherDiscountSelector: '#summary-voucher-discount',
-            voucherDiscountRowSelector: '#voucher-discount-row'
+        const discountInput = document.getElementById('discount-code-input');
+        const applyBtn = document.getElementById('apply-discount-btn');
+        const messageDiv = document.getElementById('discount-message');
+        const hiddenDiscountInput = document.getElementById('hidden-discount-code');
+
+        const summarySubtotal = document.getElementById('summary-subtotal');
+        const summaryDurationDiscount = document.getElementById('summary-duration-discount');
+        const summaryVoucherDiscount = document.getElementById('summary-voucher-discount');
+        const voucherDiscountRow = document.getElementById('voucher-discount-row');
+        const summaryTax = document.getElementById('summary-tax');
+        const summaryTotal = document.getElementById('summary-total');
+
+        const subtotalVal = parseFloat(summarySubtotal.getAttribute('data-value'));
+        const durationDiscountVal = summaryDurationDiscount ? parseFloat(summaryDurationDiscount.getAttribute('data-value')) : 0;
+        
+        // Giá trị làm căn cứ tính voucher giảm giá = Tạm tính - Chiết khấu gói tháng
+        const baseForVoucherVal = subtotalVal - durationDiscountVal;
+        const workspaceId = "{{ $room['id'] }}";
+
+        let appliedDiscountCode = '';
+
+        // Xử lý khi nhấn Enter trong ô nhập mã giảm giá
+        discountInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                applyBtn.click();
+            }
         });
+
+        applyBtn.addEventListener('click', function () {
+            const code = discountInput.value.trim();
+            if (!code) {
+                showFeedback('Vui lòng nhập mã giảm giá.', 'text-red-500');
+                resetDiscount();
+                return;
+            }
+
+            // Nếu đã áp dụng mã này và nhấn lại -> Gỡ bỏ mã
+            if (appliedDiscountCode && code === appliedDiscountCode) {
+                resetDiscount();
+                discountInput.value = '';
+                showFeedback('Đã gỡ mã giảm giá.', 'text-slate-500');
+                applyBtn.textContent = 'Áp dụng';
+                applyBtn.className = 'rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition';
+                discountInput.removeAttribute('readonly');
+                return;
+            }
+
+            applyBtn.disabled = true;
+            applyBtn.textContent = 'Đang kiểm tra...';
+
+            fetch("{{ route('booking.apply-discount') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    code: code,
+                    workspace_id: workspaceId,
+                    subtotal: baseForVoucherVal
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                applyBtn.disabled = false;
+                if (data.success) {
+                    appliedDiscountCode = data.code;
+                    hiddenDiscountInput.value = data.code;
+                    discountInput.setAttribute('readonly', 'true');
+                    
+                    // Đổi nút thành Hủy bỏ
+                    applyBtn.textContent = 'Hủy bỏ';
+                    applyBtn.className = 'rounded-xl bg-red-100 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-200 transition';
+
+                    showFeedback(data.message, 'text-green-600');
+
+                    // Tính toán số tiền mới
+                    const voucherDiscountAmount = data.discount_amount;
+                    const afterAllDiscounts = baseForVoucherVal - voucherDiscountAmount;
+                    const taxAmount = Math.round(afterAllDiscounts * 0.08);
+                    const totalAmount = afterAllDiscounts + taxAmount;
+
+                    // Cập nhật giao diện
+                    voucherDiscountRow.style.display = 'flex';
+                    summaryVoucherDiscount.textContent = `- ${new Intl.NumberFormat('vi-VN').format(voucherDiscountAmount)} VNĐ`;
+                    summaryTax.textContent = `${new Intl.NumberFormat('vi-VN').format(taxAmount)} VNĐ`;
+                    summaryTotal.textContent = `${new Intl.NumberFormat('vi-VN').format(totalAmount)} VNĐ`;
+                } else {
+                    showFeedback(data.message, 'text-red-500');
+                    resetDiscount();
+                    applyBtn.textContent = 'Áp dụng';
+                }
+            })
+            .catch(error => {
+                applyBtn.disabled = false;
+                applyBtn.textContent = 'Áp dụng';
+                showFeedback('Đã xảy ra lỗi hệ thống. Vui lòng thử lại.', 'text-red-500');
+                resetDiscount();
+            });
+        });
+
+        function showFeedback(msg, className) {
+            messageDiv.textContent = msg;
+            messageDiv.className = `text-xs mt-2 font-medium ${className}`;
+            messageDiv.classList.remove('hidden');
+        }
+
+        function resetDiscount() {
+            appliedDiscountCode = '';
+            hiddenDiscountInput.value = '';
+            
+            // Tính lại giá khi không có voucher
+            const taxAmount = Math.round(baseForVoucherVal * 0.08);
+            const totalAmount = baseForVoucherVal + taxAmount;
+
+            // Reset UI
+            voucherDiscountRow.style.display = 'none';
+            summaryVoucherDiscount.textContent = `- 0 VNĐ`;
+            summaryTax.textContent = `${new Intl.NumberFormat('vi-VN').format(taxAmount)} VNĐ`;
+            summaryTotal.textContent = `${new Intl.NumberFormat('vi-VN').format(totalAmount)} VNĐ`;
+        }
+
+        // Chống nhấp đúp khi tiến hành thanh toán
+        const checkoutForm = document.getElementById('checkout-form');
+        if (checkoutForm) {
+            checkoutForm.addEventListener('submit', function () {
+                const submitBtn = checkoutForm.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="material-symbols-outlined text-lg animate-spin">hourglass_empty</span> Đang xử lý...';
+                }
+            });
+        }
     });
 </script>
 @endpush

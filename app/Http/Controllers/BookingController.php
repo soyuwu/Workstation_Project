@@ -178,9 +178,57 @@ class BookingController extends Controller
             ->where('status', 'active')
             ->firstOrFail();
 
+        $startDate   = $validated['start_date'];
+        $endDate     = Carbon::parse($startDate)->addMonths($durationMonths)->toDateString();
+
+        // Xác định trang danh sách trước để redirect khi có lỗi, tránh loop redirect()->back()
+        $fallbackUrl = route('booking.index');
+        $ws = Workspace::with('roomType')->find($workspace->id);
+        if ($ws && $ws->roomType) {
+            $srv = Service::where('name', $ws->roomType->name)->first();
+            if ($srv) {
+                $fallbackUrl = route('booking.monthly', $srv->slug);
+            }
+        }
+
+        // Kiểm tra trùng lịch đặt theo tháng
+        $existingBookings = Booking::query()
+            ->where('workspace_id', $workspace->id)
+            ->where('status', '!=', 'cancelled')
+            ->get();
+
+        $start1 = Carbon::parse($startDate);
+        $end1 = Carbon::parse($endDate);
+        $hasOverlap = false;
+        $overlappingBooking = null;
+
+        foreach ($existingBookings as $b) {
+            $bStart = Carbon::parse($b->booking_date);
+            if ($b->duration_hours >= 240) {
+                $months = (int)round($b->duration_hours / 240);
+                $bEnd = Carbon::parse($b->booking_date)->addMonths($months);
+            } else {
+                $bEnd = Carbon::parse($b->booking_date)->addDay();
+            }
+
+            // Check overlap: S1 < E2 && E1 > S2
+            if ($start1->lessThan($bEnd) && $end1->greaterThan($bStart)) {
+                $hasOverlap = true;
+                $overlappingBooking = $b;
+                break;
+            }
+        }
+
+        if ($hasOverlap) {
+            if ($overlappingBooking->user_id === auth()->id() && $overlappingBooking->status === 'pending') {
+                return redirect()->route('account.bookings')->with('pending_booking_code', $overlappingBooking->booking_code);
+            }
+            return redirect($fallbackUrl)->with('error', 'Khoảng thời gian bạn chọn đã có người đặt. Vui lòng chọn thời gian khác.');
+        }
+
         $roomPrice = (float) ($workspace->price_per_month ?? 0);
         if ($roomPrice <= 0) {
-            return redirect()->back()->with('error', 'Workspace chưa cấu hình giá theo tháng.');
+            return redirect($fallbackUrl)->with('error', 'Workspace chưa cấu hình giá theo tháng.');
         }
         $discountRates   = [1 => 0, 3 => 0.05, 6 => 0.10, 12 => 0.15];
         $discountRate    = $discountRates[$durationMonths] ?? 0;
@@ -223,8 +271,6 @@ class BookingController extends Controller
         $tax           = $afterDiscount * 0.08;
         $totalAmount   = $afterDiscount + $tax;
 
-        $startDate   = $validated['start_date'];
-        $endDate     = Carbon::parse($startDate)->addMonths($durationMonths)->toDateString();
         $bookingCode = 'BK' . time() . rand(100, 999);
         $userId = auth()->id();
 
