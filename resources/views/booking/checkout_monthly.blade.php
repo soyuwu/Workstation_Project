@@ -129,7 +129,7 @@
                     </div>
 
                     <!-- Form chọn phương thức thanh toán -->
-                    <form id="checkout-form" action="{{ route('booking.monthly.process') }}" method="POST">
+                    <form action="{{ route('booking.monthly.process') }}" method="POST">
                         @csrf
                         <input type="hidden" name="room_id" value="{{ $room['id'] }}">
                         <input type="hidden" name="start_date" value="{{ $startDate }}">
@@ -283,18 +283,6 @@
             summaryVoucherDiscount.textContent = `- 0 VNĐ`;
             summaryTax.textContent = `${new Intl.NumberFormat('vi-VN').format(taxAmount)} VNĐ`;
             summaryTotal.textContent = `${new Intl.NumberFormat('vi-VN').format(totalAmount)} VNĐ`;
-        }
-
-        // Chống nhấp đúp khi tiến hành thanh toán
-        const checkoutForm = document.getElementById('checkout-form');
-        if (checkoutForm) {
-            checkoutForm.addEventListener('submit', function () {
-                const submitBtn = checkoutForm.querySelector('button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<span class="material-symbols-outlined text-lg animate-spin">hourglass_empty</span> Đang xử lý...';
-                }
-            });
         }
     });
 </script>

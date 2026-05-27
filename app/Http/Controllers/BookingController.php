@@ -221,7 +221,7 @@ class BookingController extends Controller
 
         if ($hasOverlap) {
             if ($overlappingBooking->user_id === auth()->id() && $overlappingBooking->status === 'pending') {
-                return redirect()->route('account.bookings')->with('pending_booking_code', $overlappingBooking->booking_code);
+                return redirect()->route('payment.vietqr', ['booking_code' => $overlappingBooking->booking_code]);
             }
             return redirect($fallbackUrl)->with('error', 'Khoảng thời gian bạn chọn đã có người đặt. Vui lòng chọn thời gian khác.');
         }
