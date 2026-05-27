@@ -519,6 +519,25 @@ function initBookingManagement() {
                 </tr>
             `;
 
+            const receiver = btnView.getAttribute('data-refund-receiver') || '';
+            const bank = btnView.getAttribute('data-refund-bank') || '';
+            const account = btnView.getAttribute('data-refund-account') || '';
+            const reason = btnView.getAttribute('data-cancel-reason') || '';
+            const detail = btnView.getAttribute('data-cancel-detail') || '';
+
+            const cancellationInfoEl = document.getElementById('modalCancellationInfo');
+            if (cancellationInfoEl) {
+                if (reason || bank || account) {
+                    cancellationInfoEl.style.display = 'block';
+                    document.getElementById('modalCancelReason').innerText = reason + (detail ? ' (' + detail + ')' : '');
+                    document.getElementById('modalRefundBank').innerText = bank || '--';
+                    document.getElementById('modalRefundAccount').innerText = account || '--';
+                    document.getElementById('modalRefundReceiver').innerText = receiver || '--';
+                } else {
+                    cancellationInfoEl.style.display = 'none';
+                }
+            }
+
             modal.style.display = 'flex';
             return;
         }
@@ -664,12 +683,122 @@ function initDashboardCharts() {
     }
 }
 
+function initReviewManagement() {
+    const table = document.getElementById('reviewsTable');
+    const modal = document.getElementById('replyReviewModal');
+    const form = document.getElementById('replyReviewForm');
+    if (!table || !modal || !form) return;
+
+    const csrf = getCsrfToken();
+
+    function closeModal() {
+        modal.style.display = 'none';
+        form.reset();
+    }
+
+    document.querySelectorAll('[data-action="close-reply-modal"]').forEach((btn) => {
+        btn.addEventListener('click', closeModal);
+    });
+
+    table.addEventListener('click', async (e) => {
+        const btnToggle = e.target.closest('.btn-toggle-visibility');
+        const btnReply = e.target.closest('.btn-reply');
+
+        if (btnToggle) {
+            const id = btnToggle.getAttribute('data-id');
+            const row = btnToggle.closest('tr');
+            const badge = row.querySelector('.status-badge');
+
+            try {
+                const response = await fetch(`/admin/review/${id}/toggle-visibility`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-CSRF-TOKEN': csrf,
+                    },
+                    body: JSON.stringify({}),
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    if (data.is_approved) {
+                        badge.className = 'badge badge--green status-badge';
+                        badge.innerText = 'Đang hiển thị';
+                        btnToggle.querySelector('i').className = 'ph-bold ph-eye-slash';
+                        btnToggle.title = 'Ẩn đánh giá';
+                        row.setAttribute('data-status', 'approved');
+                    } else {
+                        badge.className = 'badge badge--red status-badge';
+                        badge.innerText = 'Đang ẩn';
+                        btnToggle.querySelector('i').className = 'ph-bold ph-eye';
+                        btnToggle.title = 'Hiển thị đánh giá';
+                        row.setAttribute('data-status', 'hidden');
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối!');
+            }
+            return;
+        }
+
+        if (btnReply) {
+            const id = btnReply.getAttribute('data-id');
+            const author = btnReply.getAttribute('data-author');
+            const content = btnReply.getAttribute('data-content');
+            const row = btnReply.closest('tr');
+            const existingReply = row.getAttribute('data-reply') || '';
+
+            document.getElementById('replyReviewId').value = id;
+            document.getElementById('replyModalAuthor').innerText = author;
+            document.getElementById('replyModalContent').innerText = content;
+            document.getElementById('replyText').value = existingReply;
+
+            modal.style.display = 'flex';
+            return;
+        }
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('replyReviewId').value;
+        const replyText = document.getElementById('replyText').value;
+
+        try {
+            const response = await fetch(`/admin/review/${id}/reply`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                },
+                body: JSON.stringify({ reply_text: replyText }),
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+                alert('Đã phản hồi đánh giá thành công!');
+                location.reload();
+            } else {
+                alert('Có lỗi xảy ra, vui lòng thử lại.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Lỗi kết nối!');
+        }
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) closeModal();
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initFilterTabs();
     initWorkspaceManagement();
     initVoucherManagement();
     initAccountManagement();
     initBookingManagement();
+    initReviewManagement();
     initDashboardCharts();
 });
 

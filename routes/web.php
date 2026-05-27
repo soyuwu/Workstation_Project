@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Session;
 use PHPMailer\PHPMailer\PHPMailer;
 
 Route::get('/', function () {
-    $reviews = \App\Models\Review::where('is_approved', true)->get();
+    $reviews = \App\Models\Review::with('adminReplies.admin')->where('is_approved', true)->get();
     return view('LandingPage.welcome', compact('reviews'));
 });
 
@@ -119,6 +119,11 @@ Route::middleware(RequireAdmin::class)->prefix('admin')->name('admin.')->group(f
     Route::post('/workspace', [AdminController::class, 'storeWorkspace'])->name('workspace.store');
     Route::put('/workspace/{id}', [AdminController::class, 'storeWorkspace']);
     Route::delete('/workspace/{id}', [AdminController::class, 'destroyWorkspace']);
+
+    // Quản lý đánh giá
+    Route::get('/review', [AdminController::class, 'review'])->name('review');
+    Route::post('/review/{id}/reply', [AdminController::class, 'replyReview'])->name('review.reply');
+    Route::post('/review/{id}/toggle-visibility', [AdminController::class, 'toggleReviewVisibility'])->name('review.toggle-visibility');
 });
 
 

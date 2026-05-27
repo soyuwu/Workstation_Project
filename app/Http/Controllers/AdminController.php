@@ -236,5 +236,45 @@ class AdminController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function review()
+    {
+        $reviews = \App\Models\Review::with(['user', 'workspace', 'adminReplies.admin'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return view('admin.review', compact('reviews'));
+    }
 
+    public function replyReview(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'reply_text' => 'required|string|min:1|max:1000',
+        ]);
+
+        $review = \App\Models\Review::findOrFail($id);
+
+        $reply = \App\Models\AdminReply::where('review_id', $review->id)->first();
+        if ($reply) {
+            $reply->update([
+                'admin_id' => auth()->id(),
+                'reply_text' => $validated['reply_text'],
+            ]);
+        } else {
+            \App\Models\AdminReply::create([
+                'review_id' => $review->id,
+                'admin_id' => auth()->id(),
+                'reply_text' => $validated['reply_text'],
+            ]);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    public function toggleReviewVisibility($id)
+    {
+        $review = \App\Models\Review::findOrFail($id);
+        $review->is_approved = !$review->is_approved;
+        $review->save();
+
+        return response()->json(['success' => true, 'is_approved' => $review->is_approved]);
+    }
 }
