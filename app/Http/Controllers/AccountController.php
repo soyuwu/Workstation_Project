@@ -8,6 +8,7 @@ use App\Services\BookingLifecycleService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class AccountController extends Controller
 {
@@ -45,11 +46,104 @@ class AccountController extends Controller
         ]);
     }
 
-    public function cancelBooking(Booking $booking, BookingLifecycleService $bookingLifecycle)
+    public function showCancelBookingForm(Booking $booking, BookingLifecycleService $bookingLifecycle)
     {
-        $result = $bookingLifecycle->cancelByUser($booking, Auth::user());
+        $user = Auth::user();
 
-        return back()->with($result['success'] ? 'success' : 'error', $result['message']);
+        if ((int) $booking->user_id !== (int) $user->id) {
+            abort(403, 'Unauthorized');
+        }
+
+        $booking = $bookingLifecycle->syncBooking(
+            $booking->loadMissing(['workspace', 'payment'])
+        );
+        $policy = $bookingLifecycle->cancellationPreview($booking);
+
+        if (!$policy['can_cancel']) {
+            return redirect()
+                ->route('account.bookings')
+                ->with('error', $policy['reason']);
+        }
+
+        return view('account.cancel-booking', [
+            'booking' => $booking,
+            'policy' => $policy,
+            'bankOptions' => $this->bankOptions(),
+            'cancellationReasons' => $this->cancellationReasons(),
+            'defaultReceiverName' => $user->name,
+            'requiresCancellationDetails' => $this->requiresCancellationDetails($booking),
+        ]);
+    }
+
+    public function cancelBooking(Request $request, Booking $booking, BookingLifecycleService $bookingLifecycle)
+    {
+        $user = Auth::user();
+
+        if ((int) $booking->user_id !== (int) $user->id) {
+            abort(403, 'Unauthorized');
+        }
+
+        $booking = $bookingLifecycle->syncBooking($booking->loadMissing('payment'));
+        $policy = $bookingLifecycle->cancellationPreview($booking);
+
+        if (!$policy['can_cancel']) {
+            return back()->with('error', $policy['reason']);
+        }
+
+        $validated = [];
+
+        if ($this->requiresCancellationDetails($booking)) {
+            $bankOptions = $this->bankOptions();
+            $cancellationReasons = $this->cancellationReasons();
+
+            $selectedReasons = (array) $request->input('cancellation_reason_codes', []);
+
+            $validated = $request->validate([
+                'refund_receiver_name' => ['required', 'string', 'max:255'],
+                'refund_bank_name' => ['required', 'string', Rule::in(array_keys($bankOptions))],
+                'refund_bank_account_number' => ['required', 'string', 'max:32', 'regex:/^(?=.*\d)[0-9 .-]+$/'],
+                'cancellation_reason_codes' => ['required', 'array', 'min:1'],
+                'cancellation_reason_codes.*' => ['string', Rule::in(array_keys($cancellationReasons))],
+                'cancellation_reason_detail' => [
+                    'nullable',
+                    'string',
+                    'max:1000',
+                    Rule::requiredIf(fn () => in_array('other', $selectedReasons, true)),
+                ],
+            ], [
+                'refund_receiver_name.required' => 'Vui lòng nhập họ tên người nhận hoàn tiền.',
+                'refund_bank_name.required' => 'Vui lòng chọn ngân hàng thụ hưởng.',
+                'refund_bank_name.in' => 'Ngân hàng thụ hưởng không hợp lệ.',
+                'refund_bank_account_number.required' => 'Vui lòng nhập số tài khoản ngân hàng.',
+                'refund_bank_account_number.regex' => 'Số tài khoản chỉ nên gồm số, khoảng trắng, dấu chấm hoặc dấu gạch ngang.',
+                'cancellation_reason_codes.required' => 'Vui lòng chọn ít nhất một lý do hủy phòng.',
+                'cancellation_reason_codes.array' => 'Lý do hủy phòng không hợp lệ.',
+                'cancellation_reason_codes.min' => 'Vui lòng chọn ít nhất một lý do hủy phòng.',
+                'cancellation_reason_codes.*.in' => 'Lý do hủy phòng không hợp lệ.',
+                'cancellation_reason_detail.required' => 'Vui lòng nhập lý do chi tiết.',
+            ]);
+
+            $validated['refund_bank_name'] = $bankOptions[$validated['refund_bank_name']];
+            $reasonCodes = array_values(array_unique($validated['cancellation_reason_codes']));
+            $validated['cancellation_reason_code'] = implode(',', $reasonCodes);
+            $validated['cancellation_reason_label'] = implode('; ', array_map(
+                static fn (string $reasonCode) => rtrim($cancellationReasons[$reasonCode], ". \t\n\r\0\x0B"),
+                $reasonCodes
+            ));
+            unset($validated['cancellation_reason_codes']);
+        }
+
+        $result = $bookingLifecycle->cancelByUser($booking, $user, $validated);
+
+        if (!$result['success']) {
+            return back()
+                ->withInput()
+                ->with('error', $result['message']);
+        }
+
+        return redirect()
+            ->route('account.bookings')
+            ->with('success', $result['message']);
     }
 
     public function storeReview(Request $request, Booking $booking, BookingLifecycleService $bookingLifecycle)
@@ -130,7 +224,7 @@ class AccountController extends Controller
                     'cancel_reason' => $policy['reason'],
                     'cancel_fee_preview_text' => number_format((float) $policy['fee'], 0, ',', '.') . ' VND',
                     'refund_preview_text' => number_format((float) $policy['refund'], 0, ',', '.') . ' VND',
-                    'cancel_url' => $policy['can_cancel'] ? route('account.bookings.cancel', $booking) : null,
+                    'cancel_url' => $policy['can_cancel'] ? route('account.bookings.cancel.form', $booking) : null,
                     'can_review' => $bookingLifecycle->canReview($booking),
                     'review_url' => route('account.bookings.review', $booking),
                     'review' => $review ? [
@@ -141,5 +235,43 @@ class AccountController extends Controller
                 ],
             ];
         })->toArray();
+    }
+
+    private function bankOptions(): array
+    {
+        return [
+            'vietcombank' => 'Vietcombank (VCB)',
+            'bidv' => 'BIDV',
+            'vietinbank' => 'VietinBank',
+            'techcombank' => 'Techcombank',
+            'mbbank' => 'MB Bank',
+            'acb' => 'ACB',
+            'vpbank' => 'VPBank',
+            'tpbank' => 'TPBank',
+            'sacombank' => 'Sacombank',
+            'hdbank' => 'HDBank',
+            'vib' => 'VIB',
+            'msb' => 'MSB',
+            'shb' => 'SHB',
+            'agribank' => 'Agribank',
+            'ocb' => 'OCB',
+        ];
+    }
+
+    private function cancellationReasons(): array
+    {
+        return [
+            'changed_plan' => 'Đột xuất thay đổi lịch trình/kế hoạch.',
+            'wrong_booking' => 'Đặt nhầm ngày/nhầm giờ/nhầm cơ sở.',
+            'bad_weather' => 'Thời tiết xấu không thể đến.',
+            'found_alternative' => 'Tìm được không gian làm việc khác phù hợp hơn.',
+            'changed_mind' => 'Đổi ý không muốn sử dụng dịch vụ nữa.',
+            'other' => 'Lý do khác.',
+        ];
+    }
+
+    private function requiresCancellationDetails(Booking $booking): bool
+    {
+        return ($booking->payment?->payment_status ?? 'pending') === 'completed';
     }
 }

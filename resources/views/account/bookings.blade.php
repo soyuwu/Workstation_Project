@@ -311,14 +311,12 @@
                             Thanh toán ngay
                         </a>
 
-                        <form id="booking-cancel-form" method="POST" class="mt-3">
-                            @csrf
-                            <div id="booking-cancel-action" class="hidden">
-                                <button type="submit" class="w-full rounded-xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700">
-                                    Hủy đơn
-                                </button>
-                            </div>
-                        </form>
+                        <div id="booking-cancel-action" class="mt-3 hidden">
+                            <a id="booking-cancel-link" href="#"
+                                class="inline-flex w-full items-center justify-center rounded-xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700">
+                                Hủy phòng
+                            </a>
+                        </div>
 
                         <p id="booking-no-cancel-reason" class="mt-3 hidden rounded-xl bg-slate-50 p-3 text-sm text-slate-500">--</p>
                     </div>

@@ -32,6 +32,11 @@ class Booking extends Model
         'cancelled_at',
         'cancel_fee_amount',
         'refund_amount',
+        'refund_receiver_name',
+        'refund_bank_name',
+        'refund_bank_account_number',
+        'cancellation_reason_code',
+        'cancellation_reason_detail',
     ];
 
     protected $casts = [

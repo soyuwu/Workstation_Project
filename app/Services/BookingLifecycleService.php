@@ -140,7 +140,7 @@ class BookingLifecycleService
         ];
     }
 
-    public function cancelByUser(Booking $booking, User $user): array
+    public function cancelByUser(Booking $booking, User $user, array $cancellationData = []): array
     {
         if ((int) $booking->user_id !== (int) $user->id) {
             return ['success' => false, 'message' => 'Bạn không có quyền hủy đơn này.'];
@@ -154,13 +154,17 @@ class BookingLifecycleService
         }
 
         if (($booking->payment?->payment_status ?? 'pending') === 'completed') {
-            $booking->forceFill([
+            $booking->forceFill(array_merge([
                 'status' => 'cancelled',
                 'cancelled_at' => now(),
                 'cancel_fee_amount' => $policy['fee'],
                 'refund_amount' => $policy['refund'],
-                'cancellation_reason' => 'Khách hủy trước check-in. Phí phạt 20%, refund 80%.',
-            ])->save();
+                'cancellation_reason' => $this->userCancellationReason(
+                    'Khách hủy trước check-in. Phí phạt 20%, refund 80%.',
+                    $cancellationData,
+                    'Phí phạt 20%, refund 80%.'
+                ),
+            ], $this->cancellationMetadata($cancellationData)))->save();
 
             $booking->payment->forceFill([
                 'payment_status' => 'refunded',
@@ -172,7 +176,11 @@ class BookingLifecycleService
             ];
         }
 
-        $this->cancelWithoutFee($booking, 'Khách tự hủy khi chưa thanh toán.');
+        $this->cancelWithoutFee(
+            $booking,
+            $this->userCancellationReason('Khách tự hủy khi chưa thanh toán.', $cancellationData),
+            $cancellationData
+        );
 
         return ['success' => true, 'message' => 'Đã hủy đơn thành công.'];
     }
@@ -189,21 +197,64 @@ class BookingLifecycleService
         return $booking->status === 'completed' && !$booking->review;
     }
 
-    private function cancelWithoutFee(Booking $booking, string $reason): void
+    private function cancelWithoutFee(Booking $booking, string $reason, array $cancellationData = []): void
     {
         $booking->loadMissing('payment');
 
-        $booking->forceFill([
+        $booking->forceFill(array_merge([
             'status' => 'cancelled',
             'cancelled_at' => $booking->cancelled_at ?: now(),
             'cancel_fee_amount' => 0,
             'refund_amount' => 0,
             'cancellation_reason' => $booking->cancellation_reason ?: $reason,
-        ])->save();
+        ], $this->cancellationMetadata($cancellationData)))->save();
 
         if ($booking->payment && $booking->payment->payment_status !== 'completed') {
             $booking->payment->forceFill(['payment_status' => 'failed'])->save();
         }
+    }
+
+    private function cancellationMetadata(array $cancellationData): array
+    {
+        return array_filter([
+            'refund_receiver_name' => $this->nullableString($cancellationData['refund_receiver_name'] ?? null),
+            'refund_bank_name' => $this->nullableString($cancellationData['refund_bank_name'] ?? null),
+            'refund_bank_account_number' => $this->nullableString($cancellationData['refund_bank_account_number'] ?? null),
+            'cancellation_reason_code' => $this->nullableString($cancellationData['cancellation_reason_code'] ?? null),
+            'cancellation_reason_detail' => $this->nullableString($cancellationData['cancellation_reason_detail'] ?? null),
+        ], static fn ($value) => $value !== null);
+    }
+
+    private function userCancellationReason(string $fallback, array $cancellationData, ?string $suffix = null): string
+    {
+        $label = $this->nullableString($cancellationData['cancellation_reason_label'] ?? null);
+        $detail = $this->nullableString($cancellationData['cancellation_reason_detail'] ?? null);
+
+        if (!$label && !$detail) {
+            return $fallback;
+        }
+
+        $reason = $label ? rtrim($label, ". \t\n\r\0\x0B") : '';
+        if ($detail) {
+            $reason = $reason ? "{$reason}: {$detail}" : $detail;
+        }
+
+        if (!$reason) {
+            return $fallback;
+        }
+
+        return $suffix ? "{$reason}. {$suffix}" : $reason;
+    }
+
+    private function nullableString(mixed $value): ?string
+    {
+        if (!is_string($value) && !is_numeric($value)) {
+            return null;
+        }
+
+        $value = trim((string) $value);
+
+        return $value === '' ? null : $value;
     }
 
     private function shouldAutoCancel(Booking $booking): bool
