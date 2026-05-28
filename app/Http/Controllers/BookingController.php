@@ -7,6 +7,7 @@ use App\Models\RoomType;
 use App\Models\Service;
 use App\Models\User;
 use App\Models\Workspace;
+use App\Models\DiscountCode;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -80,8 +81,35 @@ class BookingController extends Controller
         $startDate   = $request->query('start_date');
         $durationMonths = (int) $request->query('duration_months', 1);
 
+        // Xác định trang danh sách trước để redirect khi có lỗi, tránh loop redirect()->back()
+        $fallbackUrl = route('booking.index');
+        if ($roomId) {
+            $ws = Workspace::with('roomType')->find($roomId);
+            if ($ws && $ws->roomType) {
+                $srv = Service::where('name', $ws->roomType->name)->first();
+                if ($srv) {
+                    $fallbackUrl = route('booking.monthly', $srv->slug);
+                }
+            }
+        }
+
         if (!$roomId || !$startDate) {
-            return redirect()->back()->with('error', 'Thiếu thông tin đặt chỗ.');
+            return redirect($fallbackUrl)->with('error', 'Thiếu thông tin đặt chỗ.');
+        }
+
+        // Kiểm tra xem đã có booking pending nào trùng lặp chưa
+        $existingBooking = \App\Models\Booking::where('user_id', auth()->id())
+            ->where('workspace_id', $roomId)
+            ->where('booking_date', Carbon::parse($startDate)->toDateString())
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existingBooking) {
+            // Trả về trang thông báo giao dịch chưa hoàn tất đẹp mắt
+            return view('booking.pending_warning', [
+                'booking' => $existingBooking,
+                'fallbackUrl' => $fallbackUrl
+            ]);
         }
 
         $workspace = Workspace::query()
@@ -97,7 +125,7 @@ class BookingController extends Controller
 
         $roomPrice = (float) ($workspace->price_per_month ?? 0);
         if ($roomPrice <= 0) {
-            return redirect()->back()->with('error', 'Không thể đặt gói tháng vì workspace chưa cấu hình giá theo tháng.');
+            return redirect($fallbackUrl)->with('error', 'Không thể đặt gói tháng vì workspace chưa cấu hình giá theo tháng.');
         }
 
         // Bảng chiết khấu theo số tháng
@@ -141,6 +169,7 @@ class BookingController extends Controller
             'start_date'      => 'required|date',
             'duration_months' => 'required|integer|min:1',
             'payment_method'  => 'required|in:bank_transfer',
+            'discount_code'   => 'nullable|string|exists:discount_codes,code',
         ]);
 
         $durationMonths  = (int) $validated['duration_months'];
@@ -149,21 +178,99 @@ class BookingController extends Controller
             ->where('status', 'active')
             ->firstOrFail();
 
+        $startDate   = $validated['start_date'];
+        $endDate     = Carbon::parse($startDate)->addMonths($durationMonths)->toDateString();
+
+        // Xác định trang danh sách trước để redirect khi có lỗi, tránh loop redirect()->back()
+        $fallbackUrl = route('booking.index');
+        $ws = Workspace::with('roomType')->find($workspace->id);
+        if ($ws && $ws->roomType) {
+            $srv = Service::where('name', $ws->roomType->name)->first();
+            if ($srv) {
+                $fallbackUrl = route('booking.monthly', $srv->slug);
+            }
+        }
+
+        // Kiểm tra trùng lịch đặt theo tháng
+        $existingBookings = Booking::query()
+            ->where('workspace_id', $workspace->id)
+            ->where('status', '!=', 'cancelled')
+            ->get();
+
+        $start1 = Carbon::parse($startDate);
+        $end1 = Carbon::parse($endDate);
+        $hasOverlap = false;
+        $overlappingBooking = null;
+
+        foreach ($existingBookings as $b) {
+            $bStart = Carbon::parse($b->booking_date);
+            if ($b->duration_hours >= 240) {
+                $months = (int)round($b->duration_hours / 240);
+                $bEnd = Carbon::parse($b->booking_date)->addMonths($months);
+            } else {
+                $bEnd = Carbon::parse($b->booking_date)->addDay();
+            }
+
+            // Check overlap: S1 < E2 && E1 > S2
+            if ($start1->lessThan($bEnd) && $end1->greaterThan($bStart)) {
+                $hasOverlap = true;
+                $overlappingBooking = $b;
+                break;
+            }
+        }
+
+        if ($hasOverlap) {
+            if ($overlappingBooking->user_id === auth()->id() && $overlappingBooking->status === 'pending') {
+                return redirect()->route('payment.vietqr', ['booking_code' => $overlappingBooking->booking_code]);
+            }
+            return redirect($fallbackUrl)->with('error', 'Khoảng thời gian bạn chọn đã có người đặt. Vui lòng chọn thời gian khác.');
+        }
+
         $roomPrice = (float) ($workspace->price_per_month ?? 0);
         if ($roomPrice <= 0) {
-            return redirect()->back()->with('error', 'Workspace chưa cấu hình giá theo tháng.');
+            return redirect($fallbackUrl)->with('error', 'Workspace chưa cấu hình giá theo tháng.');
         }
         $discountRates   = [1 => 0, 3 => 0.05, 6 => 0.10, 12 => 0.15];
         $discountRate    = $discountRates[$durationMonths] ?? 0;
 
-        $subtotal      = $roomPrice * $durationMonths;
-        $discount      = $subtotal * $discountRate;
-        $afterDiscount = $subtotal - $discount;
+        $subtotal        = $roomPrice * $durationMonths;
+        $durationDiscount = $subtotal * $discountRate;
+        $baseForManualDiscount = $subtotal - $durationDiscount;
+
+        // Xử lý mã giảm giá thủ công
+        $manualDiscountAmount = 0;
+        $discountId = null;
+
+        if (!empty($validated['discount_code'])) {
+            $discount = DiscountCode::where('code', $validated['discount_code'])->first();
+            if ($discount && $discount->status === 'active') {
+                $now = now();
+                $validDates = (!$discount->valid_from || $now->gte($discount->valid_from)) &&
+                             (!$discount->valid_until || $now->lte($discount->valid_until));
+                $validUsage = $discount->usage_limit === null || $discount->usage_count < $discount->usage_limit;
+                $validMinAmount = $subtotal >= $discount->min_booking_amount;
+                $validWorkspace = empty($discount->applicable_workspaces) || in_array($workspace->id, $discount->applicable_workspaces);
+
+                if ($validDates && $validUsage && $validMinAmount && $validWorkspace) {
+                    $discountId = $discount->id;
+                    if ($discount->discount_type === 'percentage') {
+                        $manualDiscountAmount = $baseForManualDiscount * ($discount->discount_value / 100);
+                        if ($discount->max_discount !== null && $discount->max_discount > 0) {
+                            $manualDiscountAmount = min($manualDiscountAmount, $discount->max_discount);
+                        }
+                    } else {
+                        $manualDiscountAmount = min($discount->discount_value, $baseForManualDiscount);
+                    }
+                    $manualDiscountAmount = round($manualDiscountAmount);
+                }
+            }
+        }
+
+        $totalDiscount = $durationDiscount + $manualDiscountAmount;
+        $afterDiscount = $subtotal - $totalDiscount;
         $tax           = $afterDiscount * 0.08;
         $totalAmount   = $afterDiscount + $tax;
 
-        $startDate   = $validated['start_date'];
-        $endDate     = Carbon::parse($startDate)->addMonths($durationMonths)->toDateString();
         $bookingCode = 'BK' . time() . rand(100, 999);
         $userId = auth()->id();
 
@@ -177,6 +284,7 @@ class BookingController extends Controller
             'duration_hours' => $durationMonths * 30 * 8,
             'base_price'     => $subtotal,
             'tax'            => $tax,
+            'id_discount'    => $discountId,
             'total_amount'   => $totalAmount,
             'status'         => 'pending',
             'notes'          => 'Đặt tháng | Workspace: ' . ($workspace->code ?? $workspace->id) . ' | Tháng: ' . $durationMonths . ' | Kết thúc: ' . $endDate,
@@ -186,7 +294,7 @@ class BookingController extends Controller
             'booking_id'     => $booking->id,
             'user_id'        => $userId,
             'amount'         => $subtotal,
-            'discount'       => $discount,
+            'discount'       => $totalDiscount,
             'tax'            => $tax,
             'final_amount'   => $totalAmount,
             'payment_method' => 'bank_transfer',
@@ -271,8 +379,20 @@ class BookingController extends Controller
         $startTime = $request->query('start_time');
         $endTime = $request->query('end_time');
 
+        // Xác định trang danh sách trước để redirect khi có lỗi, tránh loop redirect()->back()
+        $fallbackUrl = route('booking.index');
+        if ($roomId) {
+            $ws = Workspace::with('roomType')->find($roomId);
+            if ($ws && $ws->roomType) {
+                $srv = Service::where('name', $ws->roomType->name)->first();
+                if ($srv) {
+                    $fallbackUrl = route('booking.hourly', $srv->slug);
+                }
+            }
+        }
+
         if (!$roomId || !$date || !$startTime || !$endTime) {
-            return redirect()->back()->with('error', 'Thiếu thông tin đặt phòng.');
+            return redirect($fallbackUrl)->with('error', 'Thiếu thông tin đặt phòng.');
         }
 
         $workspace = Workspace::query()
@@ -288,7 +408,7 @@ class BookingController extends Controller
 
         $bookingDate = Carbon::parse($date)->toDateString();
         if (Carbon::parse($bookingDate)->lessThan(Carbon::today())) {
-            return redirect()->back()->with('error', 'Ngày đặt không hợp lệ.');
+            return redirect($fallbackUrl)->with('error', 'Ngày đặt không hợp lệ.');
         }
 
         // Tính thời lượng
@@ -296,16 +416,16 @@ class BookingController extends Controller
         $end = Carbon::parse($bookingDate . ' ' . $endTime);
 
         if ($end->lessThanOrEqualTo($start)) {
-            return redirect()->back()->with('error', 'Thời gian không hợp lệ.');
+            return redirect($fallbackUrl)->with('error', 'Thời gian không hợp lệ.');
         }
 
         $duration = $start->diffInMinutes($end) / 60;
 
         if ($duration < (int) $workspace->min_booking_hours) {
-            return redirect()->back()->with('error', 'Thời lượng đặt tối thiểu là ' . $workspace->min_booking_hours . ' giờ.');
+            return redirect($fallbackUrl)->with('error', 'Thời lượng đặt tối thiểu là ' . $workspace->min_booking_hours . ' giờ.');
         }
 
-        $hasOverlap = Booking::query()
+        $existingBooking = Booking::query()
             ->where('workspace_id', $workspace->id)
             ->where('status', '!=', 'cancelled')
             ->whereDate('booking_date', $bookingDate)
@@ -313,10 +433,17 @@ class BookingController extends Controller
                 $query->where('start_time', '<', $endTime)
                     ->where('end_time', '>', $startTime);
             })
-            ->exists();
+            ->first();
 
-        if ($hasOverlap) {
-            return redirect()->back()->with('error', 'Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.');
+        if ($existingBooking) {
+            if ($existingBooking->user_id === auth()->id() && $existingBooking->status === 'pending') {
+                // Trả về trang thông báo giao dịch chưa hoàn tất đẹp mắt
+                return view('booking.pending_warning', [
+                    'booking' => $existingBooking,
+                    'fallbackUrl' => $fallbackUrl
+                ]);
+            }
+            return redirect($fallbackUrl)->with('error', 'Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.');
         }
 
         $roomPrice = (float) $workspace->price_per_hour;
@@ -359,6 +486,7 @@ class BookingController extends Controller
             'start_time'     => 'required',
             'end_time'       => 'required',
             'payment_method' => 'required|in:bank_transfer',
+            'discount_code'  => 'nullable|string|exists:discount_codes,code',
         ]);
 
         $workspace = Workspace::query()
@@ -383,7 +511,7 @@ class BookingController extends Controller
             return redirect()->back()->with('error', 'Thời lượng đặt tối thiểu là ' . $workspace->min_booking_hours . ' giờ.');
         }
 
-        $hasOverlap = Booking::query()
+        $existingBooking = Booking::query()
             ->where('workspace_id', $workspace->id)
             ->where('status', '!=', 'cancelled')
             ->whereDate('booking_date', $bookingDate)
@@ -391,15 +519,54 @@ class BookingController extends Controller
                 $query->where('start_time', '<', $validated['end_time'])
                     ->where('end_time', '>', $validated['start_time']);
             })
-            ->exists();
+            ->first(); // Thay đổi từ exists() sang first() để lấy data kiểm tra
 
-        if ($hasOverlap) {
+        if ($existingBooking) {
+            // Cứu cánh cho tình huống Double-Click: 
+            // Nếu chính user này vừa tạo ra booking trùng giờ đó và nó đang pending, 
+            // thì coi như họ bấm nhầm 2 lần, đưa thẳng sang trang thanh toán luôn.
+            if ($existingBooking->user_id === auth()->id() && $existingBooking->status === 'pending') {
+                return redirect()->route('payment.vietqr', ['booking_code' => $existingBooking->booking_code]);
+            }
+
+            // Nếu thực sự là người khác đặt
             return redirect()->back()->with('error', 'Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.');
         }
 
         $basePrice   = ((float) $workspace->price_per_hour) * $duration;
-        $tax         = $basePrice * 0.08;
-        $totalAmount = $basePrice + $tax;
+
+        // Xử lý mã giảm giá
+        $discountAmount = 0;
+        $discountId = null;
+
+        if (!empty($validated['discount_code'])) {
+            $discount = DiscountCode::where('code', $validated['discount_code'])->first();
+            if ($discount && $discount->status === 'active') {
+                $now = now();
+                $validDates = (!$discount->valid_from || $now->gte($discount->valid_from)) &&
+                             (!$discount->valid_until || $now->lte($discount->valid_until));
+                $validUsage = $discount->usage_limit === null || $discount->usage_count < $discount->usage_limit;
+                $validMinAmount = $basePrice >= $discount->min_booking_amount;
+                $validWorkspace = empty($discount->applicable_workspaces) || in_array($workspace->id, $discount->applicable_workspaces);
+
+                if ($validDates && $validUsage && $validMinAmount && $validWorkspace) {
+                    $discountId = $discount->id;
+                    if ($discount->discount_type === 'percentage') {
+                        $discountAmount = $basePrice * ($discount->discount_value / 100);
+                        if ($discount->max_discount !== null && $discount->max_discount > 0) {
+                            $discountAmount = min($discountAmount, $discount->max_discount);
+                        }
+                    } else {
+                        $discountAmount = min($discount->discount_value, $basePrice);
+                    }
+                    $discountAmount = round($discountAmount);
+                }
+            }
+        }
+
+        $afterDiscount = $basePrice - $discountAmount;
+        $tax           = $afterDiscount * 0.08;
+        $totalAmount   = $afterDiscount + $tax;
 
         $bookingCode = 'BK' . time() . rand(100, 999);
         $userId = auth()->id();
@@ -414,6 +581,7 @@ class BookingController extends Controller
             'duration_hours' => $duration,
             'base_price'    => $basePrice,
             'tax'           => $tax,
+            'id_discount'   => $discountId,
             'total_amount'  => $totalAmount,
             'status'        => 'pending',
             'notes'         => 'Workspace: ' . ($workspace->code ?? $workspace->id),
@@ -423,6 +591,7 @@ class BookingController extends Controller
             'booking_id'    => $booking->id,
             'user_id'       => $userId,
             'amount'        => $basePrice,
+            'discount'      => $discountAmount,
             'tax'           => $tax,
             'final_amount'  => $totalAmount,
             'payment_method' => 'bank_transfer',
@@ -430,5 +599,102 @@ class BookingController extends Controller
         ]);
 
         return redirect()->route('payment.vietqr', ['booking_code' => $bookingCode]);
+    }
+
+    /**
+     * Áp dụng mã giảm giá qua AJAX.
+     */
+    public function applyDiscount(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'code' => 'required|string',
+                'workspace_id' => 'required|integer|exists:workspaces,id',
+                'subtotal' => 'required|numeric|min:0',
+            ]);
+
+            $code = $validated['code'];
+            $workspaceId = $validated['workspace_id'];
+            $subtotal = (float) $validated['subtotal'];
+
+            $discount = DiscountCode::where('code', $code)->first();
+
+            if (!$discount) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mã giảm giá không tồn tại.'
+                ]);
+            }
+
+            if ($discount->status !== 'active') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mã giảm giá không còn hoạt động.'
+                ]);
+            }
+
+            $now = now();
+            if ($discount->valid_from && $now->lt($discount->valid_from)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mã giảm giá chưa đến thời gian áp dụng.'
+                ]);
+            }
+
+            if ($discount->valid_until && $now->gt($discount->valid_until)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mã giảm giá đã hết hạn sử dụng.'
+                ]);
+            }
+
+            if ($discount->usage_limit !== null && $discount->usage_count >= $discount->usage_limit) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mã giảm giá đã hết lượt sử dụng.'
+                ]);
+            }
+
+            if ($subtotal < $discount->min_booking_amount) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Đơn hàng chưa đạt giá trị tối thiểu ' . number_format($discount->min_booking_amount) . 'đ để sử dụng mã này.'
+                ]);
+            }
+
+            if (!empty($discount->applicable_workspaces)) {
+                if (!in_array($workspaceId, $discount->applicable_workspaces)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Mã giảm giá không áp dụng cho không gian này.'
+                    ]);
+                }
+            }
+
+            // Tính số tiền giảm
+            $discountAmount = 0;
+            if ($discount->discount_type === 'percentage') {
+                $discountAmount = $subtotal * ($discount->discount_value / 100);
+                if ($discount->max_discount !== null && $discount->max_discount > 0) {
+                    $discountAmount = min($discountAmount, $discount->max_discount);
+                }
+            } else {
+                $discountAmount = min($discount->discount_value, $subtotal);
+            }
+
+            $discountAmount = round($discountAmount);
+
+            return response()->json([
+                'success' => true,
+                'code' => $discount->code,
+                'discount_amount' => $discountAmount,
+                'message' => 'Áp dụng mã giảm giá thành công!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi kiểm tra mã giảm giá: ' . $e->getMessage()
+            ]);
+        }
     }
 }

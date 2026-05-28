@@ -10,6 +10,44 @@ class Booking extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Tự động xử lý số lượt sử dụng khi trạng thái thay đổi
+        static::created(function ($booking) {
+            if ($booking->status === 'confirmed' && $booking->id_discount) {
+                $discount = \App\Models\DiscountCode::find($booking->id_discount);
+                if ($discount) {
+                    $discount->increment('usage_count');
+                }
+            }
+        });
+
+        static::updated(function ($booking) {
+            if ($booking->isDirty('status')) {
+                // Chuyển sang confirmed -> Tăng usage_count
+                if ($booking->status === 'confirmed' && $booking->getOriginal('status') !== 'confirmed') {
+                    if ($booking->id_discount) {
+                        $discount = \App\Models\DiscountCode::find($booking->id_discount);
+                        if ($discount) {
+                            $discount->increment('usage_count');
+                        }
+                    }
+                }
+                // Hủy confirmed -> Giảm usage_count
+                elseif ($booking->status !== 'confirmed' && $booking->getOriginal('status') === 'confirmed') {
+                    if ($booking->id_discount) {
+                        $discount = \App\Models\DiscountCode::find($booking->id_discount);
+                        if ($discount && $discount->usage_count > 0) {
+                            $discount->decrement('usage_count');
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     protected $fillable = [
         'booking_code',
         'user_id',

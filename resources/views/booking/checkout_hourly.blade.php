@@ -104,28 +104,29 @@
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-slate-700 mb-2">Mã giảm giá (Tùy chọn)</label>
                         <div class="flex gap-2">
-                            <input type="text" placeholder="Nhập mã giảm giá..." class="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
-                            <button class="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition">Áp dụng</button>
+                            <input type="text" id="discount-code-input" placeholder="Nhập mã giảm giá..." class="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" value="{{ old('discount_code') }}">
+                            <button type="button" id="apply-discount-btn" class="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 transition">Áp dụng</button>
                         </div>
+                        <div id="discount-message" class="text-xs mt-2 font-medium hidden"></div>
                     </div>
 
                     <!-- Tính tiền -->
                     <div class="space-y-3 mb-6">
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-500">Tạm tính ({{ $duration }} giờ)</span>
-                            <span class="font-medium text-slate-800">{{ number_format($subtotal) }} VNĐ</span>
+                            <span class="font-medium text-slate-800" id="summary-subtotal" data-value="{{ $subtotal }}">{{ number_format($subtotal) }} VNĐ</span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-500">Thuế VAT (8%)</span>
-                            <span class="font-medium text-slate-800">{{ number_format($tax) }} VNĐ</span>
+                            <span class="font-medium text-slate-800" id="summary-tax" data-value="{{ $tax }}">{{ number_format($tax) }} VNĐ</span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-500">Giảm giá</span>
-                            <span class="font-medium text-green-600">- 0 VNĐ</span>
+                            <span class="font-medium text-green-600" id="summary-discount" data-value="0">- 0 VNĐ</span>
                         </div>
                         <div class="border-t border-slate-200 pt-4 flex justify-between items-center">
                             <span class="text-base font-bold text-slate-800">Tổng thanh toán</span>
-                            <span class="text-2xl font-bold text-primary">{{ number_format($total) }} VNĐ</span>
+                            <span class="text-2xl font-bold text-primary" id="summary-total" data-value="{{ $total }}">{{ number_format($total) }} VNĐ</span>
                         </div>
                     </div>
 
@@ -137,6 +138,7 @@
                         <input type="hidden" name="start_time" value="{{ $startTime }}">
                         <input type="hidden" name="end_time" value="{{ $endTime }}">
                         <input type="hidden" name="payment_method" value="bank_transfer">
+                        <input type="hidden" name="discount_code" id="hidden-discount-code" value="{{ old('discount_code') }}">
 
                         <!-- Thông báo phương thức thanh toán -->
                         <div class="mb-6 flex items-center gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4">
@@ -160,3 +162,17 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/checkout-discount.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        initCheckoutDiscount({
+            applyDiscountUrl: "{{ route('booking.apply-discount') }}",
+            csrfToken: "{{ csrf_token() }}",
+            workspaceId: "{{ $roomId }}",
+            voucherDiscountSelector: '#summary-discount'
+        });
+    });
+</script>
+@endpush
