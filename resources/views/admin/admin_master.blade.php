@@ -48,6 +48,10 @@
                               href="{{ route('admin.voucher') }}">
                               <span>Vouchers Khuyến Mãi</span>
                         </a>
+                        <a class="sidebar__link {{ Request::is('admin/review') ? 'sidebar__link--active' : '' }}"
+                              href="{{ route('admin.review') }}">
+                              <span>Quản Lý Đánh Giá</span>
+                        </a>
                         @if($currentUserRole === 'admin')
                         <a class="sidebar__link {{ Request::is('admin/taikhoan') ? 'sidebar__link--active' : '' }}"
                               href="{{ route('admin.taikhoan') }}">

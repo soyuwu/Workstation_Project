@@ -64,6 +64,21 @@
                                         <p class="text-slate-400 text-sm">{{ $review->author_role }}</p>
                                     </div>
                                 </div>
+                                @php
+                                    $reply = $review->adminReplies->first();
+                                @endphp
+                                @if($reply)
+                                    <div class="mt-6 pt-4 border-t border-slate-100">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
+                                                A
+                                            </div>
+                                            <span class="font-headline font-semibold text-sm text-on-surface">Phản hồi từ Admin</span>
+                                            <span class="text-xs text-slate-400 ml-auto">{{ $reply->created_at->format('d/m/Y') }}</span>
+                                        </div>
+                                        <p class="text-slate-600 text-sm italic pl-8">"{{ $reply->reply_text }}"</p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @empty

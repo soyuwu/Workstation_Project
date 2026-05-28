@@ -100,7 +100,12 @@
                                                         data-method="{{ $booking->payment ? ($booking->payment->payment_method == 'bank_transfer' ? 'Chuyển khoản' : 'MoMo') : '--' }}"
                                                         data-base="{{ number_format($booking->base_price, 0, ',', '.') }} ₫"
                                                         data-tax="{{ number_format($booking->tax, 0, ',', '.') }} ₫"
-                                                        data-status="{{ $statusText }}">
+                                                        data-status="{{ $statusText }}"
+                                                        data-refund-receiver="{{ $booking->refund_receiver_name ?? '' }}"
+                                                        data-refund-bank="{{ $booking->refund_bank_name ?? '' }}"
+                                                        data-refund-account="{{ $booking->refund_bank_account_number ?? '' }}"
+                                                        data-cancel-reason="{{ $booking->cancellation_reason ?? '' }}"
+                                                        data-cancel-detail="{{ $booking->cancellation_reason_detail ?? '' }}">
                                                         <i class="ph-bold ph-eye"></i>
                                                     </button>
                                                 </div>
@@ -193,6 +198,16 @@
                         <p style="margin-bottom: 8px;"><strong>Trạng thái:</strong> <span class="badge badge--green"
                                     id="modalPaymentStatus" style="font-size: 12px;">--</span></p>
                         <p style="margin-bottom: 0;"><strong>Phương thức:</strong> <span id="modalPaymentMethod">--</span></p>
+                  </div>
+
+                  <div id="modalCancellationInfo" style="display: none; border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 20px;">
+                        <h3 style="font-size: 16px; font-weight: bold; color: #ef4444; margin-bottom: 10px;">Thông tin hủy phòng & Hoàn tiền</h3>
+                        <div style="background: #fdf2f2; padding: 15px; border-radius: 8px; border: 1px solid #fde8e8; font-size: 14px;">
+                              <p style="margin-bottom: 8px;"><strong>Lý do hủy:</strong> <span id="modalCancelReason">--</span></p>
+                              <p style="margin-bottom: 8px;"><strong>Ngân hàng:</strong> <span id="modalRefundBank">--</span></p>
+                              <p style="margin-bottom: 8px;"><strong>Số tài khoản:</strong> <span id="modalRefundAccount">--</span></p>
+                              <p style="margin-bottom: 0;"><strong>Người nhận:</strong> <span id="modalRefundReceiver">--</span></p>
+                        </div>
                   </div>
 
                   <div style="margin-top: 25px; text-align: right;">
