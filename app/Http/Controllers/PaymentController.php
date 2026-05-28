@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\BookingLifecycleService;
+use App\Support\Money;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -103,10 +104,19 @@ class PaymentController extends Controller
         $template = (string) config('vietqr.template', 'compact');
 
         if ($bankId === '' || $accountNo === '' || $accountName === '') {
-            abort(500, 'VietQR is not configured. Please set VIETQR_* in your environment.');
+            Log::error('VietQR config missing', [
+                'booking_code' => $booking_code,
+                'bank_id' => $bankId ?: '[missing]',
+                'bank_name' => $bankName ?: '[missing]',
+                'account_no_set' => $accountNo !== '',
+                'account_name_set' => $accountName !== '',
+            ]);
+
+            return response()
+                ->view('payment.vietqr_unavailable', compact('booking'), 503);
         }
-        // Ép kiểu ép số tiền về số nguyên (bỏ số thập phân .00) để API VietQR đọc được
-        $amount = (int) $booking->total_amount;
+
+        $amount = Money::vnd($booking->total_amount);
         $addInfo = urlencode($booking_code);
 
         $qrUrl = "https://img.vietqr.io/image/{$bankId}-{$accountNo}-{$template}.png?amount={$amount}&addInfo={$addInfo}&accountName=" . urlencode($accountName);
@@ -206,7 +216,7 @@ class PaymentController extends Controller
         Log::info('SePay Webhook Received:', $payload);
 
         $content = $payload['content'] ?? '';
-        $transferAmount = (float) ($payload['transferAmount'] ?? 0);
+        $transferAmount = Money::vnd($payload['transferAmount'] ?? 0);
 
         // 3. Tìm mã booking (định dạng BK + chuỗi chữ số, ví dụ BK1716123456) trong nội dung chuyển khoản
         if (preg_match('/(BK\d+)/i', $content, $matches)) {
@@ -234,7 +244,9 @@ class PaymentController extends Controller
                     ], 409);
                 }
 
-                if ((int) $booking->total_amount <= (int) $transferAmount) {
+                $expectedAmount = Money::vnd($booking->total_amount);
+
+                if ($transferAmount >= $expectedAmount) {
                     // Cập nhật trạng thái Booking
                     $booking->status = 'confirmed';
                     $booking->notes = ($booking->notes ? $booking->notes . ' | ' : '') . 'Thanh toán tự động qua SePay Webhook.';

@@ -8,11 +8,16 @@ use App\Models\Service;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Models\DiscountCode;
+use App\Support\Money;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class BookingController extends Controller
 {
+    private const TAX_RATE = 0.08;
+
     public function index()
     {
         $services = Service::active()->ordered()->get();
@@ -78,7 +83,7 @@ class BookingController extends Controller
     public function monthlyCheckout(Request $request)
     {
         $roomId = $request->query('room_id');
-        $startDate   = $request->query('start_date');
+        $startDate = $request->query('start_date');
         $durationMonths = (int) $request->query('duration_months', 1);
 
         // Xác định trang danh sách trước để redirect khi có lỗi, tránh loop redirect()->back()
@@ -93,14 +98,26 @@ class BookingController extends Controller
             }
         }
 
-        if (!$roomId || !$startDate) {
-            return redirect($fallbackUrl)->with('error', 'Thiếu thông tin đặt chỗ.');
+        $validator = Validator::make($request->query(), [
+            'room_id' => ['required', 'integer', 'exists:workspaces,id'],
+            'start_date' => ['required', 'date_format:Y-m-d'],
+            'duration_months' => ['nullable', 'integer', 'in:1,3,6,12'],
+        ]);
+
+        if ($validator->fails()) {
+            return redirect($fallbackUrl)->with('error', 'Thông tin đặt chỗ không hợp lệ.');
         }
+
+        $validated = $validator->validated();
+        $roomId = (int) $validated['room_id'];
+        $startDate = (string) $validated['start_date'];
+        $durationMonths = (int) ($validated['duration_months'] ?? 1);
+        $bookingDate = Carbon::createFromFormat('Y-m-d', $startDate)->toDateString();
 
         // Kiểm tra xem đã có booking pending nào trùng lặp chưa
         $existingBooking = \App\Models\Booking::where('user_id', auth()->id())
             ->where('workspace_id', $roomId)
-            ->where('booking_date', Carbon::parse($startDate)->toDateString())
+            ->where('booking_date', $bookingDate)
             ->where('status', 'pending')
             ->first();
 
@@ -123,7 +140,7 @@ class BookingController extends Controller
             ->where('status', 'active')
             ->firstOrFail();
 
-        $roomPrice = (float) ($workspace->price_per_month ?? 0);
+        $roomPrice = Money::vnd($workspace->price_per_month ?? 0);
         if ($roomPrice <= 0) {
             return redirect($fallbackUrl)->with('error', 'Không thể đặt gói tháng vì workspace chưa cấu hình giá theo tháng.');
         }
@@ -134,9 +151,9 @@ class BookingController extends Controller
         $discountPercent = $discountRate * 100;
 
         $subtotal  = $roomPrice * $durationMonths;
-        $discount  = $subtotal * $discountRate;
+        $discount  = Money::vnd($subtotal * $discountRate);
         $afterDiscount = $subtotal - $discount;
-        $tax       = $afterDiscount * 0.08;
+        $tax       = Money::vnd($afterDiscount * self::TAX_RATE);
         $total     = $afterDiscount + $tax;
 
         $room = [
@@ -166,8 +183,8 @@ class BookingController extends Controller
     {
         $validated = $request->validate([
             'room_id'         => 'required|integer|exists:workspaces,id',
-            'start_date'      => 'required|date',
-            'duration_months' => 'required|integer|min:1',
+            'start_date'      => 'required|date_format:Y-m-d',
+            'duration_months' => 'required|integer|in:1,3,6,12',
             'payment_method'  => 'required|in:bank_transfer',
             'discount_code'   => 'nullable|string|exists:discount_codes,code',
         ]);
@@ -226,7 +243,7 @@ class BookingController extends Controller
             return redirect($fallbackUrl)->with('error', 'Khoảng thời gian bạn chọn đã có người đặt. Vui lòng chọn thời gian khác.');
         }
 
-        $roomPrice = (float) ($workspace->price_per_month ?? 0);
+        $roomPrice = Money::vnd($workspace->price_per_month ?? 0);
         if ($roomPrice <= 0) {
             return redirect($fallbackUrl)->with('error', 'Workspace chưa cấu hình giá theo tháng.');
         }
@@ -234,7 +251,7 @@ class BookingController extends Controller
         $discountRate    = $discountRates[$durationMonths] ?? 0;
 
         $subtotal        = $roomPrice * $durationMonths;
-        $durationDiscount = $subtotal * $discountRate;
+        $durationDiscount = Money::vnd($subtotal * $discountRate);
         $baseForManualDiscount = $subtotal - $durationDiscount;
 
         // Xử lý mã giảm giá thủ công
@@ -254,27 +271,27 @@ class BookingController extends Controller
                 if ($validDates && $validUsage && $validMinAmount && $validWorkspace) {
                     $discountId = $discount->id;
                     if ($discount->discount_type === 'percentage') {
-                        $manualDiscountAmount = $baseForManualDiscount * ($discount->discount_value / 100);
+                        $manualDiscountAmount = Money::vnd($baseForManualDiscount * ($discount->discount_value / 100));
                         if ($discount->max_discount !== null && $discount->max_discount > 0) {
                             $manualDiscountAmount = min($manualDiscountAmount, $discount->max_discount);
                         }
                     } else {
                         $manualDiscountAmount = min($discount->discount_value, $baseForManualDiscount);
                     }
-                    $manualDiscountAmount = round($manualDiscountAmount);
+                    $manualDiscountAmount = Money::vnd($manualDiscountAmount);
                 }
             }
         }
 
         $totalDiscount = $durationDiscount + $manualDiscountAmount;
         $afterDiscount = $subtotal - $totalDiscount;
-        $tax           = $afterDiscount * 0.08;
+        $tax           = Money::vnd($afterDiscount * self::TAX_RATE);
         $totalAmount   = $afterDiscount + $tax;
 
-        $bookingCode = 'BK' . time() . rand(100, 999);
+        $bookingCode = $this->generateUniqueBookingCode();
         $userId = auth()->id();
 
-        $booking = \App\Models\Booking::create([
+        $booking = $this->createBookingWithUniqueCode([
             'booking_code'   => $bookingCode,
             'user_id'        => $userId,
             'workspace_id'   => $workspace->id,
@@ -375,9 +392,6 @@ class BookingController extends Controller
     public function checkout(Request $request)
     {
         $roomId = $request->query('room_id');
-        $date = $request->query('date');
-        $startTime = $request->query('start_time');
-        $endTime = $request->query('end_time');
 
         // Xác định trang danh sách trước để redirect khi có lỗi, tránh loop redirect()->back()
         $fallbackUrl = route('booking.index');
@@ -391,9 +405,22 @@ class BookingController extends Controller
             }
         }
 
-        if (!$roomId || !$date || !$startTime || !$endTime) {
-            return redirect($fallbackUrl)->with('error', 'Thiếu thông tin đặt phòng.');
+        $validator = Validator::make($request->query(), [
+            'room_id' => ['required', 'integer', 'exists:workspaces,id'],
+            'date' => ['required', 'date_format:Y-m-d'],
+            'start_time' => ['required', 'date_format:H:i'],
+            'end_time' => ['required', 'date_format:H:i'],
+        ]);
+
+        if ($validator->fails()) {
+            return redirect($fallbackUrl)->with('error', 'Thông tin đặt phòng không hợp lệ.');
         }
+
+        $validated = $validator->validated();
+        $roomId = (int) $validated['room_id'];
+        $date = (string) $validated['date'];
+        $startTime = (string) $validated['start_time'];
+        $endTime = (string) $validated['end_time'];
 
         $workspace = Workspace::query()
             ->with([
@@ -406,7 +433,7 @@ class BookingController extends Controller
             ->where('status', 'active')
             ->firstOrFail();
 
-        $bookingDate = Carbon::parse($date)->toDateString();
+        $bookingDate = Carbon::createFromFormat('Y-m-d', $date)->toDateString();
         if (Carbon::parse($bookingDate)->lessThan(Carbon::today())) {
             return redirect($fallbackUrl)->with('error', 'Ngày đặt không hợp lệ.');
         }
@@ -446,9 +473,9 @@ class BookingController extends Controller
             return redirect($fallbackUrl)->with('error', 'Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.');
         }
 
-        $roomPrice = (float) $workspace->price_per_hour;
-        $subtotal = $duration * $roomPrice;
-        $tax = $subtotal * 0.08; // Thuế 8%
+        $roomPrice = Money::vnd($workspace->price_per_hour ?? 0);
+        $subtotal = Money::vnd($duration * $roomPrice);
+        $tax = Money::vnd($subtotal * self::TAX_RATE);
         $total = $subtotal + $tax;
 
         $primaryImage = $workspace->images->first();
@@ -482,9 +509,9 @@ class BookingController extends Controller
     {
         $validated = $request->validate([
             'room_id'        => 'required|integer|exists:workspaces,id',
-            'date'           => 'required|date',
-            'start_time'     => 'required',
-            'end_time'       => 'required',
+            'date'           => 'required|date_format:Y-m-d',
+            'start_time'     => 'required|date_format:H:i',
+            'end_time'       => 'required|date_format:H:i',
             'payment_method' => 'required|in:bank_transfer',
             'discount_code'  => 'nullable|string|exists:discount_codes,code',
         ]);
@@ -494,7 +521,7 @@ class BookingController extends Controller
             ->where('status', 'active')
             ->firstOrFail();
 
-        $bookingDate = Carbon::parse($validated['date'])->toDateString();
+        $bookingDate = Carbon::createFromFormat('Y-m-d', $validated['date'])->toDateString();
         if (Carbon::parse($bookingDate)->lessThan(Carbon::today())) {
             return redirect()->back()->with('error', 'Ngày đặt không hợp lệ.');
         }
@@ -533,7 +560,8 @@ class BookingController extends Controller
             return redirect()->back()->with('error', 'Khung giờ bạn chọn đã có người đặt. Vui lòng chọn khung giờ khác.');
         }
 
-        $basePrice   = ((float) $workspace->price_per_hour) * $duration;
+        $roomPrice = Money::vnd($workspace->price_per_hour ?? 0);
+        $basePrice = Money::vnd($roomPrice * $duration);
 
         // Xử lý mã giảm giá
         $discountAmount = 0;
@@ -552,26 +580,26 @@ class BookingController extends Controller
                 if ($validDates && $validUsage && $validMinAmount && $validWorkspace) {
                     $discountId = $discount->id;
                     if ($discount->discount_type === 'percentage') {
-                        $discountAmount = $basePrice * ($discount->discount_value / 100);
+                        $discountAmount = Money::vnd($basePrice * ($discount->discount_value / 100));
                         if ($discount->max_discount !== null && $discount->max_discount > 0) {
                             $discountAmount = min($discountAmount, $discount->max_discount);
                         }
                     } else {
                         $discountAmount = min($discount->discount_value, $basePrice);
                     }
-                    $discountAmount = round($discountAmount);
+                    $discountAmount = Money::vnd($discountAmount);
                 }
             }
         }
 
         $afterDiscount = $basePrice - $discountAmount;
-        $tax           = $afterDiscount * 0.08;
+        $tax           = Money::vnd($afterDiscount * self::TAX_RATE);
         $totalAmount   = $afterDiscount + $tax;
 
-        $bookingCode = 'BK' . time() . rand(100, 999);
+        $bookingCode = $this->generateUniqueBookingCode();
         $userId = auth()->id();
 
-        $booking = \App\Models\Booking::create([
+        $booking = $this->createBookingWithUniqueCode([
             'booking_code'  => $bookingCode,
             'user_id'       => $userId,
             'workspace_id'  => $workspace->id,
@@ -615,7 +643,7 @@ class BookingController extends Controller
 
             $code = $validated['code'];
             $workspaceId = $validated['workspace_id'];
-            $subtotal = (float) $validated['subtotal'];
+            $subtotal = Money::vnd($validated['subtotal']);
 
             $discount = DiscountCode::where('code', $code)->first();
 
@@ -674,15 +702,13 @@ class BookingController extends Controller
             // Tính số tiền giảm
             $discountAmount = 0;
             if ($discount->discount_type === 'percentage') {
-                $discountAmount = $subtotal * ($discount->discount_value / 100);
+                $discountAmount = Money::vnd($subtotal * ($discount->discount_value / 100));
                 if ($discount->max_discount !== null && $discount->max_discount > 0) {
-                    $discountAmount = min($discountAmount, $discount->max_discount);
+                    $discountAmount = min($discountAmount, Money::vnd($discount->max_discount));
                 }
             } else {
-                $discountAmount = min($discount->discount_value, $subtotal);
+                $discountAmount = min(Money::vnd($discount->discount_value), $subtotal);
             }
-
-            $discountAmount = round($discountAmount);
 
             return response()->json([
                 'success' => true,
@@ -696,5 +722,38 @@ class BookingController extends Controller
                 'message' => 'Đã xảy ra lỗi khi kiểm tra mã giảm giá: ' . $e->getMessage()
             ]);
         }
+    }
+
+    private function generateUniqueBookingCode(): string
+    {
+        for ($i = 0; $i < 20; $i++) {
+            $code = 'BK' . now()->format('YmdHisv') . random_int(100, 999);
+            if (!Booking::where('booking_code', $code)->exists()) {
+                return $code;
+            }
+        }
+
+        return 'BK' . time() . random_int(100000, 999999);
+    }
+
+    private function createBookingWithUniqueCode(array $attributes): Booking
+    {
+        for ($i = 0; $i < 5; $i++) {
+            try {
+                return Booking::create($attributes);
+            } catch (QueryException $e) {
+                $message = strtolower($e->getMessage());
+                $isUniqueViolation = (str_contains($message, 'unique') || str_contains($message, 'duplicate'))
+                    && str_contains($message, 'booking_code');
+
+                if (!$isUniqueViolation) {
+                    throw $e;
+                }
+
+                $attributes['booking_code'] = $this->generateUniqueBookingCode();
+            }
+        }
+
+        return Booking::create($attributes);
     }
 }

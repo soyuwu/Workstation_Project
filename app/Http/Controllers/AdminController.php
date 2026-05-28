@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Booking;
 use App\Models\DiscountCode;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class AdminController extends Controller
 {
@@ -199,6 +200,7 @@ class AdminController extends Controller
             'status' => 'required|in:active,maintenance,inactive',
             'description' => 'nullable|string',
             'amenities' => 'nullable|array',
+            'images' => 'nullable|array',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
         ]);
 
@@ -214,7 +216,7 @@ class AdminController extends Controller
             if (!file_exists(public_path('Images/Workspaces'))) {
                 mkdir(public_path('Images/Workspaces'), 0777, true);
             }
-            foreach ($request->file('images') as $index => $image) {
+            foreach (Arr::wrap($request->file('images')) as $index => $image) {
                 $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
                 $image->move(public_path('Images/Workspaces'), $filename);
                 
