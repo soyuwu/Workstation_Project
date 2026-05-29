@@ -24,11 +24,11 @@
             <a class="ws-nav-link relative pb-1 transition-colors nav-link after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-1 after:rounded-full after:transition-all after:duration-300 after:w-0 hover:after:w-full {{ $isDynamic ? 'text-white hover:text-blue-200 after:bg-white' : 'text-slate-600 hover:text-primary after:bg-primary' }}"
                 href="/">Trang chủ</a>
             <a class="ws-nav-link relative pb-1 transition-colors nav-link after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-1 after:rounded-full after:transition-all after:duration-300 after:w-0 hover:after:w-full {{ $isDynamic ? 'text-white hover:text-blue-200 after:bg-white' : 'text-slate-600 hover:text-primary after:bg-primary' }}"
-                href="#about">Giới thiệu</a>
+                href="{{ url('/#about') }}">Giới thiệu</a>
 
             {{-- Megamenu Dịch vụ --}}
             <div class="relative" id="megamenu-wrapper">
-                <a href="#services"
+                <a href="{{ url('/#services') }}"
                     class="ws-nav-link relative flex items-center gap-1 transition-colors pb-1 nav-link after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-1 after:rounded-full after:transition-all after:duration-300 after:w-0 hover:after:w-full {{ $isDynamic ? 'text-white hover:text-blue-200 after:bg-white' : 'text-slate-600 hover:text-primary after:bg-primary' }}"
                     id="megamenu-trigger">
                     Dịch vụ
@@ -171,7 +171,7 @@
                         <div class="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between">
                             <p class="text-slate-400 text-sm">Chưa biết chọn loại nào? <a href="#"
                                     class="text-primary font-semibold hover:underline">Để chúng tôi tư vấn →</a></p>
-                            <a href="#services"
+                            <a href="{{ url('/#services') }}"
                                 class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-dark transition-colors">
                                 <span class="material-symbols-outlined text-lg">grid_view</span>
                                 Xem tất cả dịch vụ
@@ -182,7 +182,7 @@
             </div>
 
             <a class="ws-nav-link relative pb-1 transition-colors nav-link after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-1 after:rounded-full after:transition-all after:duration-300 after:w-0 hover:after:w-full {{ $isDynamic ? 'text-white hover:text-blue-200 after:bg-white' : 'text-slate-600 hover:text-primary after:bg-primary' }}"
-                href="#reviews">Đánh giá</a>
+                href="{{ url('/#reviews') }}">Đánh giá</a>
         </div>
         <div class="flex items-center gap-6">
             @if (Session::has('user_id'))
@@ -266,7 +266,7 @@
                     <a href="/"
                         class="block px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">Trang
                         chủ</a>
-                    <a href="#about"
+                    <a href="{{ url('/#about') }}"
                         class="block px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">Giới
                         thiệu</a>
 
@@ -303,7 +303,7 @@
                         </div>
                     </div>
 
-                    <a href="#reviews"
+                    <a href="{{ url('/#reviews') }}"
                         class="block px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 hover:text-primary rounded-lg transition-colors">Đánh
                         giá</a>
 
