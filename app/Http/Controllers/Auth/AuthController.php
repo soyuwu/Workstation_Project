@@ -28,6 +28,70 @@ class AuthController extends Controller
         $this->emailVerification = $emailVerification;
     }
 
+    private function createConfiguredMailer()
+    {
+        $mail = new PHPMailer(true);
+        $mail->isSMTP();
+
+        $smtpConfig = (array) config('mail.mailers.smtp', []);
+        $mailHost = (string) ($smtpConfig['host'] ?? 'smtp.gmail.com');
+        $mailPort = (int) ($smtpConfig['port'] ?? 465);
+        $mailUser = (string) ($smtpConfig['username'] ?? '');
+        $mailPass = (string) ($smtpConfig['password'] ?? '');
+
+        $mail->Host = $mailHost;
+        $mail->Port = $mailPort;
+
+        if ($mailUser !== '' && $mailPass !== '') {
+            $mail->SMTPAuth = true;
+            $mail->Username = $mailUser;
+            $mail->Password = $mailPass;
+        } else {
+            $mail->SMTPAuth = false;
+        }
+
+        if ($mailPort === 465) {
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        } elseif ($mailPort === 587) {
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        } else {
+            $mail->SMTPSecure = false;
+            $mail->SMTPAutoTLS = false;
+        }
+
+        //FIX LỖI OPENSSL TRÊN VPS PRODUCTION
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
+
+        $mail->CharSet = 'UTF-8';
+
+        $fromAddress = (string) config('mail.from.address', '');
+        $fromName = (string) config('mail.from.name', 'WORKSTATION TEAM');
+
+
+        if ($fromAddress === '' && $mailUser !== '') {
+            $fromAddress = $mailUser;
+        }
+
+        if ($fromAddress === '') {
+            Log::error('createConfiguredMailer failed: missing from address', [
+                'mail_host' => $mailHost,
+                'mail_port' => $mailPort,
+                'has_username' => $mailUser !== '',
+            ]);
+            return null;
+        }
+
+        $mail->setFrom($fromAddress, $fromName);
+
+        return $mail;
+    }
+
     //Register
     // 1. Show form cho người dùng.
     public function showAuthForm()
@@ -92,49 +156,14 @@ class AuthController extends Controller
     //Activate Email
     public function sendActivationEmail($email, $name, $link)
     {
-        $mail = new PHPMailer(true);
+        $mail = null;
 
         try {
-            $mail->isSMTP();
-            $mailHost = (string) env('MAIL_HOST', 'smtp.gmail.com');
-            $mailPort = (int) env('MAIL_PORT', 465);
-            $mailUser = (string) env('MAIL_USERNAME', '');
-            $mailPass = (string) env('MAIL_PASSWORD', '');
-            $mailEncryption = strtolower((string) env('MAIL_ENCRYPTION', 'ssl'));
-
-            $mail->Host = $mailHost;
-            $mail->Port = $mailPort;
-
-            if ($mailUser !== '' && $mailPass !== '') {
-                $mail->SMTPAuth = true;
-                $mail->Username = $mailUser;
-                $mail->Password = $mailPass;
-            } else {
-                $mail->SMTPAuth = false;
+            $mail = $this->createConfiguredMailer();
+            if (!$mail) {
+                return false;
             }
 
-            if (in_array($mailEncryption, ['ssl', 'smtps'], true)) {
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-            } elseif (in_array($mailEncryption, ['tls', 'starttls'], true)) {
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            } else {
-                // For local SMTP (e.g. Mailpit) without TLS.
-                $mail->SMTPSecure = false;
-                $mail->SMTPAutoTLS = false;
-            }
-
-            // --- FIX LỖI OPENSSL TRÊN VPS PRODUCTION ---
-            $mail->SMTPOptions = array(
-                'ssl' => array(
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                    'allow_self_signed' => true
-                )
-            );
-
-            $mail->CharSet = 'UTF-8';
-
-            $mail->setFrom(env('MAIL_FROM_ADDRESS'), 'WORKSTAION TEAM');
             $mail->addAddress($email, $name);
 
             $mail->isHTML(true);
@@ -244,47 +273,13 @@ class AuthController extends Controller
 
     public function sendEmailForgetPassword($email, $link)
     {
-        $mail = new PHPMailer(true);
+        $mail = null;
         try {
-            $mail->isSMTP();
-            $mailHost = (string) env('MAIL_HOST', 'smtp.gmail.com');
-            $mailPort = (int) env('MAIL_PORT', 465);
-            $mailUser = (string) env('MAIL_USERNAME', '');
-            $mailPass = (string) env('MAIL_PASSWORD', '');
-            $mailEncryption = strtolower((string) env('MAIL_ENCRYPTION', 'ssl'));
-
-            $mail->Host = $mailHost;
-            $mail->Port = $mailPort;
-
-            if ($mailUser !== '' && $mailPass !== '') {
-                $mail->SMTPAuth = true;
-                $mail->Username = $mailUser;
-                $mail->Password = $mailPass;
-            } else {
-                $mail->SMTPAuth = false;
+            $mail = $this->createConfiguredMailer();
+            if (!$mail) {
+                return false;
             }
 
-            if (in_array($mailEncryption, ['ssl', 'smtps'], true)) {
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-            } elseif (in_array($mailEncryption, ['tls', 'starttls'], true)) {
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            } else {
-                // For local SMTP (e.g. Mailpit) without TLS.
-                $mail->SMTPSecure = false;
-                $mail->SMTPAutoTLS = false;
-            }
-
-            // --- FIX LỖI OPENSSL TRÊN VPS PRODUCTION ---
-            $mail->SMTPOptions = array(
-                'ssl' => array(
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                    'allow_self_signed' => true
-                )
-            );
-
-            $mail->CharSet = 'UTF-8';
-            $mail->setFrom(env('MAIL_FROM_ADDRESS'), 'WORKSTATION TEAM');
             $mail->addAddress($email);
             $mail->isHTML(true);
             $mail->Subject = 'WORKSTATION TEAM: Đặt lại mật khẩu';

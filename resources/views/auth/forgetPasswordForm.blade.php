@@ -35,18 +35,9 @@
                 <p class="mb-6 text-sm text-slate-500">Chúng tôi sẽ gửi một liên kết đặt lại mật khẩu đến email của bạn.</p>
 
                 <!-- Hiển thị thông báo thành công từ Session -->
-                @if (session('success'))
-                <div class="mb-5 rounded-xl bg-green-50 p-4 text-sm text-green-600 border border-green-100">
-                    {{ session('success') }}
-                </div>
-                @endif
+                <x-common.flash-messages class="mb-5" />
 
                 <!-- Hiển thị lỗi chung (ví dụ: Email không tồn tại) -->
-                @if (session('error'))
-                <div class="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-600 border border-red-100">
-                    {{ session('error') }}
-                </div>
-                @endif
 
                 <form action="{{ route('forgot.password') }}" method="POST" class="space-y-5">
                     @csrf

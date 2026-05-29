@@ -13,13 +13,6 @@
             <span class="font-medium text-sm">Quay lại chọn giờ</span>
         </a>
 
-        @if(session('error'))
-            <div class="mb-8 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl flex items-center gap-3">
-                <span class="material-symbols-outlined">error</span>
-                <span>{{ session('error') }}</span>
-            </div>
-        @endif
-
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <!-- Cột Trái: Chi tiết phòng (2/3) -->
