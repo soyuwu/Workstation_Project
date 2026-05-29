@@ -66,11 +66,11 @@
                     </li>
                     <li class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-xl text-primary">phone</span>
-                        <a href="tel:0901234567" class="text-slate-400 transition-colors duration-300 hover:text-white">090 123 4567</a>
+                        <a href="tel:0927021207" class="text-slate-400 transition-colors duration-300 hover:text-white">0927021207</a>
                     </li>
                     <li class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-xl text-primary">mail</span>
-                        <a href="mailto:hello@workstation.vn" class="text-slate-400 transition-colors duration-300 hover:text-white">hello@workstation.vn</a>
+                        <a href="mailto:phamgiann2006@gmail.com" class="text-slate-400 transition-colors duration-300 hover:text-white">phamgiann2006@gmail.com</a>
                     </li>
                     <li class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-xl text-primary">schedule</span>
@@ -88,6 +88,9 @@
                 <a href="#" class="text-slate-500 transition-colors hover:text-white">Chính sách bảo mật</a>
                 <a href="#" class="text-slate-500 transition-colors hover:text-white">Điều khoản sử dụng</a>
             </div>
+        </div>
+        <div>
+            <h3>This website is for learning. If you have tranfered money to this website, please contact the information above!</h3>
         </div>
     </div>
 </footer>
