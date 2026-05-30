@@ -2,6 +2,7 @@
 <html lang="vi">
 
 <head>
+    <link data-default-icon="https://res.cloudinary.com/doj3fpuqb/image/upload/v1780147684/copy_of_711425482_1665934987958157_8586424012407537890_n.jpg" data-badged-icon="https://res.cloudinary.com/doj3fpuqb/image/upload/v1780147684/copy_of_711425482_1665934987958157_8586424012407537890_n.jpg" rel="shortcut icon" href="https://res.cloudinary.com/doj3fpuqb/image/upload/v1780147684/copy_of_711425482_1665934987958157_8586424012407537890_n.jpg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WorkStation - @yield('title', 'Hệ thống đặt chỗ')</title>
