@@ -150,7 +150,7 @@
                     Đăng ký trải nghiệm miễn phí hoặc liên hệ tư vấn để chọn gói phù hợp nhất với bạn.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="#"
+                    <a href="{{ route('booking.index') }}"
                         class="inline-flex items-center justify-center gap-2 bg-white text-primary px-8 py-4 rounded-xl font-headline font-bold text-base hover:bg-slate-50 transition-all duration-300 active:scale-95 shadow-xl">
                         <span class="material-symbols-outlined">calendar_today</span>
                         Đặt chỗ ngay
@@ -166,4 +166,3 @@
     </section>
 
 @endsection
-
