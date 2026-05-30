@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Booking;
 use App\Models\DiscountCode;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
@@ -75,34 +76,19 @@ class AdminController extends Controller
         return view('admin.booking', compact('bookings'));
     }
 
-    public function approveBooking($id)
+    public function approveBooking($id, PaymentService $paymentService)
     {
-        $booking = Booking::findOrFail($id);
-        $booking->status = 'confirmed';
-        $booking->save();
-        
-        $payment = \App\Models\Payment::where('booking_id', $booking->id)->first();
-        if ($payment) {
-            $payment->payment_status = 'completed';
-            $payment->paid_at = $payment->paid_at ?: now();
-            $payment->save();
-        }
-        
+        $booking = Booking::with('payment')->findOrFail($id);
+        $paymentService->markCompleted($booking);
+
         return response()->json(['success' => true]);
     }
     
-    public function cancelBooking($id)
+    public function cancelBooking($id, PaymentService $paymentService)
     {
-        $booking = Booking::findOrFail($id);
-        $booking->status = 'cancelled';
-        $booking->save();
-        
-        $payment = \App\Models\Payment::where('booking_id', $booking->id)->first();
-        if ($payment) {
-            $payment->payment_status = 'failed';
-            $payment->save();
-        }
-        
+        $booking = Booking::with('payment')->findOrFail($id);
+        $paymentService->markFailed($booking);
+
         return response()->json(['success' => true]);
     }
 

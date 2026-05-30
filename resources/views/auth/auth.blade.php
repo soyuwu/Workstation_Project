@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    @include('partials.favicon')
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WorkStation - Tài khoản</title>
@@ -55,7 +56,7 @@
                         </button>
                     </div>
 
-                    <form method="POST" action="{{ url('/logIn') }}" class="space-y-4">
+                    <form method="POST" action="{{ url('/logIn') }}" data-prevent-double-submit class="space-y-4">
                         @csrf
 
                         <label class="block">
@@ -97,7 +98,7 @@
                         Tạo tài khoản mới để trải nghiệm không gian làm việc và quản lý lịch đặt chỗ thuận tiện hơn.
                     </p>
 
-                    <form method="POST" action="{{ url('/register') }}" class="space-y-4">
+                    <form method="POST" action="{{ url('/register') }}" data-prevent-double-submit class="space-y-4">
                         @csrf
 
                         <label class="block">

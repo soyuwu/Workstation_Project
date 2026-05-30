@@ -2,13 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\BookingLifecycleService;
-use App\Support\Money;
+use App\Models\Booking;
+use App\Services\MoMoService;
+use App\Services\PaymentService;
+use App\Services\SePayWebhookService;
+use App\Services\VietQrService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
+    public function __construct(
+        private PaymentService $paymentService,
+        private VietQrService $vietQrService,
+        private SePayWebhookService $sePayWebhookService,
+        private MoMoService $momoService,
+    ) {
+    }
+
     /**
      * Xử lý kết quả trả về khi người dùng thanh toán xong trên MoMo và bị redirect về.
      */
@@ -35,50 +46,35 @@ class PaymentController extends Controller
      * Webhook MoMo gọi ngầm (Server to Server) để báo kết quả giao dịch.
      * Ở đây chúng ta sẽ cập nhật trạng thái đơn hàng vào Database.
      */
-    public function momoIPN(Request $request, \App\Services\MoMoService $momoService)
+    public function momoIPN(Request $request)
     {
         $data = $request->all();
 
         // 1. Xác thực chữ ký
-        if (!$momoService->verifySignature($data)) {
+        if (!$this->momoService->verifySignature($data)) {
             Log::error("MoMo IPN - Chữ ký không hợp lệ", $data);
             return response()->json(['message' => 'Invalid signature'], 400);
         }
 
-        $orderId = $data['orderId'];
-        $resultCode = $data['resultCode'];
+        $orderId = $data['orderId'] ?? null;
+        $resultCode = (int) ($data['resultCode'] ?? -1);
 
-        // 2. Tìm Booking và Payment trong DB
-        $booking = \App\Models\Booking::where('booking_code', $orderId)->first();
+        $booking = Booking::where('booking_code', $orderId)->first();
         if (!$booking) {
             return response()->json(['message' => 'Booking not found'], 404);
         }
 
-        $payment = \App\Models\Payment::where('booking_id', $booking->id)->first();
-
-        // 3. Cập nhật trạng thái
         if ($resultCode == 0) {
-            // Thanh toán thành công
-            if ($booking->status !== 'confirmed') {
-                $booking->status = 'confirmed';
-            }
-            $booking->save();
-
-            if ($payment) {
-                $payment->payment_status = 'completed';
-                $payment->transaction_code = $data['transId'] ?? null;
-                $payment->paid_at = now();
-                $payment->save();
-            }
+            $this->paymentService->markCompleted($booking, [
+                'transaction_code' => $data['transId'] ?? null,
+                'payment_gateway' => 'MoMo',
+                'gateway_response' => $data,
+            ]);
         } else {
-            // Thanh toán thất bại
-            $booking->status = 'cancelled';
-            $booking->save();
-
-            if ($payment) {
-                $payment->payment_status = 'failed';
-                $payment->save();
-            }
+            $this->paymentService->markFailed($booking, [
+                'payment_gateway' => 'MoMo',
+                'gateway_response' => $data,
+            ]);
         }
 
         // Bắt buộc trả về HTTP 204 cho MoMo biết mình đã nhận IPN thành công
@@ -90,38 +86,20 @@ class PaymentController extends Controller
      */
     public function vietqr($booking_code)
     {
-        $booking = \App\Models\Booking::where('booking_code', $booking_code)->firstOrFail();
-        $booking = app(BookingLifecycleService::class)->syncBooking($booking);
+        $booking = Booking::where('booking_code', $booking_code)->firstOrFail();
+        $booking = $this->paymentService->syncPayableBooking($booking);
 
         if ($booking->status === 'cancelled') {
             return redirect()->route('payment.success', ['booking_code' => $booking_code]);
         }
 
-        $bankId = (string) config('vietqr.bank_id', '970416');
-        $bankName = (string) config('vietqr.bank_name');
-        $accountNo = (string) config('vietqr.account_no', '27800607');
-        $accountName = (string) config('vietqr.account_name', 'LUONG LAM KHANH');
-        $template = (string) config('vietqr.template', 'compact');
-
-        if ($bankId === '' || $accountNo === '' || $accountName === '') {
-            Log::error('VietQR config missing', [
-                'booking_code' => $booking_code,
-                'bank_id' => $bankId ?: '[missing]',
-                'bank_name' => $bankName ?: '[missing]',
-                'account_no_set' => $accountNo !== '',
-                'account_name_set' => $accountName !== '',
-            ]);
-
+        $vietQrData = $this->vietQrService->dataFor($booking);
+        if (!$vietQrData) {
             return response()
                 ->view('payment.vietqr_unavailable', compact('booking'), 503);
         }
 
-        $amount = Money::vnd($booking->total_amount);
-        $addInfo = urlencode($booking_code);
-
-        $qrUrl = "https://img.vietqr.io/image/{$bankId}-{$accountNo}-{$template}.png?amount={$amount}&addInfo={$addInfo}&accountName=" . urlencode($accountName);
-
-        return view('payment.vietqr', compact('booking', 'qrUrl', 'accountNo', 'accountName', 'bankName'));
+        return view('payment.vietqr', array_merge(['booking' => $booking], $vietQrData));
     }
 
     /**
@@ -129,27 +107,15 @@ class PaymentController extends Controller
      */
     public function confirmVietqr(Request $request, $booking_code)
     {
-        $booking = \App\Models\Booking::where('booking_code', $booking_code)->firstOrFail();
-        $booking = app(BookingLifecycleService::class)->syncBooking($booking);
+        $booking = Booking::where('booking_code', $booking_code)->firstOrFail();
+        $booking = $this->paymentService->syncPayableBooking($booking);
 
         if ($booking->status === 'cancelled') {
             return redirect()->route('payment.success', ['booking_code' => $booking_code])
                 ->with('error', 'Đơn hàng đã quá thời gian thanh toán và bị hủy.');
         }
 
-        $payment = \App\Models\Payment::where('booking_id', $booking->id)->first();
-
-        if ($payment) {
-            $payment->payment_status = 'pending';
-            $payment->payment_gateway = $payment->payment_gateway ?: 'manual';
-            $payment->reported_at = $payment->reported_at ?: now();
-            $payment->save();
-        }
-
-        if (!str_contains((string)$booking->notes, 'Khách đã báo chuyển khoản')) {
-            $booking->notes = ($booking->notes ? $booking->notes . ' | ' : '') . 'Khách đã báo chuyển khoản, chờ Admin check biến động số dư.';
-        }
-        $booking->save();
+        $this->paymentService->markManualTransferReported($booking);
 
         // Redirect sang trang success (GET) để tránh bị reload form
         return redirect()->route('payment.success', ['booking_code' => $booking_code]);
@@ -160,10 +126,10 @@ class PaymentController extends Controller
      */
     public function checkStatus($booking_code)
     {
-        $booking = \App\Models\Booking::with('payment')->where('booking_code', $booking_code)->first();
+        $booking = Booking::with('payment')->where('booking_code', $booking_code)->first();
 
         if ($booking) {
-            $booking = app(BookingLifecycleService::class)->syncBooking($booking)->load('payment');
+            $booking = $this->paymentService->syncPayableBooking($booking)->load('payment');
 
             return response()->json([
                 'status' => $booking->status,
@@ -179,8 +145,8 @@ class PaymentController extends Controller
      */
     public function successPage($booking_code)
     {
-        $booking = \App\Models\Booking::with('payment')->where('booking_code', $booking_code)->firstOrFail();
-        $booking = app(BookingLifecycleService::class)->syncBooking($booking)->load('payment');
+        $booking = Booking::with('payment')->where('booking_code', $booking_code)->firstOrFail();
+        $booking = $this->paymentService->syncPayableBooking($booking)->load('payment');
 
         if ($booking->status === 'cancelled') {
             $message = $booking->cancellation_reason ?: 'Đơn hàng đã bị hủy.';
@@ -198,91 +164,11 @@ class PaymentController extends Controller
      */
     public function sepayWebhook(Request $request)
     {
-        // 1. Kiểm tra API Key (Secure Token) từ SePay cấu hình trong file .env để bảo mật
-        $authHeader = $request->header('Authorization');
-        $sepayToken = env('SEPAY_WEBHOOK_TOKEN');
+        $result = $this->sePayWebhookService->handle(
+            $request->all(),
+            $request->header('Authorization'),
+        );
 
-        if ($sepayToken && $authHeader !== 'Apikey ' . $sepayToken) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized'
-            ], 401);
-        }
-
-        // 2. Lấy dữ liệu payload từ SePay gửi về
-        $payload = $request->all();
-
-        // Ghi log để tiện theo dõi và đối soát
-        Log::info('SePay Webhook Received:', $payload);
-
-        $content = $payload['content'] ?? '';
-        $transferAmount = Money::vnd($payload['transferAmount'] ?? 0);
-
-        // 3. Tìm mã booking (định dạng BK + chuỗi chữ số, ví dụ BK1716123456) trong nội dung chuyển khoản
-        if (preg_match('/(BK\d+)/i', $content, $matches)) {
-            $bookingCode = strtoupper($matches[1]);
-
-            // Tìm Booking tương ứng trong cơ sở dữ liệu
-            $booking = \App\Models\Booking::where('booking_code', $bookingCode)->first();
-
-            if ($booking) {
-                $booking = app(BookingLifecycleService::class)->syncBooking($booking);
-
-                // Nếu đơn hàng đã được xác nhận từ trước
-                if ($booking->status === 'confirmed') {
-                    return response()->json([
-                        'success' => true,
-                        'message' => 'Booking đã được xác nhận thanh toán trước đó.'
-                    ], 200);
-                }
-
-                // Kiểm tra số tiền chuyển khoản có khớp hoặc lớn hơn số tiền của Booking không
-                if ($booking->status === 'cancelled') {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Booking da bi huy, can doi soat thu cong neu tien da vao tai khoan.'
-                    ], 409);
-                }
-
-                $expectedAmount = Money::vnd($booking->total_amount);
-
-                if ($transferAmount >= $expectedAmount) {
-                    // Cập nhật trạng thái Booking
-                    $booking->status = 'confirmed';
-                    $booking->notes = ($booking->notes ? $booking->notes . ' | ' : '') . 'Thanh toán tự động qua SePay Webhook.';
-                    $booking->save();
-
-                    // Cập nhật trạng thái Payment
-                    $payment = \App\Models\Payment::where('booking_id', $booking->id)->first();
-                    if ($payment) {
-                        $payment->payment_status = 'completed';
-                        $payment->transaction_code = $payload['referenceCode'] ?? ($payload['id'] ?? null);
-                        $payment->paid_at = now();
-                        $payment->payment_gateway = $payload['gateway'] ?? 'SePay';
-                        $payment->gateway_response = $payload;
-                        $payment->save();
-                    }
-
-                    return response()->json([
-                        'success' => true,
-                        'message' => 'Xác nhận thanh toán thành công qua SePay.'
-                    ], 200);
-                } else {
-                    // Cập nhật ghi chú nếu khách chuyển thiếu tiền
-                    $booking->notes = ($booking->notes ? $booking->notes . ' | ' : '') . 'Lỗi: Chuyển khoản thiếu tiền. Nhận: ' . number_format($transferAmount) . 'đ';
-                    $booking->save();
-
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Số tiền chuyển khoản không đủ.'
-                    ], 400);
-                }
-            }
-        }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Không tìm thấy mã booking hợp lệ trong nội dung chuyển khoản.'
-        ], 400);
+        return response()->json($result['body'], $result['status']);
     }
 }

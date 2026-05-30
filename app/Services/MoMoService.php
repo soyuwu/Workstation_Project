@@ -93,6 +93,28 @@ class MoMoService
      */
     public function verifySignature($data)
     {
+        $requiredKeys = [
+            'amount',
+            'extraData',
+            'message',
+            'orderId',
+            'orderInfo',
+            'orderType',
+            'partnerCode',
+            'payType',
+            'requestId',
+            'responseTime',
+            'resultCode',
+            'transId',
+            'signature',
+        ];
+
+        foreach ($requiredKeys as $key) {
+            if (!array_key_exists($key, $data)) {
+                return false;
+            }
+        }
+
         $accessKey = config('momo.access_key');
         $secretKey = config('momo.secret_key');
         

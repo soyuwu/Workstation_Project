@@ -238,6 +238,49 @@ function initAuthPanel() {
     });
 }
 
+function initPreventDoubleSubmit() {
+    const forms = document.querySelectorAll("form[data-prevent-double-submit]");
+
+    if (forms.length === 0) {
+        return;
+    }
+
+    forms.forEach((form) => {
+        form.addEventListener("submit", (event) => {
+            if (form.dataset.isSubmitting === "1") {
+                event.preventDefault();
+                event.stopPropagation();
+
+                if (typeof event.stopImmediatePropagation === "function") {
+                    event.stopImmediatePropagation();
+                }
+
+                return;
+            }
+
+            form.dataset.isSubmitting = "1";
+            form.setAttribute("aria-busy", "true");
+
+            const submitter =
+                event.submitter instanceof HTMLElement
+                    ? event.submitter
+                    : form.querySelector(
+                          'button[type="submit"], input[type="submit"]',
+                      );
+
+            if (
+                submitter instanceof HTMLButtonElement ||
+                submitter instanceof HTMLInputElement
+            ) {
+                submitter.disabled = true;
+                submitter.setAttribute("aria-disabled", "true");
+                submitter.style.cursor = "not-allowed";
+                submitter.style.opacity = "0.7";
+            }
+        });
+    });
+}
+
 function initUi() {
     initNavigation();
 
@@ -246,6 +289,7 @@ function initUi() {
     initTestimonials();
     initWorkspaceFilter();
     initAuthPanel();
+    initPreventDoubleSubmit();
 }
 
 if (document.readyState === "loading") {
