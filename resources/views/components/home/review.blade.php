@@ -117,7 +117,7 @@
                     <span class="material-symbols-outlined">calendar_today</span>
                     Đặt chỗ ngay
                 </a>
-                <a href="#" class="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm text-white border border-white/25 px-8 py-4 rounded-xl font-headline font-semibold text-base hover:bg-white/20 transition-all duration-300 active:scale-95">
+                <a href="tel:0927021207" class="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm text-white border border-white/25 px-8 py-4 rounded-xl font-headline font-semibold text-base hover:bg-white/20 transition-all duration-300 active:scale-95">
                     <span class="material-symbols-outlined">call</span>
                     Liên hệ tư vấn
                 </a>

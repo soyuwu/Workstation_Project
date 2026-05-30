@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    @include('partials.favicon')
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WorkStation - Tài khoản</title>
@@ -16,27 +17,8 @@
     <main class="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl items-center justify-center">
         <section id="container" data-auth-container class="auth-card {{ request()->is('register') ? 'is-register' : '' }}">
             <div class="absolute left-1/2 top-6 z-20 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 space-y-3">
-                @if (session('success'))
-                    <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 shadow-sm">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if (session('warning'))
-                    <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 shadow-sm">
-                        {{ session('warning') }}
-                    </div>
-                @endif
-
-                @if ($errors->any())
-                    <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm">
-                        <ul class="space-y-1">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+                <x-common.flash-messages />
+                <x-common.validation-errors />
             </div>
             <div class="auth-mobile-toggle absolute left-6 right-6 top-6 z-20 rounded-2xl bg-slate-100 p-1">
                 <button type="button" data-auth-target="login" data-auth-toggle class="flex-1 rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 transition-all duration-200">
@@ -74,7 +56,7 @@
                         </button>
                     </div>
 
-                    <form method="POST" action="{{ url('/logIn') }}" class="space-y-4">
+                    <form method="POST" action="{{ url('/logIn') }}" data-prevent-double-submit class="space-y-4">
                         @csrf
 
                         <label class="block">
@@ -116,7 +98,7 @@
                         Tạo tài khoản mới để trải nghiệm không gian làm việc và quản lý lịch đặt chỗ thuận tiện hơn.
                     </p>
 
-                    <form method="POST" action="{{ url('/register') }}" class="space-y-4">
+                    <form method="POST" action="{{ url('/register') }}" data-prevent-double-submit class="space-y-4">
                         @csrf
 
                         <label class="block">

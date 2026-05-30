@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    @include('partials.favicon')
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WorkStation - Đặt lại mật khẩu</title>
@@ -32,11 +33,7 @@
                 <h2 class="mb-2 font-headline text-4xl font-bold text-slate-800">Mật khẩu mới</h2>
                 <p class="mb-8 text-sm text-slate-500">Vui lòng nhập mật khẩu mới và xác nhận lại để hoàn tất.</p>
 
-                @if (session('error'))
-                    <div class="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-600 border border-red-100">
-                        {{ session('error') }}
-                    </div>
-                @endif
+                <x-common.flash-messages class="mb-5" />
 
                 <form action="{{ route('password.update', ['token' => $token]) }}" method="POST" class="space-y-5">
                     @csrf

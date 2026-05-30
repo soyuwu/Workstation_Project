@@ -2,6 +2,7 @@
 <html lang="vi">
 
 <head>
+    @include('partials.favicon')
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WorkStation - @yield('title', 'Hệ thống đặt chỗ')</title>
@@ -25,6 +26,10 @@
 
 <body data-nav-mode="@yield('nav-mode', 'solid')" class="bg-background font-body text-on-surface antialiased @yield('body-class')">
     @include('layouts.nav')
+
+    <div class="fixed left-1/2 top-24 z-[60] w-[calc(100%-2rem)] max-w-xl -translate-x-1/2">
+        <x-common.flash-messages />
+    </div>
 
     <main>
         @yield('content')

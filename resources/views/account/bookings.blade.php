@@ -39,18 +39,6 @@
 
     <section class="bg-slate-50 py-16">
         <div class="mx-auto max-w-7xl px-6 lg:px-12">
-            @if(session('success'))
-                <div class="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="mb-6 rounded-2xl border border-rose-100 bg-rose-50 px-5 py-4 text-sm font-medium text-rose-700">
-                    {{ session('error') }}
-                </div>
-            @endif
-
             <div class="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-100">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>

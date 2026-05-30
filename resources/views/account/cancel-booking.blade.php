@@ -47,22 +47,7 @@
                     </a>
                 </div>
 
-                @if(session('error'))
-                    <div class="mt-6 rounded-2xl border border-rose-100 bg-rose-50 px-5 py-4 text-sm font-medium text-rose-700">
-                        {{ session('error') }}
-                    </div>
-                @endif
-
-                @if($errors->any())
-                    <div class="mt-6 rounded-2xl border border-rose-100 bg-rose-50 px-5 py-4 text-sm text-rose-700">
-                        <p class="font-semibold">Vui lòng kiểm tra lại thông tin.</p>
-                        <ul class="mt-2 list-disc space-y-1 pl-5">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+                <x-common.validation-errors class="mt-6" title="Vui lòng kiểm tra lại thông tin." />
 
                 <form method="POST" action="{{ route('account.bookings.cancel', $booking) }}" class="mt-8 space-y-8">
                     @csrf

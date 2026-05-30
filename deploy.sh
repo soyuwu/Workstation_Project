@@ -19,7 +19,7 @@ echo "Đợi 5 giây cho Database khởi động hoàn toàn..."
 sleep 5
 
 echo "[4/6] Khởi tạo lại Database sạch và gieo dữ liệu Admin..."
-docker compose exec -T app php artisan migrate:fresh --seed
+docker compose exec -T app php artisan migrate:fresh --seed --force
 
 echo "[5/6] Cài đặt thư viện JS và build asset với Vite..."
 docker compose exec -T app npm install
