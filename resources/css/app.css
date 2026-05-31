@@ -248,6 +248,10 @@
     .reveal-stagger.revealed > *:nth-child(4) {
         transition-delay: 0.26s;
     }
+
+    .reveal-stagger.revealed > *:nth-child(5) {
+        transition-delay: 0.33s;
+    }
 }
 
 @media (max-width: 959px) {
